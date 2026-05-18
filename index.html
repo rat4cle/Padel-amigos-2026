@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padel Amigos 2026 | Dashboard Blindado</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
+
+    <nav class="bg-slate-950/80 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-black tracking-wider text-emerald-400 flex items-center gap-2">
+                自由 PADEL AMIGOS <span class="text-xs bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">LIVE</span>
+            </h1>
+            <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <button onclick="switchTab('resumen')" id="btn-resumen" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-500 text-slate-950">🏆 Clasificación</button>
+                <button onclick="switchTab('partidos')" id="btn-partidos" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🕒 Historial</button>
+                <button onclick="switchTab('logistica')" id="btn-logistica" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">💰 Finanzas</button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="loading" class="max-w-7xl mx-auto p-8 text-center text-slate-400">
+        <p class="text-xl animate-pulse">⚡ Conectando de forma segura con Google Sheets...</p>
+    </div>
+
+    <main id="main-content" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 hidden space-y-6">
+
+        <section id="tab-resumen" class="tab-content space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Partidos Totales</span>
+                    <span id="kpi-partidos" class="text-4xl font-black text-white mt-2">0</span>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Líder por Victorias</span>
+                    <span id="kpi-lider" class="text-2xl font-black text-emerald-400 mt-2">-</span>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Fortaleza del Grupo</span>
+                    <span id="kpi-pista" class="text-2xl font-black text-sky-400 mt-2">-</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-emerald-400">🏅 Rendimiento de Jugadores</h3>
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700">
+                                    <th class="p-4">Jugador</th>
+                                    <th class="p-4 text-center">Jugados</th>
+                                    <th class="p-4 text-center">Victorias</th>
+                                    <th class="p-4 text-right">Efectividad</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-sm">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                    <h3 class="text-lg font-bold mb-4 text-slate-200">📊 Histograma de Victorias</h3>
+                    <div class="relative h-64 sm:h-full flex items-center justify-center">
+                        <canvas id="rankingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-partidos" class="tab-content hidden space-y-4">
+            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-200">📅 Buscador de Partidos</h3>
+                <input type="text" id="searchInput" onkeyup="filterMatches()" placeholder="Busca por jugador, pista, fecha..." class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-sm w-full sm:w-80 focus:outline-none focus:border-emerald-500 transition">
+            </div>
+
+            <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+                <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+                    <table class="w-full text-left border-collapse" id="matchesTable">
+                        <thead class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700 sticky top-0 z-10">
+                            <tr>
+                                <th class="p-4">Fecha</th>
+                                <th class="p-4">Pista</th>
+                                <th class="p-4">Pareja 1</th>
+                                <th class="p-4">Pareja 2</th>
+                                <th class="p-4 text-center">Resultado</th>
+                                <th class="p-4">Ganadores</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/50 text-sm text-slate-300">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-logistica" class="tab-content hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-lg font-bold mb-4 text-amber-400">💰 Registro de Reservas (Pagos)</h3>
+                <div class="h-64 flex items-center justify-center">
+                    <canvas id="pagosChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-lg font-bold mb-4 text-sky-400">🎾 Proveedores de Pelotas</h3>
+                <div class="h-64 flex items-center justify-center">
+                    <canvas id="bolasChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Tu enlace de Google Sheets verificado
+        const urlGoogleSheets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTe6pQbD3p4NroFXhb1ypqFS9JmXeJjZq90ebqDEleUkR80fvdVarM1cXyaXU8CDY1BwTwuWV1OBCaB/pub?gid=2133685853&single=true&output=csv";
+
+        // Cambiar entre pestañas
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-500', 'text-slate-950');
+                btn.classList.add('text-slate-400', 'hover:text-white');
+            });
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('text-slate-400', 'hover:text-white');
+            activeBtn.classList.add('bg-emerald-500', 'text-slate-950');
+        }
+
+        // Conexión automática tolerante a CORS
+        window.onload = function() {
+            const urlConPuente = "https://corsproxy.io/?" + encodeURIComponent(urlGoogleSheets);
+
+            Papa.parse(urlConPuente, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results && results.data) {
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('main-content').classList.remove('hidden');
+                        procesarDatosInteligentes(results.data);
+                    } else {
+                        mostrarError();
+                    }
+                },
+                error: function(err) {
+                    mostrarError();
+                }
+            });
+        };
+
+        function mostrarError() {
+            document.getElementById('loading').innerHTML = "❌ Error al conectar con Google Sheets. Revisa la conexión o la publicación.";
+        }
+
+        // Procesador ultra seguro y case-insensitive
+        function procesarDatosInteligentes(rows) {
+            let totalPartidos = 0;
+            let pistasCount = {};
+            let jugadoresStats = {};
+            let pagosCount = {};
+            let pelotasCount = {};
+            let validRows = [];
+
+            rows.forEach(rawRow => {
+                if (!rawRow) return;
+
+                // ESCUDO: Convertir todas las llaves a minúsculas y quitar espacios para evitar errores de nombres
+                let row = {};
+                Object.keys(rawRow).forEach(k => {
+                    if (k) row[k.trim().toLowerCase()] = rawRow[k];
+                });
+
+                // Si no hay fecha, saltar fila (evita procesar celdas en blanco inferiores)
+                if (!row['fecha'] || row['fecha'].trim() === "") return;
+                
+                totalPartidos++;
+                validRows.push(rawRow); // Guardar para el historial
+
+                let pista = row['pista'];
+                if(pista) {
+                    pista = pista.trim();
+                    pistasCount[pista] = (pistasCount[pista] || 0) + 1;
+                }
+
+                let pReserva = row['pago reserva'];
+                if(pReserva && pReserva.toString().toLowerCase() !== "false" && pReserva.toString().toLowerCase() !== "playtomic") {
+                    pReserva = pReserva.trim();
+                    pagosCount[pReserva] = (pagosCount[pReserva] || 0) + 1;
+                }
+
+                let pelota = row['pelotas'];
+                if(pelota && pelota.toString().toLowerCase() !== "playtomic") {
+                    pelota = pelota.trim();
+                    pelotasCount[pelota] = (pelotasCount[pelota] || 0) + 1;
+                }
+
+                let j1A = row['p1 - jugador a'] || "";
+                let j1B = row['p1 - jugador b'] || "";
+                let j2A = row['p2 - jugador a'] || "";
+                let j2B = row['p2 - jugador b'] || "";
+                let ganadores = row['ganadores'] || "";
+
+                let participantes = [j1A, j1B, j2A, j2B].map(j => j.toString().trim()).filter(j => j && j.toLowerCase() !== "playtomic" && j !== "");
+                let participantesUnicos = [...new Set(participantes)];
+
+                participantesUnicos.forEach(j => {
+                    if(!jugadoresStats[j]) {
+                        jugadoresStats[j] = { partidos: 0, victorias: 0 };
+                    }
+                    jugadoresStats[j].partidos += 1;
+                    
+                    // Comprobación ultra-segura de tipo string antes del includes
+                    if(typeof ganadores === 'string' && ganadores.includes(j)) {
+                        jugadoresStats[j].victorias += 1;
+                    }
+                });
+            });
+
+            let pistaPrincipal = "Ninguna";
+            let maxPista = 0;
+            for(let p in pistasCount) {
+                if(pistasCount[p] > maxPista) {
+                    maxPista = pistasCount[p];
+                    pistaPrincipal = p;
+                }
+            }
+
+            let rankingArray = [];
+            for(let j in jugadoresStats) {
+                let rate = jugadoresStats[j].partidos > 0 ? ((jugadoresStats[j].victorias / jugadoresStats[j].partidos) * 100).toFixed(0) : 0;
+                rankingArray.push({
+                    nombre: j,
+                    partidos: jugadoresStats[j].partidos,
+                    victorias: jugadoresStats[j].victorias,
+                    winRate: parseInt(rate)
+                });
+            }
+            rankingArray.sort((a,b) => b.victorias - a.victorias);
+
+            document.getElementById('kpi-partidos').innerText = totalPartidos;
+            document.getElementById('kpi-lider').innerText = rankingArray.length > 0 ? `${rankingArray.nombre} (${rankingArray.victorias} vics)` : "-";
+            document.getElementById('kpi-pista').innerText = pistaPrincipal;
+
+            renderRankingTable(rankingArray);
+            window.allMatches = validRows;
+            displayMatches(validRows);
+            renderCharts(rankingArray, pagosCount, pelotasCount);
+        }
+
+        function renderRankingTable(ranking) {
+            const tbody = document.getElementById("ranking-tbody");
+            tbody.innerHTML = "";
+            ranking.forEach((r, idx) => {
+                let medalla = "";
+                if(idx === 0) medalla = "👑 ";
+                if(idx === 1) medalla = "🥈 ";
+                if(idx === 2) medalla = "🥉 ";
+                
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-750/30 transition border-b border-slate-800";
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-200">${medalla}${r.nombre}</td>
+                    <td class="p-4 text-center text-slate-300">${r.partidos}</td>
+                    <td class="p-4 text-center text-emerald-400 font-bold">${r.victorias}</td>
+                    <td class="p-4 text-right font-mono text-amber-400 font-bold">${r.winRate}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function displayMatches(matches) {
+            const tbody = document.querySelector("#matchesTable tbody");
+            tbody.innerHTML = "";
+            matches.forEach(rawRow => {
+                let row = {};
+                Object.keys(rawRow).forEach(k => {
+                    if (k) row[k.trim().toLowerCase()] = rawRow[k];
+                });
+
+                let s1 = `${row['set 1 - p1'] || 0}-${row['set 1 - p2'] || 0}`;
+                let s2 = `${row['set 2 - p1'] || 0}-${row['set 2 - p2'] || 0}`;
+                let s3 = row['set 3 - p1'] ? `, ${row['set 3 - p1']}-${row['set 3 - p2']}` : "";
+                
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-750/20 transition border-b border-slate-800";
+                tr.innerHTML = `
+                    <td class="p-4 text-xs font-mono text-slate-400">${row['fecha'] || '-'}</td>
+                    <td class="p-4 font-semibold text-slate-200">${row['pista'] || '-'}</td>
+                    <td class="p-4 text-xs text-slate-300">${row['p1 - jugador a'] || ''} / ${row['p1 - jugador b'] || ''}</td>
+                    <td class="p-4 text-xs text-slate-300">${row['p2 - jugador a'] || ''} / ${row['p2 - jugador b'] || ''}</td>
+                    <td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td>
+                    <td class="p-4 font-bold text-emerald-400">${row['ganadores'] || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Buscador global ultra robusto
+        function filterMatches() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = window.allMatches.filter(rawRow => {
+                return Object.values(rawRow).some(val => 
+                    val && val.toString().toLowerCase().includes(query)
+                );
+            });
+            displayMatches(filtered);
+        }
+
+        let chart1, chart2, chart3;
+        function renderCharts(ranking, pagos, pelotas) {
+            if(chart1) chart1.destroy();
+            if(chart2) chart2.destroy();
+            if(chart3) chart3.destroy();
+
+            chart1 = new Chart(document.getElementById('rankingChart'), {
+                type: 'bar',
+                data: {
+                    labels: ranking.map(r => r.nombre),
+                    datasets: [{
+                        data: ranking.map(r => r.victorias),
+                        backgroundColor: '#34d399',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', stepSize: 1 } }, x: { ticks: { color: '#94a3b8' } } }
+                }
+            });
+
+            chart2 = new Chart(document.getElementById('pagosChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(pagos),
+                    datasets: [{
+                        data: Object.values(pagos),
+                        backgroundColor: ['#fbbf24', '#38bdf8', '#34d399', '#a78bfa', '#f43f5e', '#f97316']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
+            });
+
+            chart3 = new Chart(document.getElementById('bolasChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: Object.keys(pelotas),
+                    datasets: [{
+                        data: Object.values(pelotas),
+                        backgroundColor: ['#38bdf8', '#a78bfa', '#fbbf24', '#f43f5e', '#34d399']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
+            });
+        }
+    </script>
+</body>
+</html>
