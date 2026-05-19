@@ -3,28 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padel Amigos 2026 | Dashboard Blindado</title>
+    <title>Padel Amigos 2026 | Master Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        .leader td { background-color: rgba(255, 215, 0, 0.12); }
+        .streak-fire td { background-color: rgba(255, 69, 0, 0.1); }
+        .streak-ice td { background-color: rgba(0, 191, 255, 0.1); }
+        .leader-fire td { background: linear-gradient(90deg, rgba(255, 140, 0, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(255, 69, 0, 0.3); }
+        .leader-ice td { background: linear-gradient(90deg, rgba(0, 191, 255, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(0, 0, 139, 0.3); }
+    </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
 
     <nav class="bg-slate-950/80 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="max-w-7xl mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
             <h1 class="text-2xl font-black tracking-wider text-emerald-400 flex items-center gap-2">
-                自由 PADEL AMIGOS <span class="text-xs bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">LIVE</span>
+                🎾 PADEL AMIGOS <span class="text-xs bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">LIVE</span>
             </h1>
-            <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
-                <button onclick="switchTab('resumen')" id="btn-resumen" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-500 text-slate-950">🏆 Clasificación</button>
-                <button onclick="switchTab('partidos')" id="btn-partidos" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🕒 Historial</button>
-                <button onclick="switchTab('logistica')" id="btn-logistica" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">💰 Finanzas</button>
+            
+            <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-700 text-sm">
+                <span class="text-slate-400 font-bold px-2 hidden sm:inline">Filtro:</span>
+                <input type="date" id="dateStart" onchange="aplicarFiltrosGlobales()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 focus:ring-1 focus:ring-emerald-500 cursor-pointer text-xs sm:text-sm">
+                <span class="text-slate-500">-</span>
+                <input type="date" id="dateEnd" onchange="aplicarFiltrosGlobales()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 focus:ring-1 focus:ring-emerald-500 cursor-pointer text-xs sm:text-sm">
+                <div class="flex gap-1 border-l border-slate-700 pl-2 ml-1">
+                    <button onclick="setDefaultDates()" class="text-xs bg-emerald-900/30 text-emerald-400 hover:bg-emerald-800/50 rounded px-3 py-1 font-bold transition-colors">Este Año</button>
+                    <button onclick="clearDates()" class="text-xs bg-amber-900/30 text-amber-400 hover:bg-amber-800/50 rounded px-3 py-1 font-bold transition-colors">Ver Todo</button>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <button onclick="switchTab('resumen')" id="btn-resumen" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all bg-emerald-500 text-slate-950">🏆 Clasificación</button>
+                <button onclick="switchTab('parejas')" id="btn-parejas" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">🤝 Parejas</button>
+                <button onclick="switchTab('partidos')" id="btn-partidos" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">🕒 Historial</button>
+                <button onclick="switchTab('logistica')" id="btn-logistica" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">💰 Finanzas</button>
             </div>
         </div>
     </nav>
 
     <div id="loading" class="max-w-7xl mx-auto p-8 text-center text-slate-400">
-        <p class="text-xl animate-pulse">⚡ Conectando de forma segura con Google Sheets...</p>
+        <p id="loading-text" class="text-xl animate-pulse">⚡ Extrayendo datos y calculando estadísticas inteligentes...</p>
+        <div id="error-box" class="hidden mt-4 p-4 bg-red-900/50 border border-red-700 rounded-xl text-red-200 text-sm font-mono max-w-xl mx-auto text-left"></div>
     </div>
 
     <main id="main-content" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 hidden space-y-6">
@@ -32,335 +53,689 @@
         <section id="tab-resumen" class="tab-content space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Partidos Totales</span>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Partidos Liga <span id="rango-badge" class="ml-2 text-[10px] bg-slate-700 px-2 py-0.5 rounded text-emerald-400">Este Año</span></span>
                     <span id="kpi-partidos" class="text-4xl font-black text-white mt-2">0</span>
                 </div>
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Líder por Victorias</span>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Líder de la Tabla</span>
                     <span id="kpi-lider" class="text-2xl font-black text-emerald-400 mt-2">-</span>
                 </div>
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Fortaleza del Grupo</span>
-                    <span id="kpi-pista" class="text-2xl font-black text-sky-400 mt-2">-</span>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 opacity-10 text-7xl">🔥</div>
+                    <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Pareja Letal</span>
+                    <span id="kpi-pareja" class="text-xl font-black text-amber-400 mt-2 z-10">-</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-emerald-400">🏅 Rendimiento de Jugadores</h3>
+                    <h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-400">🏅 Rendimiento General</h3>
+                    <p class="text-xs text-slate-500 mb-4">* % V calculado sin empates. Ordenado por % Puntuación.</p>
                     <div class="overflow-x-auto rounded-xl">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700">
-                                    <th class="p-4">Jugador</th>
-                                    <th class="p-4 text-center">Jugados</th>
-                                    <th class="p-4 text-center">Victorias</th>
-                                    <th class="p-4 text-right">Efectividad</th>
+                                <tr class="bg-slate-750 text-slate-300 text-[10px] sm:text-xs uppercase font-bold border-b border-slate-700">
+                                    <th class="p-3">#</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-right">% P</th>
                                 </tr>
                             </thead>
-                            <tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-sm">
-                                </tbody>
+                            <tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-xs sm:text-sm"></tbody>
                         </table>
                     </div>
                 </div>
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
-                    <h3 class="text-lg font-bold mb-4 text-slate-200">📊 Histograma de Victorias</h3>
+                    <h3 class="text-lg font-bold mb-4 text-slate-200">📊 % Puntuación</h3>
                     <div class="relative h-64 sm:h-full flex items-center justify-center">
                         <canvas id="rankingChart"></canvas>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <section id="tab-partidos" class="tab-content hidden space-y-4">
-            <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center">
-                <h3 class="text-lg font-bold text-slate-200">📅 Buscador de Partidos</h3>
-                <input type="text" id="searchInput" onkeyup="filterMatches()" placeholder="Busca por jugador, pista, fecha..." class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-sm w-full sm:w-80 focus:outline-none focus:border-emerald-500 transition">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">👤 Ficha Técnica del Jugador</h3>
+                    <select id="playerSelector" onchange="renderPlayerProfile()" class="bg-slate-900 border border-emerald-500 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer min-w-[200px]">
+                        <option value="">Selecciona un jugador...</option>
+                    </select>
+                </div>
+                <div id="player-stats-container" class="hidden space-y-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center">
+                            <span class="text-xs text-slate-400 uppercase font-bold block mb-1">Posición Favorita</span>
+                            <span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span>
+                            <span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center">
+                            <span class="text-xs text-slate-400 uppercase font-bold block mb-1">Victorias / Partidos</span>
+                            <span id="prof-victorias" class="text-2xl font-black text-emerald-400">0</span>
+                            <span id="prof-partidosJug" class="text-lg font-bold text-slate-500">/0</span>
+                            <span id="prof-winrate" class="text-xs text-slate-500 font-bold block mt-1">0% WR</span>
+                        </div>
+                        <div class="bg-gradient-to-br from-slate-900/50 to-amber-900/20 p-4 rounded-xl border border-slate-700 text-center">
+                            <span class="text-xs text-amber-500 uppercase font-bold block mb-1">Socio de Oro</span>
+                            <span id="prof-socio" class="text-lg font-black text-amber-400 block truncate">-</span>
+                            <span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold">-</span>
+                        </div>
+                        <div class="bg-gradient-to-br from-slate-900/50 to-red-900/30 p-4 rounded-xl border border-slate-700 text-center">
+                            <span class="text-xs text-red-400 uppercase font-bold block mb-1">⚠️ El Némesis</span>
+                            <span id="prof-nemesis" class="text-lg font-black text-red-400 block truncate">-</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                        <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider border-b border-slate-800 pb-2">🎾 Rendimiento por Posición</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4">
+                            <div class="flex flex-col items-center">
+                                <h5 class="text-lg font-black text-emerald-400 mb-2">REVÉS</h5>
+                                <div class="w-40 h-40 relative"><canvas id="chartReves"></canvas></div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <h5 class="text-lg font-black text-sky-400 mb-2">DRIVE</h5>
+                                <div class="w-40 h-40 relative"><canvas id="chartDrive"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
-                <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
-                    <table class="w-full text-left border-collapse" id="matchesTable">
-                        <thead class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700 sticky top-0 z-10">
-                            <tr>
-                                <th class="p-4">Fecha</th>
-                                <th class="p-4">Pista</th>
-                                <th class="p-4">Pareja 1</th>
-                                <th class="p-4">Pareja 2</th>
-                                <th class="p-4 text-center">Resultado</th>
-                                <th class="p-4">Ganadores</th>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-lg font-bold mb-4 text-emerald-400">📊 Resultados Habituales (Más repetidos)</h3>
+                <div class="overflow-x-auto rounded-xl">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700">
+                                <th class="p-4">Jugador</th><th class="p-4 text-center">Set 1</th><th class="p-4 text-center">Set 2</th><th class="p-4 text-center">Set 3</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-700/50 text-sm text-slate-300">
-                            </tbody>
+                        <tbody id="habituales-tbody" class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <section id="tab-logistica" class="tab-content hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-lg font-bold mb-4 text-amber-400">💰 Registro de Reservas (Pagos)</h3>
-                <div class="h-64 flex items-center justify-center">
-                    <canvas id="pagosChart"></canvas>
+        <section id="tab-parejas" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-4 text-emerald-400 flex items-center gap-2">🏆 Top 3 Mejores Parejas</h3>
+                    <div id="top-parejas-body" class="space-y-3"></div>
+                </div>
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                    <h3 class="text-lg font-bold mb-4 text-red-400 flex items-center gap-2">💀 Top 3 Peores Parejas</h3>
+                    <div id="worst-parejas-body" class="space-y-3"></div>
                 </div>
             </div>
+
             <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-lg font-bold mb-4 text-sky-400">🎾 Proveedores de Pelotas</h3>
-                <div class="h-64 flex items-center justify-center">
-                    <canvas id="bolasChart"></canvas>
+                <h3 class="text-lg font-bold mb-4 text-amber-400">⚖️ Comparador de Parejas (Head to Head)</h3>
+                <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-2">
+                    <div><label class="text-xs text-slate-400 block mb-1">Pareja 1 (J1)</label><select id="cmp-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div>
+                    <div class="flex items-center justify-center pt-5"><button onclick="swapCmp(1)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold transition-colors">↔</button></div>
+                    <div><label class="text-xs text-slate-400 block mb-1">Pareja 1 (J2)</label><select id="cmp-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div>
                 </div>
+                <div class="flex justify-center text-2xl font-black text-red-500 py-2">VS</div>
+                <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-4">
+                    <div><label class="text-xs text-slate-400 block mb-1">Pareja 2 (J3)</label><select id="cmp-p3" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div>
+                    <div class="flex items-center justify-center pt-5"><button onclick="swapCmp(2)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold transition-colors">↔</button></div>
+                    <div><label class="text-xs text-slate-400 block mb-1">Pareja 2 (J4)</label><select id="cmp-p4" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div>
+                </div>
+                
+                <div class="flex items-center gap-3 mb-6 bg-slate-900/50 p-3 rounded-lg border border-slate-700">
+                    <input type="checkbox" id="cmp-respectOrder" class="w-5 h-5 bg-slate-900 border-slate-700 rounded text-emerald-500 focus:ring-emerald-500 cursor-pointer">
+                    <label for="cmp-respectOrder" class="text-xs text-slate-300 cursor-pointer font-bold">Respetar posición exacta (Revés/Drive)<br><span class="font-normal text-slate-500">Si se ignora, agrupa todos los enfrentamientos en 1 solo resultado.</span></label>
+                </div>
+
+                <button onclick="compararParejas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-2 rounded-xl transition-colors">Comparar Histórico</button>
+                
+                <div id="cmp-result" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                        <h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Historial Enfrentamientos</h4>
+                        <div id="cmp-historial" class="text-2xl font-black text-center py-4"></div>
+                    </div>
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                        <h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Resultados Habituales (Sets)</h4>
+                        <div id="cmp-sets" class="text-center py-4 space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-lg font-bold mb-4 text-sky-400">🎾 Resultado Habitual de Pareja</h3>
+                <div class="flex flex-col sm:flex-row gap-4 items-end mb-4">
+                    <div class="flex-1 w-full">
+                        <label class="text-xs text-slate-400 block mb-1">Jugador 1</label>
+                        <select id="hab-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select>
+                    </div>
+                    <div class="flex items-center justify-center text-xl font-bold text-slate-500 pt-4 px-2">&</div>
+                    <div class="flex-1 w-full">
+                        <label class="text-xs text-slate-400 block mb-1">Jugador 2</label>
+                        <select id="hab-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select>
+                    </div>
+                    <button onclick="calcHabPareja()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">Ver Resultado</button>
+                </div>
+                <div id="hab-pareja-result" class="hidden mt-4 bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center font-mono"></div>
+            </div>
+        </section>
+
+        <section id="tab-partidos" class="tab-content hidden space-y-4">
+             <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col sm:flex-row gap-4 justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-200">📅 Buscador de Partidos</h3>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="filterRecorded()" id="btn-videoteca" class="text-xs bg-purple-900/30 text-purple-400 hover:bg-purple-800/50 rounded-lg px-4 py-2 font-bold transition-colors border border-purple-800/50">🎬 Videoteca</button>
+                    <input type="text" id="searchInput" onkeyup="filterMatches()" placeholder="Busca jugador, pista..." class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-sm w-full sm:w-80 focus:outline-none focus:border-emerald-500 transition">
+                </div>
+            </div>
+            <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+                <div class="overflow-x-auto max-h-[600px] overflow-y-auto">
+                    <table class="w-full text-left border-collapse" id="matchesTable">
+                        <thead class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700 sticky top-0 z-10">
+                            <tr><th class="p-4">Fecha</th><th class="p-4">Pista</th><th class="p-4">Pareja 1</th><th class="p-4">Pareja 2</th><th class="p-4 text-center">Resultado</th><th class="p-4">Ganadores</th></tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-logistica" class="tab-content hidden space-y-6">
+            <div class="bg-gradient-to-r from-amber-900/20 to-red-900/20 border border-amber-800/50 p-6 rounded-2xl text-amber-200">
+                <h3 class="text-xl font-black mb-2 flex items-center gap-2">💸 El Deudor del Grupo</h3>
+                <p id="deudor-insight" class="text-sm text-amber-300/80">Calculando...</p>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                <h3 class="text-lg font-bold mb-4 text-amber-400">💰 Pagos de Reservas</h3>
+                <div class="h-64 flex items-center justify-center"><canvas id="pagosChart"></canvas></div>
             </div>
         </section>
 
     </main>
 
     <script>
-        // Tu enlace de Google Sheets verificado
         const urlGoogleSheets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTe6pQbD3p4NroFXhb1ypqFS9JmXeJjZq90ebqDEleUkR80fvdVarM1cXyaXU8CDY1BwTwuWV1OBCaB/pub?gid=2133685853&single=true&output=csv";
+        const MANDATORY_PLAYERS = ["Garrido", "Pablo", "David", "Jordi", "Vijay"];
+        
+        let rawDataGlobal = []; let filteredDataGlobal = []; let jugadoresGlobales = []; 
+        let chartRevesInstance = null; let chartDriveInstance = null;
 
-        // Cambiar entre pestañas
+        function getModes(arr) {
+            if(arr.length === 0) return "-";
+            let freq = {}; arr.forEach(e => { freq[e] = (freq[e] || 0) + 1; });
+            let max = 0; for(let e in freq) { if(freq[e] > max) max = freq[e]; }
+            let modes = []; for(let e in freq) { if(freq[e] === max) modes.push(e); }
+            return modes.join(", ");
+        }
+
+        function formatScoreMode(modeStr) {
+            if (!modeStr || modeStr === "-") return "-";
+            return modeStr.split(", ").map(score => {
+                let parts = score.split("-");
+                if (parts.length === 2) {
+                    let p1 = parseInt(parts[0]), p2 = parseInt(parts[1]);
+                    if (p1 > p2) return `<span class="text-emerald-400 font-bold">${score}</span>`;
+                    if (p1 < p2) return `<span class="text-red-400 font-bold">${score}</span>`;
+                    return `<span class="text-amber-400 font-bold">${score}</span>`;
+                }
+                return score;
+            }).join("<span class='text-slate-500'>, </span>");
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById('tab-' + tabId).classList.remove('hidden');
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-emerald-500', 'text-slate-950');
-                btn.classList.add('text-slate-400', 'hover:text-white');
-            });
-            const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.remove('text-slate-400', 'hover:text-white');
-            activeBtn.classList.add('bg-emerald-500', 'text-slate-950');
+            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400', 'hover:text-white'); });
+            document.getElementById('btn-' + tabId).classList.remove('text-slate-400', 'hover:text-white');
+            document.getElementById('btn-' + tabId).classList.add('bg-emerald-500', 'text-slate-950');
         }
 
-        // Conexión automática tolerante a CORS
-        window.onload = function() {
-            const urlConPuente = "https://corsproxy.io/?" + encodeURIComponent(urlGoogleSheets);
+        function parseCSVDate(dateStr) {
+            if(!dateStr) return 0; dateStr = String(dateStr).trim().split(" ")[0]; let parts;
+            if (dateStr.includes('-')) parts = dateStr.split('-'); else if (dateStr.includes('/')) parts = dateStr.split('/');
+            else return isNaN(new Date(dateStr).getTime()) ? 0 : new Date(dateStr).getTime();
+            if (parts && parts.length === 3) { let p0 = parseInt(parts[0], 10), p1 = parseInt(parts[1], 10) - 1, p2 = parseInt(parts[2], 10);
+                if (parts[2].length === 4) return new Date(p2, p1, p0).getTime(); else return new Date(p0, p1, p2).getTime(); }
+            return 0;
+        }
 
-            Papa.parse(urlConPuente, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
+        function setDefaultDates() {
+            const today = new Date(); const currentYear = today.getFullYear();
+            let m = '' + (today.getMonth() + 1), d = '' + today.getDate();
+            if (m.length < 2) m = '0' + m; if (d.length < 2) d = '0' + d;
+            document.getElementById('dateStart').value = `${currentYear}-01-01`; document.getElementById('dateEnd').value = `${currentYear}-${m}-${d}`;
+            document.getElementById('rango-badge').innerText = "Este Año"; if(rawDataGlobal.length > 0) aplicarFiltrosGlobales();
+        }
+
+        function clearDates() {
+            document.getElementById('dateStart').value = ""; document.getElementById('dateEnd').value = "";
+            document.getElementById('rango-badge').innerText = "Histórico Completo"; if(rawDataGlobal.length > 0) aplicarFiltrosGlobales();
+        }
+
+        window.onload = function() {
+            Papa.parse(urlGoogleSheets, {
+                download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
-                    if (results && results.data) {
-                        document.getElementById('loading').classList.add('hidden');
-                        document.getElementById('main-content').classList.remove('hidden');
-                        procesarDatosInteligentes(results.data);
-                    } else {
-                        mostrarError();
-                    }
-                },
-                error: function(err) {
-                    mostrarError();
-                }
+                    if (results && results.data && results.data.length > 0) {
+                        rawDataGlobal = results.data.map(rawRow => {
+                            let row = {}; Object.keys(rawRow).forEach(k => { if(k && rawRow[k] !== undefined && rawRow[k] !== null) {
+                                let cleanKey = String(k).replace(/[^a-zA-Z0-9\- ]/g, '').trim().toLowerCase(); row[cleanKey] = rawRow[k]; } }); return row;
+                        }).filter(r => r.fecha && String(r.fecha).trim() !== "" && String(r.fecha).trim() !== "*");
+                        if(rawDataGlobal.length === 0) { mostrarErrorPantalla("No se han encontrado partidos válidos."); return; }
+                        document.getElementById('loading').classList.add('hidden'); document.getElementById('main-content').classList.remove('hidden'); setDefaultDates(); 
+                    } else { mostrarErrorPantalla("El documento está vacío."); }
+                }, error: function(err) { mostrarErrorPantalla("No se pudo conectar a Google Sheets."); }
             });
         };
 
-        function mostrarError() {
-            document.getElementById('loading').innerHTML = "❌ Error al conectar con Google Sheets. Revisa la conexión o la publicación.";
+        function mostrarErrorPantalla(msg) {
+            document.getElementById('loading-text').innerText = "❌ Error"; document.getElementById('loading-text').classList.remove('animate-pulse');
+            document.getElementById('error-box').classList.remove('hidden'); document.getElementById('error-box').innerText = msg;
         }
 
-        // Procesador ultra seguro y case-insensitive
+        function aplicarFiltrosGlobales() {
+            let dStart = document.getElementById('dateStart').value, dEnd = document.getElementById('dateEnd').value;
+            let timeStart = dStart ? new Date(dStart).getTime() : 0, timeEnd = dEnd ? new Date(dEnd).getTime() + 86400000 : Infinity; 
+            if(dStart && dEnd) document.getElementById('rango-badge').innerText = "Filtrado";
+            filteredDataGlobal = rawDataGlobal.filter(row => { let rowTime = parseCSVDate(row.fecha); return rowTime >= timeStart && rowTime <= timeEnd; });
+            filteredDataGlobal.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha));
+            procesarDatosInteligentes(filteredDataGlobal);
+        }
+
         function procesarDatosInteligentes(rows) {
-            let totalPartidos = 0;
-            let pistasCount = {};
-            let jugadoresStats = {};
-            let pagosCount = {};
-            let pelotasCount = {};
-            let validRows = [];
+            let totalPartidosInternos = 0, jugadoresStats = {}, pagosCount = {}, parejasStats = {}, jugadoresUnicosSet = new Set();
+            let rachasData = {}; 
 
-            rows.forEach(rawRow => {
-                if (!rawRow) return;
-
-                // ESCUDO: Convertir todas las llaves a minúsculas y quitar espacios para evitar errores de nombres
-                let row = {};
-                Object.keys(rawRow).forEach(k => {
-                    if (k) row[k.trim().toLowerCase()] = rawRow[k];
-                });
-
-                // Si no hay fecha, saltar fila (evita procesar celdas en blanco inferiores)
-                if (!row['fecha'] || row['fecha'].trim() === "") return;
+            rows.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
+                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim();
+                let j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
+                let ganadores = String(row['ganadores'] || ""), setsP1 = parseInt(row['sets p1'] || 0), setsP2 = parseInt(row['sets p2'] || 0);
                 
-                totalPartidos++;
-                validRows.push(rawRow); // Guardar para el historial
+                [j1A, j1B, j2A, j2B].forEach(j => { if(j && j !== "Playtomic") { jugadoresUnicosSet.add(j); if(!rachasData[j]) rachasData[j]=[]; } });
 
-                let pista = row['pista'];
-                if(pista) {
-                    pista = pista.trim();
-                    pistasCount[pista] = (pistasCount[pista] || 0) + 1;
-                }
+                if (!isExterno) {
+                    totalPartidosInternos++;
+                    let pReserva = String(row['pago reserva'] || "").trim();
+                    if(pReserva && pReserva.toLowerCase() !== "false" && pReserva.toLowerCase() !== "playtomic" && pReserva !== "*") pagosCount[pReserva] = (pagosCount[pReserva] || 0) + 1;
 
-                let pReserva = row['pago reserva'];
-                if(pReserva && pReserva.toString().toLowerCase() !== "false" && pReserva.toString().toLowerCase() !== "playtomic") {
-                    pReserva = pReserva.trim();
-                    pagosCount[pReserva] = (pagosCount[pReserva] || 0) + 1;
-                }
-
-                let pelota = row['pelotas'];
-                if(pelota && pelota.toString().toLowerCase() !== "playtomic") {
-                    pelota = pelota.trim();
-                    pelotasCount[pelota] = (pelotasCount[pelota] || 0) + 1;
-                }
-
-                let j1A = row['p1 - jugador a'] || "";
-                let j1B = row['p1 - jugador b'] || "";
-                let j2A = row['p2 - jugador a'] || "";
-                let j2B = row['p2 - jugador b'] || "";
-                let ganadores = row['ganadores'] || "";
-
-                let participantes = [j1A, j1B, j2A, j2B].map(j => j.toString().trim()).filter(j => j && j.toLowerCase() !== "playtomic" && j !== "");
-                let participantesUnicos = [...new Set(participantes)];
-
-                participantesUnicos.forEach(j => {
-                    if(!jugadoresStats[j]) {
-                        jugadoresStats[j] = { partidos: 0, victorias: 0 };
-                    }
-                    jugadoresStats[j].partidos += 1;
+                    let winT1 = ganadores.includes(j1A) && ganadores.includes(j1B) && j1A && j1B;
+                    let winT2 = ganadores.includes(j2A) && ganadores.includes(j2B) && j2A && j2B;
                     
-                    // Comprobación ultra-segura de tipo string antes del includes
-                    if(typeof ganadores === 'string' && ganadores.includes(j)) {
-                        jugadoresStats[j].victorias += 1;
-                    }
-                });
+                    let duo1 = [j1A, j1B].sort().join(" & "), duo2 = [j2A, j2B].sort().join(" & ");
+                    if(!parejasStats[duo1]) parejasStats[duo1] = { w: 0, l: 0, d: 0, p: 0 }; if(!parejasStats[duo2]) parejasStats[duo2] = { w: 0, l: 0, d: 0, p: 0 };
+                    parejasStats[duo1].p += 1; parejasStats[duo2].p += 1;
+                    if(isDraw) { parejasStats[duo1].d += 1; parejasStats[duo2].d += 1; }
+                    else if(winT1) { parejasStats[duo1].w += 1; parejasStats[duo2].l += 1; }
+                    else if(winT2) { parejasStats[duo2].w += 1; parejasStats[duo1].l += 1; }
+
+                    [[j1A, j1B, setsP1, setsP2, winT1, winT2], [j2A, j2B, setsP2, setsP1, winT2, winT1]].forEach(team => {
+                        [team[0], team[1]].forEach(j => {
+                            if(j) {
+                                if(!jugadoresStats[j]) jugadoresStats[j] = { partidos: 0, victorias: 0, empates: 0, derrotas: 0, sf: 0, sc: 0 };
+                                jugadoresStats[j].partidos += 1; jugadoresStats[j].sf += team[2]; jugadoresStats[j].sc += team[3];
+                                if(isDraw) { jugadoresStats[j].empates += 1; rachasData[j].push('D'); }
+                                else if(team[4]) { jugadoresStats[j].victorias += 1; rachasData[j].push('W'); }
+                                else { jugadoresStats[j].derrotas += 1; rachasData[j].push('L'); }
+                            }
+                        });
+                    });
+                }
             });
 
-            let pistaPrincipal = "Ninguna";
-            let maxPista = 0;
-            for(let p in pistasCount) {
-                if(pistasCount[p] > maxPista) {
-                    maxPista = pistasCount[p];
-                    pistaPrincipal = p;
-                }
+            MANDATORY_PLAYERS.forEach(mp => { if(!jugadoresUnicosSet.has(mp)) jugadoresUnicosSet.add(mp); });
+            jugadoresGlobales = [...jugadoresUnicosSet].sort(); populateSelectors(jugadoresGlobales);
+
+            let parejasArray = [];
+            for(let p in parejasStats) { 
+                let pDecisivos = parejasStats[p].w + parejasStats[p].l;
+                let wr = pDecisivos > 0 ? (parejasStats[p].w / pDecisivos) : 0;
+                parejasArray.push({ name: p, w: parejasStats[p].w, l: parejasStats[p].l, d: parejasStats[p].d, p: parejasStats[p].p, wr: wr });
             }
+            
+            let parejasElegibles = parejasArray.filter(p => p.p >= 3);
+            parejasElegibles.sort((a, b) => b.wr - a.wr);
+            let parejaLetalText = parejasElegibles.length > 0 ? `${parejasElegibles[0].name} (${(parejasElegibles[0].wr*100).toFixed(0)}% / ${parejasElegibles[0].p} PJ)` : "Ninguna";
 
             let rankingArray = [];
             for(let j in jugadoresStats) {
-                let rate = jugadoresStats[j].partidos > 0 ? ((jugadoresStats[j].victorias / jugadoresStats[j].partidos) * 100).toFixed(0) : 0;
-                rankingArray.push({
-                    nombre: j,
-                    partidos: jugadoresStats[j].partidos,
-                    victorias: jugadoresStats[j].victorias,
-                    winRate: parseInt(rate)
+                let s = jugadoresStats[j]; 
+                if(s.partidos < 3 && !MANDATORY_PLAYERS.includes(j)) continue; 
+                let puntos = (s.victorias * 3) + (s.empates * 1), maxPuntos = s.partidos * 3;
+                let puntuacion = maxPuntos > 0 ? ((puntos / maxPuntos) * 100).toFixed(1) : 0;
+                let partidosDecisivos = s.victorias + s.derrotas;
+                let winRateVic = partidosDecisivos > 0 ? ((s.victorias / partidosDecisivos) * 100).toFixed(1) : 0;
+                
+                let streakIcon = "", streakType = "";
+                let results = rachasData[j] || [];
+                if(results.length > 0) {
+                    let last = results[results.length - 1]; let count = 0;
+                    for(let i = results.length - 1; i >= 0; i--) { if(results[i] === last) count++; else break; }
+                    if(last === 'W' && count >= 3) { streakIcon = `🔥${count}`; streakType = "fire"; }
+                    if(last === 'L' && count >= 3) { streakIcon = `🧊${count}`; streakType = "ice"; }
+                }
+                rankingArray.push({ nombre: j, partidos: s.partidos, victorias: s.victorias, empates: s.empates, derrotas: s.derrotas, difSets: s.sf - s.sc, winRateVic: parseFloat(winRateVic), puntuacion: parseFloat(puntuacion), streak: streakIcon, streakType: streakType });
+            }
+            MANDATORY_PLAYERS.forEach(mp => {
+                if(!jugadoresStats[mp]) rankingArray.push({ nombre: mp, partidos: 0, victorias: 0, empates: 0, derrotas: 0, difSets: 0, winRateVic: 0, puntuacion: 0, streak: "", streakType: "" });
+            });
+            rankingArray.sort((a,b) => b.puntuacion - a.puntuacion || b.difSets - a.difSets);
+
+            document.getElementById('kpi-partidos').innerText = totalPartidosInternos;
+            document.getElementById('kpi-lider').innerText = rankingArray.length > 0 ? `${rankingArray[0].nombre} (${rankingArray[0].puntuacion}%)` : "-";
+            document.getElementById('kpi-pareja').innerText = parejaLetalText;
+
+            calculateDeudor(jugadoresStats, pagosCount);
+            renderRankingTable(rankingArray);
+            renderResultadosHabituales(rows);
+            renderParejasTopBottom(parejasElegibles);
+            displayMatches(filteredDataGlobal); 
+            renderCharts(rankingArray, pagosCount);
+            renderPlayerProfile();
+        }
+
+        function populateSelectors(jugadores) {
+            let selIds = ['playerSelector', 'cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2'];
+            selIds.forEach(id => { let el = document.getElementById(id); let val = el.value;
+                let html = (id === 'playerSelector') ? '<option value="">Selecciona un jugador...</option>' : '<option value="">Jugador</option>';
+                jugadores.forEach(j => html += `<option value="${j}">${j}</option>`);
+                el.innerHTML = html; if(jugadores.includes(val)) el.value = val; });
+        }
+
+        function calculateDeudor(stats, pagos) {
+            let aportes = {};
+            let totalMatches = 0;
+            for(let j in stats) { 
+                if(stats[j].partidos >= 3 || MANDATORY_PLAYERS.includes(j)) { 
+                    aportes[j] = { pagos: 0, pj: stats[j].partidos }; 
+                    totalMatches += stats[j].partidos;
+                } 
+            }
+            for(let p in pagos) { if(aportes[p]) aportes[p].pagos = pagos[p]; }
+            
+            let totalPayments = Object.values(pagos).reduce((a, b) => a + b, 0);
+            let maxDebt = -Infinity, deudor = "Nadie";
+            
+            for(let j in aportes) { 
+                if(aportes[j].pj === 0) continue; 
+                let expectedPayments = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalPayments : 0;
+                let debt = expectedPayments - aportes[j].pagos;
+                if(debt > maxDebt) { maxDebt = debt; deudor = j; }
+            }
+            document.getElementById('deudor-insight').innerText = `Las matemáticas no mienten. Teniendo en cuenta partidos jugados y pagos realizados, el próximo partido debe pagarlo: 💸 ${deudor}.`;
+        }
+
+        function renderPlayerProfile() {
+            let player = document.getElementById('playerSelector').value; let container = document.getElementById('player-stats-container');
+            if(!player) { container.classList.add('hidden'); return; } container.classList.remove('hidden');
+
+            let vT=0, pT=0, rJ=0, rV=0, rD=0, dJ=0, dV=0, dD=0, sociosStats={}, nemesisCount={}, posReves=0, posDrive=0;
+
+            filteredDataGlobal.forEach(row => {
+                if(String(row.tipo || "").toLowerCase() === "externo") return;
+                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim();
+                let j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
+                let ganadores = String(row['ganadores'] || ""), equipo=0, posicion="", soc="";
+
+                if(j1A===player){equipo=1;posicion="Revés";soc=j1B;} else if(j1B===player){equipo=1;posicion="Drive";soc=j1A;}
+                else if(j2A===player){equipo=2;posicion="Revés";soc=j2B;} else if(j2B===player){equipo=2;posicion="Drive";soc=j2A;}
+                if(equipo===0) return; pT++;
+
+                let gano = ganadores.includes(player), pierde = !gano && !String(ganadores).toLowerCase().includes("empate");
+                if(posicion==="Revés"){rJ++;if(gano)rV++;else if(pierde)rD++;} if(posicion==="Drive"){dJ++;if(gano)dV++;else if(pierde)dD++;}
+                if(soc) { if(!sociosStats[soc]) sociosStats[soc]={w:0,l:0,p:0}; sociosStats[soc].p+=1; if(gano)sociosStats[soc].w+=1; else if(pierde)sociosStats[soc].l+=1; }
+                if(pierde) { let riv = equipo===1?[j2A,j2B]:[j1A,j1B]; riv.forEach(r=>{if(r)nemesisCount[r]=(nemesisCount[r]||0)+1;}); }
+                else if(gano) vT++;
+                if(posicion==="Revés") posReves++; else if(posicion==="Drive") posDrive++;
+            });
+
+            let posFavText = "Ambas";
+            let posFavDetail = `${posDrive}/${pT} en cada lado`;
+            if(posReves > posDrive) { posFavText = "Revés"; posFavDetail = `${posReves}/${pT} en Revés`; }
+            else if(posDrive > posReves) { posFavText = "Drive"; posFavDetail = `${posDrive}/${pT} en Drive`; }
+            
+            document.getElementById('prof-posicion').innerText = posFavText;
+            document.getElementById('prof-posicion-detail').innerText = posFavDetail;
+
+            let validSocios = [];
+            for(let s in sociosStats) { 
+                if(sociosStats[s].p >= 2) {
+                    let wls = sociosStats[s].w + sociosStats[s].l;
+                    validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); 
+                }
+            }
+            validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p);
+            if(validSocios.length === 0) { for(let s in sociosStats) { let wls = sociosStats[s].w + sociosStats[s].l; validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); } validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p); }
+
+            let maxNemesis = 0; for(let n in nemesisCount) if(nemesisCount[n] > maxNemesis) maxNemesis = nemesisCount[n];
+            let nemeses = []; for(let n in nemesisCount) if(nemesisCount[n] === maxNemesis) nemeses.push(n);
+            let nemesisText = nemeses.length > 0 ? `${nemeses.join(", ")} (${maxNemesis} D)` : "Nadie";
+
+            document.getElementById('prof-victorias').innerText = vT;
+            document.getElementById('prof-partidosJug').innerText = `/ ${pT}`;
+            document.getElementById('prof-winrate').innerText = `${pT > 0 ? Math.round((vT/pT)*100) : 0}% WR`;
+            document.getElementById('prof-socio').innerText = validSocios.length > 0 ? validSocios[0].name : "-";
+            document.getElementById('prof-socio-wr').innerText = validSocios.length > 0 ? `${(validSocios[0].wr*100).toFixed(0)}% efectividad (${validSocios[0].w}V / ${validSocios[0].p} PJ)` : "-";
+            document.getElementById('prof-nemesis').innerText = nemesisText;
+            renderPositionCharts(rV, rD, rJ-rV-rD, dV, dD, dJ-dV-dD);
+        }
+
+        function renderResultadosHabituales(rows) {
+            let setsData = {};
+            rows.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
+                let s1p1 = parseInt(row['set 1 - p1']||0), s1p2 = parseInt(row['set 1 - p2']||0);
+                let s2p1 = parseInt(row['set 2 - p1']||0), s2p2 = parseInt(row['set 2 - p2']||0);
+                let s3p1 = parseInt(row['set 3 - p1']||0), s3p2 = parseInt(row['set 3 - p2']||0);
+                [[row['p1 - jugador a'], s1p1, s1p2, s2p1, s2p2, s3p1, s3p2], [row['p1 - jugador b'], s1p1, s1p2, s2p1, s2p2, s3p1, s3p2],
+                 [row['p2 - jugador a'], s1p2, s1p1, s2p2, s2p1, s3p2, s3p1], [row['p2 - jugador b'], s1p2, s1p1, s2p2, s2p1, s3p2, s3p1]].forEach(p => {
+                    let name = String(p[0]||"").trim(); if(!name || name==="Playtomic") return;
+                    if(!setsData[name]) setsData[name] = {s1:[], s2:[], s3:[]};
+                    setsData[name].s1.push(`${p[1]}-${p[2]}`); setsData[name].s2.push(`${p[3]}-${p[4]}`);
+                    if(p[5]>0||p[6]>0) setsData[name].s3.push(`${p[5]}-${p[6]}`);
+                });
+            });
+            let tbody = document.getElementById("habituales-tbody"); tbody.innerHTML = "";
+            Object.keys(setsData).sort().forEach(j => {
+                let d = setsData[j]; if(d.s1.length < 3) return; 
+                let tr = document.createElement("tr"); tr.className = "hover:bg-slate-750/30 border-b border-slate-800";
+                tr.innerHTML = `<td class="p-4 font-bold text-slate-200">${j}</td><td class="p-4 text-center font-mono">${formatScoreMode(getModes(d.s1))}</td><td class="p-4 text-center font-mono">${formatScoreMode(getModes(d.s2))}</td><td class="p-4 text-center font-mono">${d.s3.length > 0 ? formatScoreMode(getModes(d.s3)) : "-"}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderParejasTopBottom(parejas) {
+            let topBody = document.getElementById("top-parejas-body");
+            let worstBody = document.getElementById("worst-parejas-body");
+            topBody.innerHTML = ""; worstBody.innerHTML = "";
+            
+            let top3 = [...parejas].sort((a, b) => b.wr - a.wr).slice(0, 3);
+            let worst3 = [...parejas].sort((a, b) => a.wr - b.wr).slice(0, 3); 
+
+            const renderList = (arr, container, isGood) => {
+                if(arr.length === 0) container.innerHTML = `<div class="text-slate-500 text-sm">Datos insuficientes (Mínimo 3 PJ)</div>`;
+                arr.forEach((p, idx) => {
+                    container.innerHTML += `
+                    <div class="flex items-center justify-between bg-slate-900/50 p-3 rounded-lg border ${isGood ? 'border-emerald-900/50' : 'border-red-900/50'}">
+                        <div class="flex items-center gap-3">
+                            <span class="font-black text-lg ${isGood ? 'text-emerald-400' : 'text-red-400'}">${idx+1}</span>
+                            <div>
+                                <span class="font-bold text-slate-200 text-sm">${p.name}</span>
+                                <span class="text-xs text-slate-500 block">${p.p} PJ</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-mono font-bold ${isGood ? 'text-emerald-400' : 'text-red-400'}">${(p.wr*100).toFixed(0)}% V</div>
+                            <div class="text-[10px] text-slate-500 font-bold">${p.w}V / ${p.l}D</div>
+                        </div>
+                    </div>`;
+                });
+            };
+            renderList(top3, topBody, true);
+            renderList(worst3, worstBody, false);
+        }
+
+        function swapCmp(pair) {
+            if(pair === 1) {
+                let v1 = document.getElementById('cmp-p1').value, v2 = document.getElementById('cmp-p2').value;
+                document.getElementById('cmp-p1').value = v2; document.getElementById('cmp-p2').value = v1;
+            } else {
+                let v3 = document.getElementById('cmp-p3').value, v4 = document.getElementById('cmp-p4').value;
+                document.getElementById('cmp-p3').value = v4; document.getElementById('cmp-p4').value = v3;
+            }
+        }
+
+        function compararParejas() {
+            let p1 = document.getElementById('cmp-p1').value, p2 = document.getElementById('cmp-p2').value;
+            let p3 = document.getElementById('cmp-p3').value, p4 = document.getElementById('cmp-p4').value;
+            if(!p1||!p2||!p3||!p4) return;
+
+            let respectOrder = document.getElementById('cmp-respectOrder').checked;
+            let groupedMatches = {};
+
+            filteredDataGlobal.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
+                let j1A = String(row['p1 - jugador a']||"").trim(), j1B = String(row['p1 - jugador b']||"").trim();
+                let j2A = String(row['p2 - jugador a']||"").trim(), j2B = String(row['p2 - jugador b']||"").trim();
+
+                let isC1T1 = respectOrder ? (j1A===p1 && j1B===p2) : ((j1A===p1 && j1B===p2) || (j1A===p2 && j1B===p1));
+                let isC2T2 = respectOrder ? (j2A===p3 && j2B===p4) : ((j2A===p3 && j2B===p4) || (j2A===p4 && j2B===p3));
+                let isC1T2 = respectOrder ? (j2A===p1 && j2B===p2) : ((j2A===p1 && j2B===p2) || (j2A===p2 && j2B===p1));
+                let isC2T1 = respectOrder ? (j1A===p3 && j1B===p4) : ((j1A===p3 && j1B===p4) || (j1A===p4 && j1B===p3));
+
+                let c1IsLeft = false;
+                let layoutKey = "";
+
+                if (isC1T1 && isC2T2) {
+                    c1IsLeft = true; layoutKey = respectOrder ? `${p1}/${p2} vs ${p3}/${p4}` : `${p1} & ${p2} vs ${p3} & ${p4}`;
+                } else if (isC1T2 && isC2T1) {
+                    c1IsLeft = false; layoutKey = respectOrder ? `${p1}/${p2} vs ${p3}/${p4}` : `${p1} & ${p2} vs ${p3} & ${p4}`;
+                }
+
+                if (layoutKey !== "") {
+                    if (!groupedMatches[layoutKey]) groupedMatches[layoutKey] = [];
+                    groupedMatches[layoutKey].push({ row: row, c1IsLeft: c1IsLeft });
+                }
+            });
+
+            document.getElementById('cmp-result').classList.remove('hidden');
+            let htmlHistorial = "", htmlSets = "";
+            const layoutKeys = Object.keys(groupedMatches);
+            
+            if (layoutKeys.length === 0) {
+                htmlHistorial = `<div class="text-xl font-black text-center py-4 text-slate-500">Sin enfrentamientos</div>`;
+                htmlSets = `<div class="text-center py-4 text-slate-500">Sin datos</div>`;
+            } else {
+                layoutKeys.forEach(key => {
+                    let matches = groupedMatches[key], c1W=0, c2W=0, draws=0, s1Scores=[], s2Scores=[], s3Scores=[];
+                    matches.forEach(m => {
+                        let row = m.row, ganadores = String(row['ganadores'] || "");
+                        let p1s1 = parseInt(row['set 1 - p1']||0), p2s1 = parseInt(row['set 1 - p2']||0);
+                        let p1s2 = parseInt(row['set 2 - p1']||0), p2s2 = parseInt(row['set 2 - p2']||0);
+                        let p1s3 = parseInt(row['set 3 - p1']||0), p2s3 = parseInt(row['set 3 - p2']||0);
+                        if(ganadores.includes(p1)&&ganadores.includes(p2)) c1W++; else if(ganadores.includes(p3)&&ganadores.includes(p4)) c2W++; else draws++;
+                        let c1S1 = m.c1IsLeft ? p1s1 : p2s1, c2S1 = m.c1IsLeft ? p2s1 : p1s1;
+                        let c1S2 = m.c1IsLeft ? p1s2 : p2s2, c2S2 = m.c1IsLeft ? p2s2 : p1s2;
+                        let c1S3 = m.c1IsLeft ? p1s3 : p2s3, c2S3 = m.c1IsLeft ? p2s3 : p1s3;
+                        s1Scores.push(`${c1S1}-${c2S1}`); s2Scores.push(`${c1S2}-${c2S2}`);
+                        if(p1s3>0||p2s3>0) s3Scores.push(`${c1S3}-${c2S3}`);
+                    });
+                    let names = key.split(" vs ");
+                    htmlHistorial += `<div class="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700"><h5 class="text-xs font-bold text-slate-400 mb-2 uppercase">${key}</h5><div class="text-xl font-black text-center"><span class="text-emerald-400">${names[0]}: ${c1W}V</span><br><span class="text-red-400 mt-1 block">${names[1]}: ${c2W}V</span><br><span class="text-amber-400 mt-1 block text-sm">Empates: ${draws}</span></div></div>`;
+                    htmlSets += `<div class="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700"><h5 class="text-xs font-bold text-slate-400 mb-2 uppercase">${key}</h5>`;
+                    if(s1Scores.length > 0) {
+                        htmlSets += `<div class="text-slate-300 font-bold text-sm">SET 1: <span class="font-mono">${formatScoreMode(getModes(s1Scores))}</span></div><div class="text-slate-300 font-bold text-sm mt-1">SET 2: <span class="font-mono">${formatScoreMode(getModes(s2Scores))}</span></div>`;
+                        if(s3Scores.length > 0) htmlSets += `<div class="text-slate-300 font-bold text-sm mt-1">SET 3: <span class="font-mono">${formatScoreMode(getModes(s3Scores))}</span></div>`;
+                    } else { htmlSets += `<div class="text-slate-500 text-sm">Sin datos</div>`; }
+                    htmlSets += `</div>`;
                 });
             }
-            rankingArray.sort((a,b) => b.victorias - a.victorias);
+            document.getElementById('cmp-historial').innerHTML = htmlHistorial;
+            document.getElementById('cmp-sets').innerHTML = htmlSets;
+        }
 
-            document.getElementById('kpi-partidos').innerText = totalPartidos;
-            document.getElementById('kpi-lider').innerText = rankingArray.length > 0 ? `${rankingArray.nombre} (${rankingArray.victorias} vics)` : "-";
-            document.getElementById('kpi-pista').innerText = pistaPrincipal;
+        function calcHabPareja() {
+            let p1 = document.getElementById('hab-p1').value, p2 = document.getElementById('hab-p2').value;
+            if(!p1 || !p2) return;
+            let s1Scores=[], s2Scores=[], s3Scores=[];
+            
+            filteredDataGlobal.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
+                let j1A = String(row['p1 - jugador a']||"").trim(), j1B = String(row['p1 - jugador b']||"").trim();
+                let j2A = String(row['p2 - jugador a']||"").trim(), j2B = String(row['p2 - jugador b']||"").trim();
+                
+                let isTeam1P1 = (j1A===p1 && j1B===p2) || (j1A===p2 && j1B===p1);
+                let isTeam1P2 = (j2A===p1 && j2B===p2) || (j2A===p2 && j2B===p1);
+                
+                if (isTeam1P1) {
+                    s1Scores.push(`${row['set 1 - p1']}-${row['set 1 - p2']}`);
+                    s2Scores.push(`${row['set 2 - p1']}-${row['set 2 - p2']}`);
+                    if(parseInt(row['set 3 - p1']||0)>0 || parseInt(row['set 3 - p2']||0)>0) s3Scores.push(`${row['set 3 - p1']}-${row['set 3 - p2']}`);
+                } else if (isTeam1P2) {
+                    s1Scores.push(`${row['set 1 - p2']}-${row['set 1 - p1']}`);
+                    s2Scores.push(`${row['set 2 - p2']}-${row['set 2 - p1']}`);
+                    if(parseInt(row['set 3 - p1']||0)>0 || parseInt(row['set 3 - p2']||0)>0) s3Scores.push(`${row['set 3 - p2']}-${row['set 3 - p1']}`);
+                }
+            });
 
-            renderRankingTable(rankingArray);
-            window.allMatches = validRows;
-            displayMatches(validRows);
-            renderCharts(rankingArray, pagosCount, pelotasCount);
+            let resultDiv = document.getElementById('hab-pareja-result');
+            resultDiv.classList.remove('hidden');
+            if (s1Scores.length === 0) {
+                resultDiv.innerHTML = `<span class="text-slate-500 text-sm font-sans">No han jugado juntos en este periodo</span>`;
+            } else {
+                let html = `
+                    <div class="text-sm text-slate-400 mb-2 font-sans">${s1Scores.length} partidos juntos</div>
+                    <div class="grid grid-cols-3 gap-4 text-center text-lg">
+                        <div><div class="text-xs text-slate-500 mb-1 font-sans">SET 1</div><div>${formatScoreMode(getModes(s1Scores))}</div></div>
+                        <div><div class="text-xs text-slate-500 mb-1 font-sans">SET 2</div><div>${formatScoreMode(getModes(s2Scores))}</div></div>
+                        <div><div class="text-xs text-slate-500 mb-1 font-sans">SET 3</div><div>${s3Scores.length > 0 ? formatScoreMode(getModes(s3Scores)) : '-'}</div></div>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            }
+        }
+
+        function renderPositionCharts(rv, rd, re, dv, dd, de) {
+            if(chartRevesInstance) chartRevesInstance.destroy(); if(chartDriveInstance) chartDriveInstance.destroy();
+            const O = { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } } } };
+            chartRevesInstance = new Chart(document.getElementById('chartReves'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [rv,rd,re], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O });
+            chartDriveInstance = new Chart(document.getElementById('chartDrive'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [dv,dd,de], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O });
         }
 
         function renderRankingTable(ranking) {
-            const tbody = document.getElementById("ranking-tbody");
-            tbody.innerHTML = "";
+            const tbody = document.getElementById("ranking-tbody"); tbody.innerHTML = "";
             ranking.forEach((r, idx) => {
-                let medalla = "";
-                if(idx === 0) medalla = "👑 ";
-                if(idx === 1) medalla = "🥈 ";
-                if(idx === 2) medalla = "🥉 ";
-                
+                let m = idx===0?"👑 ":""; 
                 const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-750/30 transition border-b border-slate-800";
-                tr.innerHTML = `
-                    <td class="p-4 font-bold text-slate-200">${medalla}${r.nombre}</td>
-                    <td class="p-4 text-center text-slate-300">${r.partidos}</td>
-                    <td class="p-4 text-center text-emerald-400 font-bold">${r.victorias}</td>
-                    <td class="p-4 text-right font-mono text-amber-400 font-bold">${r.winRate}%</td>
-                `;
+                let rowClass = "hover:bg-slate-750/30 border-b border-slate-800";
+                if (idx === 0 && r.streakType === 'fire') rowClass += " leader-fire";
+                else if (idx === 0 && r.streakType === 'ice') rowClass += " leader-ice";
+                else if (idx === 0) rowClass += " leader";
+                else if (r.streakType === 'fire') rowClass += " streak-fire";
+                else if (r.streakType === 'ice') rowClass += " streak-ice";
+                tr.className = rowClass;
+                let dc = r.difSets>0?'text-emerald-400':(r.difSets<0?'text-red-400':'text-slate-400'); let dp = r.difSets>0?'+':'';
+                let streakHtml = r.streak ? `<span class="mr-1">${r.streak}</span>` : "";
+                tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${streakHtml}${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.partidos}</td><td class="p-3 text-center text-emerald-400 font-bold">${r.victorias}</td><td class="p-3 text-center text-red-400">${r.derrotas}</td><td class="p-3 text-center text-amber-400">${r.empates}</td><td class="p-3 text-center font-bold ${dc}">${dp}${r.difSets}</td><td class="p-3 text-center font-mono text-slate-300">${r.winRateVic}%</td><td class="p-3 text-right font-mono font-bold text-white bg-slate-900/50 rounded-l-lg">${r.puntuacion}%</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function displayMatches(matches) {
-            const tbody = document.querySelector("#matchesTable tbody");
-            tbody.innerHTML = "";
-            matches.forEach(rawRow => {
-                let row = {};
-                Object.keys(rawRow).forEach(k => {
-                    if (k) row[k.trim().toLowerCase()] = rawRow[k];
-                });
-
-                let s1 = `${row['set 1 - p1'] || 0}-${row['set 1 - p2'] || 0}`;
-                let s2 = `${row['set 2 - p1'] || 0}-${row['set 2 - p2'] || 0}`;
-                let s3 = row['set 3 - p1'] ? `, ${row['set 3 - p1']}-${row['set 3 - p2']}` : "";
-                
-                const tr = document.createElement("tr");
-                tr.className = "hover:bg-slate-750/20 transition border-b border-slate-800";
-                tr.innerHTML = `
-                    <td class="p-4 text-xs font-mono text-slate-400">${row['fecha'] || '-'}</td>
-                    <td class="p-4 font-semibold text-slate-200">${row['pista'] || '-'}</td>
-                    <td class="p-4 text-xs text-slate-300">${row['p1 - jugador a'] || ''} / ${row['p1 - jugador b'] || ''}</td>
-                    <td class="p-4 text-xs text-slate-300">${row['p2 - jugador a'] || ''} / ${row['p2 - jugador b'] || ''}</td>
-                    <td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td>
-                    <td class="p-4 font-bold text-emerald-400">${row['ganadores'] || '-'}</td>
-                `;
+            const tbody = document.querySelector("#matchesTable tbody"); tbody.innerHTML = "";
+            matches.forEach(row => {
+                let isE = String(row.tipo||"").toLowerCase()==="externo", isG = String(row['grabado']||"").toLowerCase()==="true";
+                let bE = isE?`<span class="ml-2 px-1.5 py-0.5 bg-red-950 text-red-400 text-[9px] rounded border border-red-900 font-black">EXT</span>`:"";
+                let bG = isG?`<span class="ml-2 px-1.5 py-0.5 bg-purple-950 text-purple-400 text-[9px] rounded border border-purple-900 font-black">🎬</span>`:"";
+                let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=row['set 3 - p1']?`,${row['set 3 - p1']}-${row['set 3 - p2']}`:"";
+                const tr = document.createElement("tr"); tr.className = `border-b border-slate-800 transition ${isE?'bg-red-950/5 opacity-60':'hover:bg-slate-750/20'}`;
+                tr.innerHTML = `<td class="p-4 text-xs font-mono text-slate-400 whitespace-nowrap">${row['fecha']||'-'} ${bE} ${bG}</td><td class="p-4 font-semibold text-slate-200">${row['pista']||'-'}</td><td class="p-4 text-xs text-slate-300">${row['p1 - jugador a']||'?'}/${row['p1 - jugador b']||'?'}</td><td class="p-4 text-xs text-slate-300">${row['p2 - jugador a']||'?'}/${row['p2 - jugador b']||'?'}</td><td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td><td class="p-4 font-bold text-emerald-400">${row['ganadores']||'-'}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
-        // Buscador global ultra robusto
-        function filterMatches() {
-            const query = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = window.allMatches.filter(rawRow => {
-                return Object.values(rawRow).some(val => 
-                    val && val.toString().toLowerCase().includes(query)
-                );
-            });
-            displayMatches(filtered);
-        }
+        function filterMatches() { const q=(document.getElementById("searchInput").value||"").toLowerCase(); displayMatches(filteredDataGlobal.filter(row=>Object.values(row).some(val=>String(val).toLowerCase().includes(q)))); }
+        function filterRecorded() { const btn=document.getElementById('btn-videoteca'); const isF=btn.classList.contains('bg-purple-500'); if(isF){displayMatches(filteredDataGlobal);btn.classList.remove('bg-purple-500','text-white');btn.classList.add('bg-purple-900/30','text-purple-400');document.getElementById('searchInput').value='';}else{displayMatches(filteredDataGlobal.filter(row=>String(row['grabado']||"").toLowerCase()==="true"));btn.classList.add('bg-purple-500','text-white');btn.classList.remove('bg-purple-900/30','text-purple-400');document.getElementById('searchInput').value='Filtrado: Grabados';}}
 
-        let chart1, chart2, chart3;
-        function renderCharts(ranking, pagos, pelotas) {
-            if(chart1) chart1.destroy();
-            if(chart2) chart2.destroy();
-            if(chart3) chart3.destroy();
-
-            chart1 = new Chart(document.getElementById('rankingChart'), {
-                type: 'bar',
-                data: {
-                    labels: ranking.map(r => r.nombre),
-                    datasets: [{
-                        data: ranking.map(r => r.victorias),
-                        backgroundColor: '#34d399',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', stepSize: 1 } }, x: { ticks: { color: '#94a3b8' } } }
-                }
-            });
-
-            chart2 = new Chart(document.getElementById('pagosChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(pagos),
-                    datasets: [{
-                        data: Object.values(pagos),
-                        backgroundColor: ['#fbbf24', '#38bdf8', '#34d399', '#a78bfa', '#f43f5e', '#f97316']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
-            });
-
-            chart3 = new Chart(document.getElementById('bolasChart'), {
-                type: 'polarArea',
-                data: {
-                    labels: Object.keys(pelotas),
-                    datasets: [{
-                        data: Object.values(pelotas),
-                        backgroundColor: ['#38bdf8', '#a78bfa', '#fbbf24', '#f43f5e', '#34d399']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
-            });
+        let chart1, chart2;
+        function renderCharts(ranking, pagos) {
+            if(chart1)chart1.destroy(); if(chart2)chart2.destroy();
+            chart1 = new Chart(document.getElementById('rankingChart'), { type:'bar', data:{labels:ranking.map(r=>r.nombre),datasets:[{label:'% Puntuación',data:ranking.map(r=>r.puntuacion),backgroundColor:'#34d399',borderRadius:6}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#334155'},ticks:{color:'#94a3b8'},max:100},y:{ticks:{color:'#94a3b8'}}}}});
+            chart2 = new Chart(document.getElementById('pagosChart'), { type:'doughnut', data:{labels:Object.keys(pagos),datasets:[{data:Object.values(pagos),backgroundColor:['#fbbf24','#38bdf8','#34d399','#a78bfa','#f43f5e','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}}}}});
         }
     </script>
 </body>
