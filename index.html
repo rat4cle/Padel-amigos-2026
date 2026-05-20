@@ -102,11 +102,44 @@
                 <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">📅 El Día Maldito</h3><p id="cur-dia" class="text-sm text-slate-400">Calculando...</p></div>
             </div>
 
-            <!-- HEATMAP -->
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h3 class="text-lg font-bold mb-4 text-sky-400">🕸️ La Matriz de Dominancia</h3>
-                <p class="text-xs text-slate-500 mb-4">% de victoria de (Fila) contra (Columna)</p>
-                <div class="overflow-x-auto"><table id="heatmap-table" class="w-full text-xs text-center border-collapse"></table></div>
+            <!-- LAYOUT MATRIX + RESULTADOS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                
+                <!-- HEATMAP (IZQUIERDA) -->
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col items-center">
+                    <h3 class="text-xl font-black mb-2 text-sky-400">🕸️ La Matriz de Dominancia</h3>
+                    <p class="text-xs text-slate-500 mb-6 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
+                    <div class="w-full overflow-x-auto pb-4">
+                        <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
+                    </div>
+                </div>
+
+                <!-- HISTOGRAMA DE RESULTADOS (DERECHA) -->
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col">
+                    <h3 class="text-xl font-black mb-4 text-amber-400">📊 Frecuencia de Sets</h3>
+                    <select id="result-selector" onchange="renderResultChart()" class="w-full bg-slate-900 border border-slate-700 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer mb-6">
+                        <option value="">Selecciona un resultado de set...</option>
+                        <option value="6-0">6-0 (Panzerwager)</option>
+                        <option value="6-1">6-1</option>
+                        <option value="6-2">6-2</option>
+                        <option value="6-3">6-3</option>
+                        <option value="6-4">6-4</option>
+                        <option value="7-5">7-5 (Cierre)</option>
+                        <option value="7-6">7-6 (Tie Break)</option>
+                        <option value="0-6">0-6 (Panzerwager invertido)</option>
+                        <option value="1-6">1-6</option>
+                        <option value="2-6">2-6</option>
+                        <option value="3-6">3-6</option>
+                        <option value="4-6">4-6</option>
+                        <option value="5-7">5-7 (Cierre invertido)</option>
+                        <option value="6-7">6-7 (Tie Break invertido)</option>
+                    </select>
+                    <div class="relative h-80 flex items-center justify-center">
+                        <canvas id="resultChart"></canvas>
+                        <p id="result-placeholder" class="text-slate-500 text-sm text-center absolute">Selecciona un resultado para ver su distribución</p>
+                    </div>
+                </div>
+
             </div>
         </section>
 
@@ -737,61 +770,152 @@
         
         function displayMatches(matches) { const tbody = document.querySelector("#matchesTable tbody"); tbody.innerHTML = ""; matches.forEach((row, idx) => { let isE = String(row.tipo||"").toLowerCase()==="externo", isG = String(row['grabado']||"").toLowerCase()==="true"; let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*"; let bE = isE?`<span class="ml-2 px-1.5 py-0.5 bg-red-950 text-red-400 text-[9px] rounded border border-red-900 font-black">EXT</span>`:""; let bG = isG?`<span class="ml-2 px-1.5 py-0.5 bg-purple-950 text-purple-400 text-[9px] rounded border border-purple-900 font-black">🎬</span>`:""; let bB = isB?`<span class="ml-2 px-1.5 py-0.5 bg-emerald-950 text-emerald-400 text-[9px] rounded border border-emerald-900 font-black">🎾</span>`:""; let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=row['set 3 - p1']?`,${row['set 3 - p1']}-${row['set 3 - p2']}`:""; const tr = document.createElement("tr"); tr.className = `border-b border-slate-800 transition ${isE?'bg-red-950/5 opacity-60':'hover:bg-slate-750/20'}`; tr.innerHTML = `<td class="p-4 text-xs font-mono text-slate-500">${idx+1}</td><td class="p-4 text-xs font-mono text-slate-400 whitespace-nowrap">${row['fecha']||'-'} ${bE} ${bG} ${bB}</td><td class="p-4 font-semibold text-slate-200">${row['pista']||'-'}</td><td class="p-4 text-xs text-slate-300">${row['p1 - jugador a']||'?'}/${row['p1 - jugador b']||'?'}</td><td class="p-4 text-xs text-slate-300">${row['p2 - jugador a']||'?'}/${row['p2 - jugador b']||'?'}</td><td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td><td class="p-4 font-bold text-emerald-400">${row['ganadores']||'-'}</td>`; tbody.appendChild(tr); }); }
 
-        function renderHeatmap() {
-            // 1. Calculamos victorias Head-to-Head desde cero para asegurar que funciona
-            let h2hWins = {};
-            let faceOffs = {};
+        let resultChartInstance = null;
+        function renderResultChart() {
+            let selectedResult = document.getElementById('result-selector').value;
+            let placeholder = document.getElementById('result-placeholder');
+            if(resultChartInstance) resultChartInstance.destroy();
+            
+            if(!selectedResult) {
+                placeholder.classList.remove('hidden');
+                return;
+            }
+            placeholder.classList.add('hidden');
+
+            let playerCounts = {};
+            jugadoresGlobales.forEach(p => playerCounts[p] = 0);
 
             filteredDataGlobal.forEach(row => {
                 let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
-                let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
                 let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
-                let winT1 = String(row['ganadores'] || "").includes(j1A) && String(row['ganadores'] || "").includes(j1B); 
-                let winT2 = String(row['ganadores'] || "").includes(j2A) && String(row['ganadores'] || "").includes(j2B);
-                let team1 = [j1A, j1B].filter(p => p && p !== "Playtomic");
-                let team2 = [j2A, j2B].filter(p => p && p !== "Playtomic");
+                let s1p1 = parseInt(row['set 1 - p1']||0), s1p2 = parseInt(row['set 1 - p2']||0);
+                let s2p1 = parseInt(row['set 2 - p1']||0), s2p2 = parseInt(row['set 2 - p2']||0);
+                let s3p1 = parseInt(row['set 3 - p1']||0), s3p2 = parseInt(row['set 3 - p2']||0);
+                
+                // Set 1
+                let s1_T1 = `${s1p1}-${s1p2}`, s1_T2 = `${s1p2}-${s1p1}`; 
+                [j1A, j1B].forEach(j => { if(j&&j!=="Playtomic" && s1_T1 === selectedResult) playerCounts[j]++; });
+                [j2A, j2B].forEach(j => { if(j&&j!=="Playtomic" && s1_T2 === selectedResult) playerCounts[j]++; });
 
-                // Registra enfrentamientos
-                team1.forEach(p1 => team2.forEach(p2 => {
-                    if(!faceOffs[p1]) faceOffs[p1] = {};
-                    faceOffs[p1][p2] = (faceOffs[p1][p2] || 0) + 1;
-                }));
+                // Set 2
+                let s2_T1 = `${s2p1}-${s2p2}`, s2_T2 = `${s2p2}-${s2p1}`;
+                [j1A, j1B].forEach(j => { if(j&&j!=="Playtomic" && s2_T1 === selectedResult) playerCounts[j]++; });
+                [j2A, j2B].forEach(j => { if(j&&j!=="Playtomic" && s2_T2 === selectedResult) playerCounts[j]++; });
 
-                // Registra victorias (sin empates)
-                if (!isDraw) {
-                    if (winT1) {
-                        team1.forEach(w => team2.forEach(l => { if(!h2hWins[w]) h2hWins[w]={}; h2hWins[w][l] = (h2hWins[w][l] || 0) + 1; }));
-                    } else if (winT2) {
-                        team2.forEach(w => team1.forEach(l => { if(!h2hWins[w]) h2hWins[w]={}; h2hWins[w][l] = (h2hWins[w][l] || 0) + 1; }));
-                    }
+                // Set 3
+                if(s3p1 > 0 || s3p2 > 0) {
+                    let s3_T1 = `${s3p1}-${s3p2}`, s3_T2 = `${s3p2}-${s3p1}`;
+                    [j1A, j1B].forEach(j => { if(j&&j!=="Playtomic" && s3_T1 === selectedResult) playerCounts[j]++; });
+                    [j2A, j2B].forEach(j => { if(j&&j!=="Playtomic" && s3_T2 === selectedResult) playerCounts[j]++; });
                 }
             });
 
-            // 2. Renderizar la tabla
+            // Preparar datos para Chart.js
+            let labels = []; let data = []; let colors = [];
+            // FILTRADO Y ORDEN CORREGIDO
+            let sortedPlayers = Object.entries(playerCounts).filter(([p, c]) => globalJugadoresStats[p] && (globalJugadoresStats[p].partidos >= 3 || MANDATORY_PLAYERS.includes(p))).sort((a, b) => b[1] - a[1]);
+            
+            sortedPlayers.forEach(([p, c]) => {
+                labels.push(p);
+                data.push(c);
+                colors.push(PLAYER_COLORS[p] || '#94a3b8');
+            });
+
+            resultChartInstance = new Chart(document.getElementById('resultChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Veces con resultado ${selectedResult}`,
+                        data: data,
+                        backgroundColor: colors.map(c => c + 'B3'),
+                        borderColor: colors,
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false }, 
+                        datalabels: { 
+                            anchor: 'end', align: 'start', color: '#fff', font: { weight: 'bold', size: 12 }, 
+                            formatter: (value) => value > 0 ? value : '', textStrokeColor: '#000', textStrokeWidth: 2 
+                        } 
+                    },
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8', stepSize: 1 } }, 
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } } 
+                    }
+                }
+            });
+        }    
+
+        function renderHeatmap() {
             let players = jugadoresGlobales.filter(p => globalJugadoresStats[p] && (globalJugadoresStats[p].partidos >= 3 || MANDATORY_PLAYERS.includes(p)));
             let table = document.getElementById('heatmap-table');
             if(!table) return;
+
+            let matrixData = {}; // matrixData[P1][P2] = { wins: 0, draws: 0, total: 0 }
             
+            filteredDataGlobal.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
+                let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
+                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim();
+                let j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
+                let winT1 = String(row['ganadores'] || "").includes(j1A) && String(row['ganadores'] || "").includes(j1B); 
+                let winT2 = String(row['ganadores'] || "").includes(j2A) && String(row['ganadores'] || "").includes(j2B);
+                
+                let team1 = [j1A, j1B].filter(p => p && p !== "Playtomic");
+                let team2 = [j2A, j2B].filter(p => p && p !== "Playtomic");
+
+                team1.forEach(p1 => team2.forEach(p2 => {
+                    if(!matrixData[p1]) matrixData[p1] = {};
+                    if(!matrixData[p1][p2]) matrixData[p1][p2] = { wins: 0, draws: 0, total: 0 };
+                    matrixData[p1][p2].total++;
+                    if (isDraw) matrixData[p1][p2].draws++;
+                    else if (winT1) matrixData[p1][p2].wins++;
+                }));
+                
+                team2.forEach(p1 => team1.forEach(p2 => {
+                    if(!matrixData[p1]) matrixData[p1] = {};
+                    if(!matrixData[p1][p2]) matrixData[p1][p2] = { wins: 0, draws: 0, total: 0 };
+                    matrixData[p1][p2].total++;
+                    if (isDraw) matrixData[p1][p2].draws++;
+                    else if (winT2) matrixData[p1][p2].wins++;
+                }));
+            });
+
             let html = '<thead><tr><th class="p-2"></th>';
-            players.forEach(p => html += `<th class="p-2 text-[10px] font-bold text-slate-400" style="writing-mode: vertical-lr; transform: rotate(180deg); min-width: 40px;">${p}</th>`);
+            players.forEach(p => html += `<th class="p-2 md:p-3 text-[10px] md:text-xs font-bold text-slate-400 whitespace-nowrap" style="writing-mode: vertical-lr; transform: rotate(180deg); min-width: 50px; height: 80px;">${p}</th>`);
             html += '</tr></thead><tbody>';
             
             players.forEach(rowP => {
-                html += `<tr><td class="p-2 font-bold text-slate-200 text-right pr-2 whitespace-nowrap">${rowP}</td>`;
+                html += `<tr><td class="p-2 md:p-3 font-bold text-slate-200 text-right pr-2 md:pr-4 whitespace-nowrap text-xs md:text-sm">${rowP}</td>`;
                 players.forEach(colP => {
                     if(rowP === colP) { 
-                        html += `<td class="p-2 bg-slate-800 border border-slate-700 text-slate-600 text-[9px]">-</td>`; 
+                        html += `<td class="p-1 md:p-2"><div class="bg-slate-900 rounded-lg p-2 md:p-3 text-slate-700 text-xs text-center">-</div></td>`; 
                         return; 
                     }
-                    let faced = (faceOffs[rowP] && faceOffs[rowP][colP]) ? faceOffs[rowP][colP] : 0;
-                    let wins = (h2hWins[rowP] && h2hWins[rowP][colP]) ? h2hWins[rowP][colP] : 0;
                     
-                    let wr = faced > 0 ? (wins / faced) * 100 : -1;
-                    // Colores mejorados: Verde brillante si gana mucho, Rojo si pierde, Gris si no se han enfrentado
-                    let bgColor = wr === -1 ? 'rgba(100,116,139,0.05)' : `rgba(${wr > 50 ? '16,185,129' : '239,68,68'}, ${Math.max(0.1, Math.abs(wr-50)/60)})`;
-                    let text = faced > 0 ? `${wr.toFixed(0)}%` : '-';
+                    let data = (matrixData[rowP] && matrixData[rowP][colP]) ? matrixData[rowP][colP] : null;
+                    // CALCULO SIN EMPATES: Solo cuenta victorias y derrotas
+                    let decisiveMatches = data ? (data.total - data.draws) : 0;
+                    let wr = decisiveMatches > 0 ? (data.wins / decisiveMatches) * 100 : -1;
                     
-                    html += `<td class="p-2 font-mono font-bold border border-slate-700 text-[11px]" style="background-color: ${bgColor}; color: ${wr === -1 ? '#64748b' : '#fff'}">${text}</td>`;
+                    // Si se han enfrentado pero todo fueron empates
+                    let text = decisiveMatches > 0 ? `${wr.toFixed(0)}%` : (data && data.total > 0 ? `<span class="text-amber-400 text-[9px]">E</span>` : '-');
+                    
+                    let bgColor, textColor;
+                    if (wr === -1) { bgColor = 'bg-slate-900'; textColor = 'text-slate-700'; } // No se han enfrentado
+                    else if (wr >= 80) { bgColor = 'bg-emerald-800/70'; textColor = 'text-emerald-200'; }
+                    else if (wr >= 60) { bgColor = 'bg-emerald-900/40'; textColor = 'text-emerald-300'; }
+                    else if (wr >= 40) { bgColor = 'bg-slate-800'; textColor = 'text-slate-300'; }
+                    else if (wr >= 20) { bgColor = 'bg-red-900/40'; textColor = 'text-red-300'; }
+                    else if (wr >= 0) { bgColor = 'bg-red-800/70'; textColor = 'text-red-200'; }
+                    else { bgColor = 'bg-amber-900/40'; textColor = 'text-amber-400'; } // Caso de solo empates (E)
+
+                    html += `<td class="p-1 md:p-2"><div class="${bgColor} ${textColor} rounded-lg p-2 md:p-3 font-mono font-bold text-xs md:text-sm text-center shadow-sm">${text}</div></td>`;
                 });
                 html += '</tr>';
             });
