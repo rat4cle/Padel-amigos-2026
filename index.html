@@ -21,7 +21,7 @@
 
     <nav class="bg-slate-950/80 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-md">
         <div class="max-w-7xl mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl font-black tracking-wider text-emerald-400 flex items-center gap-2">🎾 PADEL AMIGOS <span class="text-xs bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">2026</span></h1>
+            <h1 class="text-2xl font-black tracking-wider text-emerald-400 flex items-center gap-2">🎾 PADEL AMIGOS <span class="text-xs bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">LIVE</span></h1>
             <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-700 text-sm">
                 <span class="text-slate-400 font-bold px-2 hidden sm:inline">Filtro:</span>
                 <input type="date" id="dateStart" onchange="aplicarFiltrosGlobales()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 focus:ring-1 focus:ring-emerald-500 cursor-pointer text-xs sm:text-sm">
@@ -123,10 +123,11 @@
                     <select id="mm-p3" onchange="updateMMSelectors(3)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
                     <select id="mm-p4" onchange="updateMMSelectors(4)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
                 </div>
-                <div class="grid grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-5 gap-4 mb-4">
                     <button onclick="createTeams('random')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🎲 Aleatorio</button>
                     <button onclick="createTeams('balanced')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">⚖️ Equilibrado</button>
                     <button onclick="createTeams('least')" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🧊 Menos Visto</button>
+                    <button onclick="createTeams('most')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🔥 Más Visto</button>
                     <button onclick="resetMMSelectors()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition-colors text-sm">🔄 Reset</button>
                 </div>
                 <div id="mm-result" class="hidden bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center"></div>
@@ -533,7 +534,56 @@
         function updateMMSelectors(changedId) { let ids = ['mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; let selectedValues = {}; ids.forEach(id => { selectedValues[id] = document.getElementById(id).value; }); ids.forEach(id => { let el = document.getElementById(id); let currentVal = selectedValues[id]; let html = '<option value="">Jugador</option>'; jugadoresGlobales.forEach(j => { let isSelectedElsewhere = ids.some(otherId => otherId !== id && selectedValues[otherId] === j); let disabledAttr = isSelectedElsewhere ? 'disabled class="text-slate-600"' : ''; let selectedAttr = j === currentVal ? 'selected' : ''; html += `<option value="${j}" ${disabledAttr} ${selectedAttr}>${j}</option>`; }); el.innerHTML = html; el.value = currentVal; }); }
         function resetMMSelectors() { ['mm-p1', 'mm-p2', 'mm-p3', 'mm-p4'].forEach(id => document.getElementById(id).value = ""); updateMMSelectors(0); document.getElementById('mm-result').classList.add('hidden'); }
 
-        function createTeams(mode) { let p1 = document.getElementById('mm-p1').value, p2 = document.getElementById('mm-p2').value, p3 = document.getElementById('mm-p3').value, p4 = document.getElementById('mm-p4').value; if(!p1 || !p2 || !p3 || !p4 || new Set([p1,p2,p3,p4]).size < 4) { alert("Selecciona 4 jugadores distintos."); return; } let resultDiv = document.getElementById('mm-result'); resultDiv.classList.remove('hidden'); if (mode === 'random') { let arr = [p1, p2, p3, p4]; for (let i = arr.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } renderTeams([[arr[0], arr[1], arr[2], arr[3]]], "🎲 Aleatorio"); } else if (mode === 'balanced') { let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ]; let bestCombo = null; let minDiff = Infinity; combos.forEach(c => { let avg1 = ((stats[c.t1[0]]||0) + (stats[c.t1[1]]||0)) / 2; let avg2 = ((stats[c.t2[0]]||0) + (stats[c.t2[1]]||0)) / 2; let diff = Math.abs(avg1 - avg2); if(diff < minDiff) { minDiff = diff; bestCombo = c; } }); renderTeams([[bestCombo.t1[0], bestCombo.t1[1], bestCombo.t2[0], bestCombo.t2[1]]], "⚖️ Equilibrado"); } else if (mode === 'least') { let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ]; let minSum = Infinity; let getPairFO = (arr1, arr2) => { let k1 = arr1.slice().sort().join(" & "), k2 = arr2.slice().sort().join(" & "); return (globalPairFaceOffs[k1] && globalPairFaceOffs[k1][k2]) || 0; }; combos.forEach(c => { let sum = getPairFO(c.t1, c.t2); if(sum < minSum) minSum = sum; }); let bestCombos = combos.filter(c => getPairFO(c.t1, c.t2) === minSum); let options = bestCombos.map(c => [c.t1[0], c.t1[1], c.t2[0], c.t2[1]]); renderTeams(options, `🧊 Menos Visto (${minSum} enfrentamientos)`); } }
+        function createTeams(mode) { 
+            let p1 = document.getElementById('mm-p1').value, p2 = document.getElementById('mm-p2').value, p3 = document.getElementById('mm-p3').value, p4 = document.getElementById('mm-p4').value; 
+            if(!p1 || !p2 || !p3 || !p4 || new Set([p1,p2,p3,p4]).size < 4) { alert("Selecciona 4 jugadores distintos."); return; } 
+            let resultDiv = document.getElementById('mm-result'); resultDiv.classList.remove('hidden'); 
+            if (mode === 'random') { 
+                let arr = [p1, p2, p3, p4]; for (let i = arr.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } 
+                renderTeams([[arr[0], arr[1], arr[2], arr[3]]], "🎲 Aleatorio"); 
+            } else if (mode === 'balanced') { 
+                let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); 
+                let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ]; 
+                let bestCombo = null; let minDiff = Infinity; 
+                combos.forEach(c => { let avg1 = ((stats[c.t1[0]]||0) + (stats[c.t1[1]]||0)) / 2; let avg2 = ((stats[c.t2[0]]||0) + (stats[c.t2[1]]||0)) / 2; let diff = Math.abs(avg1 - avg2); if(diff < minDiff) { minDiff = diff; bestCombo = c; } }); 
+                renderTeams([[bestCombo.t1[0], bestCombo.t1[1], bestCombo.t2[0], bestCombo.t2[1]]], "⚖️ Equilibrado"); 
+            } else if (mode === 'least' || mode === 'most') { 
+                let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ]; 
+                
+                // Calculamos los enfrentamientos reales de las parejas en el filtro actual
+                let pairFaceOffs = {};
+                filteredDataGlobal.forEach(row => {
+                    let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
+                    let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
+                    let duo1 = [j1A, j1B].sort().join(" & "), duo2 = [j2A, j2B].sort().join(" & ");
+                    if(!pairFaceOffs[duo1]) pairFaceOffs[duo1] = {};
+                    pairFaceOffs[duo1][duo2] = (pairFaceOffs[duo1][duo2] || 0) + 1;
+                });
+
+                let getPairFO = (arr1, arr2) => { 
+                    let k1 = arr1.slice().sort().join(" & "), k2 = arr2.slice().sort().join(" & "); 
+                    let count1 = (pairFaceOffs[k1] && pairFaceOffs[k1][k2]) || 0;
+                    let count2 = (pairFaceOffs[k2] && pairFaceOffs[k2][k1]) || 0;
+                    return count1 + count2; 
+                };
+
+                let scores = combos.map(c => getPairFO(c.t1, c.t2));
+                let targetScore, bestCombos, title;
+
+                if (mode === 'least') {
+                    targetScore = Math.min(...scores);
+                    bestCombos = combos.filter((c, i) => scores[i] === targetScore);
+                    title = `🧊 Menos Visto (${targetScore} enfrentamientos)`;
+                } else { // 'most'
+                    targetScore = Math.max(...scores);
+                    bestCombos = combos.filter((c, i) => scores[i] === targetScore);
+                    title = `🔥 Más Visto (${targetScore} enfrentamientos)`;
+                }
+
+                let options = bestCombos.map(c => [c.t1[0], c.t1[1], c.t2[0], c.t2[1]]); 
+                renderTeams(options, title); 
+            } 
+        }
         function renderTeams(options, title) { let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); let html = `<h4 class="text-lg font-bold mb-3 text-purple-300">${title}</h4>`; if (options.length > 1) { html += `<p class="text-xs text-cyan-400 mb-3 font-bold">⚡ ${options.length} opciones empatadas — elige la que prefieras:</p>`; } options.forEach((opt, idx) => { let [n1, n2, n3, n4] = opt; let avg1 = (((stats[n1]||0) + (stats[n2]||0)) / 2).toFixed(1); let avg2 = (((stats[n3]||0) + (stats[n4]||0)) / 2).toFixed(1); html += `<div class="grid grid-cols-2 gap-4 ${options.length > 1 ? 'mb-3 p-3 rounded-xl border border-slate-700' : ''}">`; if (options.length > 1) html += `<div class="col-span-2 text-xs text-slate-500 font-bold mb-1">Opción ${idx + 1}</div>`; html += `<div class="bg-emerald-900/20 p-3 rounded-lg border border-emerald-800/50"><div class="text-sm text-emerald-400 font-bold">EQUIPO 1</div><div class="text-xl font-black text-white">${n1} & ${n2}</div><div class="text-xs text-slate-400">Media: ${avg1}%</div></div>`; html += `<div class="bg-red-900/20 p-3 rounded-lg border border-red-800/50"><div class="text-sm text-red-400 font-bold">EQUIPO 2</div><div class="text-xl font-black text-white">${n3} & ${n4}</div><div class="text-xs text-slate-400">Media: ${avg2}%</div></div>`; html += `</div>`; }); document.getElementById('mm-result').innerHTML = html; }
 
         function renderPlayerProfile() { 
