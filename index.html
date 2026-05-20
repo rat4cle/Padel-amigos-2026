@@ -34,6 +34,7 @@
             </div>
             <div class="flex flex-wrap justify-center bg-slate-800 p-1 rounded-xl border border-slate-700">
                 <button onclick="switchTab('resumen')" id="btn-resumen" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all bg-emerald-500 text-slate-950">🏆 Clasificación</button>
+                <button onclick="switchTab('ficha')" id="btn-ficha" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">👤 Ficha Técnica</button>
                 <button onclick="switchTab('parejas')" id="btn-parejas" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">🤝 Parejas</button>
                 <button onclick="switchTab('partidos')" id="btn-partidos" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">🕒 Historial</button>
                 <button onclick="switchTab('logistica')" id="btn-logistica" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">💰 Finanzas</button>
@@ -58,41 +59,8 @@
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
             </div>
             <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><h3 class="text-lg font-bold mb-4 text-slate-200">📊 % Puntuación General</h3><div class="relative h-64 sm:h-96 flex items-center justify-center"><canvas id="rankingChart"></canvas></div></div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">👤 Ficha Técnica del Jugador</h3>
-                    <div class="flex gap-2 items-center">
-                        <select id="playerSelector" onchange="renderPlayerProfile()" class="bg-slate-900 border border-emerald-500 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer min-w-[200px]"><option value="">Selecciona un jugador...</option></select>
-                        <button onclick="toggleExpandProfile()" id="btn-expand-profile" class="hidden bg-slate-700 hover:bg-slate-600 text-white font-bold px-3 py-2 rounded-lg transition-colors text-sm">Ampliar 📊</button>
-                    </div>
-                </div>
-                <div id="player-stats-container" class="hidden space-y-6">
-                    <div>
-                        <div id="profile-badges" class="flex flex-wrap gap-2"></div>
-                        <div id="badge-detail" class="hidden mt-3 bg-slate-900 p-4 rounded-xl border border-amber-900/30 transition-all duration-300"></div>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 uppercase font-bold block mb-1">Posición Favorita</span><span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span><span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span></div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 uppercase font-bold block mb-1">Victorias / Partidos</span><span id="prof-victorias" class="text-2xl font-black text-emerald-400">0</span><span id="prof-partidosJug" class="text-lg font-bold text-slate-500">/0</span><span id="prof-winrate" class="text-xs text-slate-500 font-bold block mt-1">0% WR</span></div>
-                        <div class="bg-gradient-to-br from-slate-900/50 to-amber-900/20 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-amber-500 uppercase font-bold block mb-1">Socio de Oro</span><span id="prof-socio" class="text-lg font-black text-amber-400 block truncate">-</span><span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold">-</span></div>
-                        <div class="bg-gradient-to-br from-slate-900/50 to-red-900/30 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-red-400 uppercase font-bold block mb-1">⚠️ El Némesis</span><span id="prof-nemesis" class="text-lg font-black text-red-400 block truncate">-</span></div>
-                    </div>
-                    <div id="profile-expanded" class="hidden pt-4 border-t border-slate-700 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Más veces compañero</span><span id="prof-most-mate" class="text-sm font-bold text-sky-400 block">-</span></div>
-                            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Menos veces rival</span><span id="prof-least-rival" class="text-sm font-bold text-orange-400 block">-</span></div>
-                            <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Pareja rival menos vista</span><span id="prof-least-rival-pair" class="text-sm font-bold text-pink-400 block truncate">-</span></div>
-                        </div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">📈 Evolución Mensual (Global)</h4><div class="relative h-64"><canvas id="chartMonthlyEvolution"></canvas></div></div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-emerald-900/30 bg-gradient-to-br from-slate-900/50 to-emerald-900/10"><h4 class="text-md font-bold mb-4 text-emerald-300 uppercase tracking-wider">📊 Evolución en Rango (Partido a Partido)</h4><div class="relative h-64"><canvas id="chartMatchEvolution"></canvas></div></div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                            <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">🕸️ Perfil Radar (vs Media Grupo)</h4>
-                            <div class="relative h-72"><canvas id="chartRadar"></canvas></div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider border-b border-slate-800 pb-2">🎾 Rendimiento por Posición</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4"><div class="flex flex-col items-center"><h5 class="text-lg font-black text-emerald-400 mb-2">REVÉS</h5><div class="w-40 h-40 relative"><canvas id="chartReves"></canvas></div></div><div class="flex flex-col items-center"><h5 class="text-lg font-black text-sky-400 mb-2">DRIVE</h5><div class="w-40 h-40 relative"><canvas id="chartDrive"></canvas></div></div></div></div>
-                </div>
-            </div>
+            <!-- NUEVA PESTAÑA FICHA TÉCNICA -->
+            
             <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">📊 Resultados Habituales</h3><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-4">Jugador</th><th class="p-4 text-center">Set 1</th><th class="p-4 text-center">Set 2</th><th class="p-4 text-center">Set 3</th></tr></thead><tbody id="habituales-tbody" class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
             <div class="bg-gradient-to-r from-amber-900/10 to-emerald-900/10 border border-slate-700 rounded-2xl overflow-hidden"><button onclick="toggleAdvancedStats()" class="w-full p-6 text-left flex justify-between items-center hover:bg-slate-800/50 transition-colors"><h3 class="text-lg font-bold text-white flex items-center gap-2">🌟 Estadísticas por Meses</h3><span id="adv-stats-icon" class="text-2xl text-emerald-400 transform transition-transform">+</span></button><div id="advanced-stats-container" class="hidden px-6 pb-6 space-y-3"></div></div>
             
@@ -142,7 +110,42 @@
 
             </div>
         </section>
-
+        <section id="tab-ficha" class="tab-content hidden space-y-6">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                        <h2 class="text-2xl font-bold text-white flex items-center gap-2">👤 Ficha Técnica del Jugador</h2>
+                        <select id="playerSelector" onchange="renderPlayerProfile()" class="bg-slate-900 border border-emerald-500 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer min-w-[200px]"><option value="">Selecciona un jugador...</option></select>
+                    </div>
+                    <div id="player-stats-container" class="hidden space-y-6">
+                        <div>
+                            <div id="profile-badges" class="flex flex-wrap gap-2"></div>
+                            <div id="badge-detail" class="hidden mt-3 bg-slate-900 p-4 rounded-xl border border-amber-900/30 transition-all duration-300"></div>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 uppercase font-bold block mb-1">Posición Favorita</span><span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span><span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span></div>
+                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 uppercase font-bold block mb-1">Victorias / Partidos</span><span id="prof-victorias" class="text-2xl font-black text-emerald-400">0</span><span id="prof-partidosJug" class="text-lg font-bold text-slate-500">/0</span><span id="prof-winrate" class="text-xs text-slate-500 font-bold block mt-1">0% WR</span></div>
+                            <div class="bg-gradient-to-br from-slate-900/50 to-amber-900/20 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-amber-500 uppercase font-bold block mb-1">Socio de Oro</span><span id="prof-socio" class="text-lg font-black text-amber-400 block truncate">-</span><span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold">-</span></div>
+                            <div class="bg-gradient-to-br from-slate-900/50 to-red-900/30 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-red-400 uppercase font-bold block mb-1">⚠️ El Némesis</span><span id="prof-nemesis" class="text-lg font-black text-red-400 block truncate">-</span></div>
+                        </div>
+                        
+                        <!-- Al tener su propia pestaña, esto ya no necesita estar oculto ni tener el botón de ampliar -->
+                        <div id="profile-expanded" class="pt-4 border-t border-slate-700 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Más veces compañero</span><span id="prof-most-mate" class="text-sm font-bold text-sky-400 block">-</span></div>
+                                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Menos veces rival</span><span id="prof-least-rival" class="text-sm font-bold text-orange-400 block">-</span></div>
+                                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Pareja rival menos vista</span><span id="prof-least-rival-pair" class="text-sm font-bold text-pink-400 block truncate">-</span></div>
+                            </div>
+                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">📈 Evolución Mensual (Global)</h4><div class="relative h-64"><canvas id="chartMonthlyEvolution"></canvas></div></div>
+                            <div class="bg-slate-900/50 p-4 rounded-xl border border-emerald-900/30 bg-gradient-to-br from-slate-900/50 to-emerald-900/10"><h4 class="text-md font-bold mb-4 text-emerald-300 uppercase tracking-wider">📊 Evolución en Rango (Partido a Partido)</h4><div class="relative h-64"><canvas id="chartMatchEvolution"></canvas></div></div>
+                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                                <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">🕸️ Perfil Radar (vs Media Grupo)</h4>
+                                <div class="relative h-72"><canvas id="chartRadar"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider border-b border-slate-800 pb-2">🎾 Rendimiento por Posición</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4"><div class="flex flex-col items-center"><h5 class="text-lg font-black text-emerald-400 mb-2">REVÉS</h5><div class="w-40 h-40 relative"><canvas id="chartReves"></canvas></div></div><div class="flex flex-col items-center"><h5 class="text-lg font-black text-sky-400 mb-2">DRIVE</h5><div class="w-40 h-40 relative"><canvas id="chartDrive"></canvas></div></div></div></div>
+                    </div>
+                </div>
+            </section>
         <section id="tab-parejas" class="tab-content hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">🏆 Top 3 Mejores</h3><div id="top-parejas-body" class="space-y-3"></div></div>
@@ -620,9 +623,9 @@
         function renderTeams(options, title) { let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); let html = `<h4 class="text-lg font-bold mb-3 text-purple-300">${title}</h4>`; if (options.length > 1) { html += `<p class="text-xs text-cyan-400 mb-3 font-bold">⚡ ${options.length} opciones empatadas — elige la que prefieras:</p>`; } options.forEach((opt, idx) => { let [n1, n2, n3, n4] = opt; let avg1 = (((stats[n1]||0) + (stats[n2]||0)) / 2).toFixed(1); let avg2 = (((stats[n3]||0) + (stats[n4]||0)) / 2).toFixed(1); html += `<div class="grid grid-cols-2 gap-4 ${options.length > 1 ? 'mb-3 p-3 rounded-xl border border-slate-700' : ''}">`; if (options.length > 1) html += `<div class="col-span-2 text-xs text-slate-500 font-bold mb-1">Opción ${idx + 1}</div>`; html += `<div class="bg-emerald-900/20 p-3 rounded-lg border border-emerald-800/50"><div class="text-sm text-emerald-400 font-bold">EQUIPO 1</div><div class="text-xl font-black text-white">${n1} & ${n2}</div><div class="text-xs text-slate-400">Media: ${avg1}%</div></div>`; html += `<div class="bg-red-900/20 p-3 rounded-lg border border-red-800/50"><div class="text-sm text-red-400 font-bold">EQUIPO 2</div><div class="text-xl font-black text-white">${n3} & ${n4}</div><div class="text-xs text-slate-400">Media: ${avg2}%</div></div>`; html += `</div>`; }); document.getElementById('mm-result').innerHTML = html; }
 
         function renderPlayerProfile() { 
-            let player = document.getElementById('playerSelector').value; let container = document.getElementById('player-stats-container'); let btnExpand = document.getElementById('btn-expand-profile'); document.getElementById('badge-detail').classList.add('hidden'); 
-            if(!player) { container.classList.add('hidden'); btnExpand.classList.add('hidden'); return; } 
-            container.classList.remove('hidden'); btnExpand.classList.remove('hidden'); 
+            let player = document.getElementById('playerSelector').value; let container = document.getElementById('player-stats-container'); document.getElementById('badge-detail').classList.add('hidden'); 
+            if(!player) { container.classList.add('hidden'); return; } 
+            container.classList.remove('hidden'); 
             let htmlBadges = ""; globalBadges.forEach(b => { if(b.winners.includes(player)) { htmlBadges += `<div onclick="showBadgeDetail('${b.id}')" class="bg-slate-800 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-600 cursor-pointer hover:border-emerald-500 transition-colors">${b.emoji} ${b.name}</div>`; } }); 
             document.getElementById('profile-badges').innerHTML = htmlBadges ? `<h4 class="w-full text-xs text-slate-500 uppercase font-bold mb-1">Insignias (Clic para detalles)</h4>` + htmlBadges : ""; 
             
