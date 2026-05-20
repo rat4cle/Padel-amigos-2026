@@ -227,14 +227,17 @@
             let streakBreaks = {};
             let curseBreaks = {};
 
-            const init = (j) => { 
+                        const init = (j) => { 
                 if(!bs[j]) bs[j] = {
                     pj:0, tb:0, remontadas:0, bolasW:0, bolasPj:0, posRev:0, posDriv:0, mates:{}, maxW:0, maxL:0, curW:0, curL:0, s3reach:0, s3win:0, matchesWonIn2:0, s1win:0, s1lose:0, s2lose:0, s3lose:0,
-                    cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{}
+                    cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{},
+                    firstHalf: {w:0, p:0}, secondHalf: {w:0, p:0}
                 }; 
             };
 
-            rows.forEach(row => {
+            let midIndex = Math.floor(rows.length / 2);
+
+            rows.forEach((row, rowIndex) => {
                 let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
                 let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
                 let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
@@ -250,12 +253,12 @@
                 if(j1A && j1B) pairMatchesCount[[j1A, j1B].sort().join(" & ")] = (pairMatchesCount[[j1A, j1B].sort().join(" & ")] || 0) + 1;
                 if(j2A && j2B) pairMatchesCount[[j2A, j2B].sort().join(" & ")] = (pairMatchesCount[[j2A, j2B].sort().join(" & ")] || 0) + 1;
 
-                // Bajonazo (ChokeJob)
+                // Bajonazo (ChokeJob) - CORREGIDO
                 if (!isDraw) {
                     let t1Won1st = s1p1 > s1p2;
                     let t2Won1st = s1p2 > s1p1;
-                    if (t1Won1st && winT2) { [j2A, j2B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].chokeJobs++; } }); }
-                    if (t2Won1st && winT1) { [j1A, j1B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].chokeJobs++; } }); }
+                    if (t1Won1st && winT2) { [j1A, j1B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].chokeJobs++; } }); }
+                    if (t2Won1st && winT1) { [j2A, j2B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].chokeJobs++; } }); }
                 }
 
                 // Criptonita
@@ -304,21 +307,31 @@
                         if(isTB) bs[j].tb++;
                         if(isB) { bs[j].bolasPj++; if(teamWon) bs[j].bolasW++; }
                         if(tNum===1) bs[j].posRev++; else bs[j].posDriv++;
-                        if(!bs[j].mates[pB]) bs[j].mates[pB] = {w:0, p:0, d:0}; bs[j].mates[pB].p++;
                         
+                        let partner = (j === pA) ? pB : pA; // FIX: Calculamos el compañero real dinámicamente
+                        
+                        if(!bs[j].mates[partner]) bs[j].mates[partner] = {w:0, p:0, d:0}; bs[j].mates[partner].p++;
+                        
+                        let isSecondHalf = rowIndex >= midIndex;
                         if(teamWon) { 
-                            bs[j].mates[pB].w++; bs[j].curW++; bs[j].curL=0; if(bs[j].curW > bs[j].maxW) bs[j].maxW = bs[j].curW; 
+                            bs[j].mates[partner].w++; bs[j].curW++; bs[j].curL=0; if(bs[j].curW > bs[j].maxW) bs[j].maxW = bs[j].curW; 
                             if(!has3Set) bs[j].matchesWonIn2++;
-                            if(!bs[j].winsWith[pB]) bs[j].winsWith[pB] = 0; bs[j].winsWith[pB]++;
+                            if(!bs[j].winsWith[partner]) bs[j].winsWith[partner] = 0; bs[j].winsWith[partner]++;
+                            if(isSecondHalf) { bs[j].secondHalf.w++; bs[j].secondHalf.p++; } else { bs[j].firstHalf.w++; bs[j].firstHalf.p++; }
                         } 
-                        else if(!isDraw) { bs[j].curL++; bs[j].curW=0; if(bs[j].curL > bs[j].maxL) bs[j].maxL = bs[j].curL; } 
-                        else { bs[j].mates[pB].d++; }
+                        else if(!isDraw) { 
+                            bs[j].curL++; bs[j].curW=0; if(bs[j].curL > bs[j].maxL) bs[j].maxL = bs[j].curL;
+                            if(isSecondHalf) { bs[j].secondHalf.p++; } else { bs[j].firstHalf.p++; }
+                        }
+                        else { bs[j].mates[partner].d++; }
 
-                        // Courts
+                        // Courts (Contabilizamos W, L, D y P para calcular % sin empates)
                         if(court && court !== "Playtomic") {
-                            if(!bs[j].courts[court]) bs[j].courts[court] = {w:0, p:0};
+                            if(!bs[j].courts[court]) bs[j].courts[court] = {w:0, l:0, d:0, p:0};
                             bs[j].courts[court].p++;
                             if(teamWon) bs[j].courts[court].w++;
+                            else if(!isDraw) bs[j].courts[court].l++;
+                            else bs[j].courts[court].d++;
                         }
 
                         let sP, sR;
@@ -376,37 +389,52 @@
             for(let pair in pairMatchesCount) { if(pairMatchesCount[pair] > maxPairCount) { maxPairCount = pairMatchesCount[pair]; maxPairName = pair; } }
 
             globalBadges = [
-                { id:'clean_sets', name:'El Cirujano', emoji:'🔪', desc:'El rey del set limpio (6-0 o 6-1)', findMax: (b) => b.cleanSets, format: (v) => `${v} sets limpios` },
-                { id:'ext_comeback', name:'Efecto Diésel', emoji:'⛽', desc:'De menos a más (pierde 1er set por 1-6/2-6 y gana partido)', findMax: (b) => b.extComebacks, format: (v) => `${v} remontadas extremas` },
-                { id:'close_sets', name:'El Cerrajero', emoji:'🔑', desc:'El que mejor cierra (sets 7-5)', findMax: (b) => b.closeSetPlayed >= 2 ? (b.closeSetWins / b.closeSetPlayed)*100 : 0, format: (v) => `${v.toFixed(1)}% en 7-5` },
-                { id:'choke', name:'El gatillazo', emoji:'📉', desc:'El que más partidos ha perdido ganando el 1er set', findMax: (b) => b.chokeJobs, format: (v) => `${v} partidos tirados` },
-                { id:'adaptable', name:'El Adaptable', emoji:'🦎', desc:'Ha ganado al menos 1 partido con todos sus compañeros', findMax: (b) => { let allMates = Object.keys(b.mates); let wonWith = Object.keys(b.winsWith); return allMates.length >= 2 && wonWith.length === allMates.length ? allMates.length : 0; }, format: (v) => `Ha ganado con sus ${v} compañeros` },
-                { id:'kryptonite', name:'Criptonita', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins, format: (v) => `${v} victorias al Top 1` },
-                { id:'matrimonio', name:'Matrimonio', emoji:'💍', desc:'La pareja fija que más partidos ha jugado junta', findMax: (b, name) => maxPairName.includes(name) ? maxPairCount : 0, format: (v) => `${maxPairName} (${v} partidos)` },
-                { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', desc:'El compañero con el que peor % de victoria se tiene', findMin: (b) => { let minWR = 1; for(let m in b.mates) { let d = b.mates[m].p - (b.mates[m].d||0); let wr = d > 0 ? b.mates[m].w / d : 1; if(wr < minWR && b.mates[m].p >= 2) minWR = wr; } return minWR; }, format: (v) => `${(v * 100).toFixed(1)}% peor WR acompañando` },
-                { id:'feudo', name:'El Terrateniente', emoji:'🏰', desc:'% victoria insultantemente alto en un club específico', findMax: (b) => { let maxWR = 0; for(let c in b.courts) { if(b.courts[c].p >= 2) { let wr = b.courts[c].w / b.courts[c].p; if(wr > maxWR) maxWR = wr; } } return maxWR * 100; }, format: (v) => `${v.toFixed(1)}% en su feudo` },
-                { id:'abonado', name:'El Abonado', emoji:'🎟️', desc:'El jugador que más partidos totales acumula', findMax: (b) => b.pj, format: (v) => `${v} partidos totales` },
-                { id:'talisman_bolas', name:'Talismán Bolas', emoji:'✨', desc:'100% victorias con bolas nuevas', findMax: (b) => b.bolasPj >= 2 && b.bolasW === b.bolasPj ? b.bolasPj : 0, format: (v) => `100% en ${v} partidos con bolas nuevas` },
-                { id:'muro', name:'Aguafiestas', emoji:'🥳', desc:'Mayor número de rachas de victoria cortadas', findMax: (b, name) => streakBreaks[name] || 0, format: (v) => `${v} rachas cortadas` },
-                { id:'maldiciones', name:'Rompe-maldiciones', emoji:'🧿', desc:'Era compañero cuando alguien cortó su peor racha', findMax: (b, name) => curseBreaks[name] || 0, format: (v) => `${v} maldiciones rotas como compa` },
-                { id:'montaña_rusa', name:'Montaña Rusa', emoji:'🎢', desc:'El más irregular (alterna V-D-V-D)', findMax: (b, name) => alternations[name] || 0, format: (v) => `${(v * 100).toFixed(1)}% de alternancia` },
-                { id:'tb_most', name:'Tiebreaker', emoji:'⛓️', desc:'Jugador con más Tie Breaks', findMax: (b) => b.tb, format: (v) => `${v} Tie Breaks` },
-                { id:'tb_least', name:'Evita Problemas', emoji:'🧘', desc:'Jugador con menos Tie Breaks', findMin: (b) => b.tb, format: (v) => `${v} Tie Breaks` },
-                { id:'comeback', name:'Remontador', emoji:'🦸‍♂️', desc:'Más victorias perdiendo el 1er set', findMax: (b) => b.remontadas, format: (v) => `${v} remontadas` },
-                { id:'fixed_pos', name:'Inamovible', emoji:'🗿', desc:'Jugador que menos ha jugado en su lado contrario', findMin: (b) => b.pj >= 3 ? Math.min(b.posRev, b.posDriv) / b.pj : 999, format: (v) => `${(v * 100).toFixed(1)}% en lado contrario` },
-                { id:'best_mate', name:'Compañero Perfecto', emoji:'🤝', desc:'Mayor % de victoria ponderado con compañeros', findMax: (b) => { 
-                    let mates = Object.values(b.mates); if(mates.length < 2) return 0; let sumWRxP = 0; let sumP = 0; 
+                { id:'clean_sets', name:'Cirujano', emoji:'🔪', desc:'El rey del set limpio (6-0 o 6-1)', findMax: (b) => b.pj >= 3 ? b.cleanSets : null, format: (v) => `${v} sets limpios` },
+                { id:'ext_comeback', name:'Efecto Diésel', emoji:'⛽', desc:'De menos a más (pierde 1er set por 1-6/2-6 y gana partido)', findMax: (b) => b.extComebacks > 0 ? b.extComebacks : null, format: (v) => `${v} remontadas extremas` },
+                { id:'close_sets', name:'El Cerrajero', emoji:'🔐', desc:'El que mejor cierra (sets 7-5)', findMax: (b) => b.closeSetPlayed >= 2 ? (b.closeSetWins / b.closeSetPlayed)*100 : null, format: (v) => `${v.toFixed(1)}% en 7-5` },
+                { id:'choke', name:'Ícaro', emoji:'🐦‍🔥', desc:'El que más partidos ha perdido ganando el 1er set', findMax: (b) => b.chokeJobs > 0 ? b.chokeJobs : null, format: (v) => `${v} partidos perdidos` },
+                { id:'adaptable', name:'Camaleón', emoji:'🦎', desc:'Ha ganado al menos 1 partido con todos los miembros fijos del grupo', findMax: (b, name) => { let group = MANDATORY_PLAYERS.filter(p => p !== name); if(group.length === 0) return null; return group.every(mate => b.winsWith[mate] > 0) ? group.length : null; }, format: (v) => `Ha ganado con los ${v} fijos` },
+                { id:'kryptonite', name:'Cazagigantes', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
+                { id:'matrimonio', name:'Matrimonio', emoji:'💍', desc:'La pareja fija que más partidos ha jugado junta', findMax: (b, name) => maxPairName.includes(name) ? maxPairCount : null, format: (v) => `${maxPairName} (${v} partidos)` },
+                { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', desc:'El compañero con el que peor % de victoria ponderado se tiene', findMin: (b) => { 
+                    let mates = Object.values(b.mates); if(mates.length < 2) return null; 
+                    let sumWRxP = 0; let sumP = 0; 
                     mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); 
-                    return sumP > 0 ? (sumWRxP / sumP) * 100 : 0; 
+                    let avgWR = sumP > 0 ? (sumWRxP / sumP) * 100 : null;
+                    return avgWR; 
+                }, format: (v) => `${v.toFixed(1)}% WR ponderado con compas` },
+                { id:'rey_granja', name:'Rey de La Granja', emoji:'🌾', desc:'Mayor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
+                { id:'rey_indoor', name:'Indoor Pro', emoji:'🏛️', desc:'Mayor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
+                { id:'victima_granja', name:'Forastero', emoji:'⛈️', desc:'Menor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
+                { id:'victima_indoor', name:'Indoor Rookie', emoji:'🧊', desc:'Menor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
+                { id:'evolucion', name:'La Evolución', emoji:'📈', desc:'Mayor mejora de % victoria comparando 1ª y 2ª mitad de temporada', findMax: (b) => { 
+                    let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; 
+                    let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; 
+                    if(wr1 === null || wr2 === null) return null;
+                    return wr2 - wr1; 
+                }, format: (v) => `+${v.toFixed(1)}% de mejora` },
+                { id:'abonado', name:'El Abonado', emoji:'🎟️', desc:'El jugador que más partidos totales acumula', findMax: (b) => b.pj, format: (v) => `${v} partidos totales` },
+                { id:'talisman_bolas', name:'Talismán Bolas', emoji:'✨', desc:'El jugador que más veces ha ganado con bolas nuevas', findMax: (b) => b.bolasW > 0 ? b.bolasW : null, format: (v) => `${v} victorias con bolas nuevas` },
+                { id:'muro', name:'Aguafiestas', emoji:'🥳', desc:'Corta la racha de victorias de otros', findMax: (b, name) => (streakBreaks[name] || 0) > 0 ? streakBreaks[name] : null, format: (v) => `${v} rachas cortadas` },
+                { id:'maldiciones', name:'Rompe-maldiciones', emoji:'🧿', desc:'Era compañero cuando alguien cortó su racha de derrotas', findMax: (b, name) => (curseBreaks[name] || 0) > 0 ? curseBreaks[name] : null, format: (v) => `${v} maldiciones rotas como compañero` },
+                { id:'montaña_rusa', name:'Montaña Rusa', emoji:'🎢', desc:'El más irregular (alterna V-D-V-D)', findMax: (b, name) => alternations[name] > 0 ? alternations[name] : null, format: (v) => `${(v * 100).toFixed(1)}% de alternancia` },
+                { id:'tb_most', name:'Tiebreaker', emoji:'⛓️', desc:'Jugador con más Tie Breaks', findMax: (b) => b.tb > 0 ? b.tb : null, format: (v) => `${v} Tie Breaks` },
+                { id:'tb_least', name:'Evita Problemas', emoji:'🧘', desc:'Jugador con menos Tie Breaks (mín. 3 partidos)', findMin: (b) => b.pj >= 3 ? b.tb : null, format: (v) => `${v} Tie Breaks` },
+                { id:'comeback', name:'Remontador', emoji:'🦸‍♂️', desc:'Más victorias perdiendo el 1er set', findMax: (b) => b.remontadas > 0 ? b.remontadas : null, format: (v) => `${v} remontadas` },
+                { id:'fixed_pos', name:'Inamovible', emoji:'🗿', desc:'Jugador que menos ha jugado en su lado contrario', findMin: (b) => b.pj >= 3 ? Math.min(b.posRev, b.posDriv) / b.pj : null, format: (v) => `${(v * 100).toFixed(1)}% en lado contrario` },
+                { id:'best_mate', name:'Compañero Perfecto', emoji:'🤝', desc:'Mayor % de victoria ponderado con compañeros', findMax: (b) => { 
+                    let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; 
+                    mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); 
+                    return sumP > 0 ? (sumWRxP / sumP) * 100 : null; 
                 }, format: (v) => `${v.toFixed(1)}% ponderado` },
-                { id:'streak_w', name:'Imparable', emoji:'🚀', desc:'Racha más larga de victorias', findMax: (b) => b.maxW, format: (v) => `${v} partidos seguidos` },
-                { id:'streak_l', name:'Mala Racha', emoji:'💀', desc:'Racha más larga de derrotas', findMax: (b) => b.maxL, format: (v) => `${v} partidos seguidos` },
+                { id:'streak_w', name:'Racha Dorada', emoji:'🔥', desc:'Racha más larga de victorias', findMax: (b) => b.maxW >= 3 ? b.maxW : null, format: (v) => `${v} partidos seguidos` },
+                { id:'streak_l', name:'Mala Racha', emoji:'💀', desc:'Racha más larga de derrotas', findMax: (b) => b.maxL >= 3 ? b.maxL : null, format: (v) => `${v} partidos seguidos` },
                 { id:'s3_reach', name:'Guerrero', emoji:'⚔️', desc:'Jugador que más ha llegado a 3er set', findMax: (b) => b.s3reach, format: (v) => `${v} veces` },
                 { id:'s3_win', name:'Decisivo', emoji:'🎯', desc:'Jugador que más 3er sets ha ganado', findMax: (b) => b.s3win, format: (v) => `${v} veces` },
                 { id:'s3_lose', name:'Agotado', emoji:'🥵', desc:'Jugador que más 3er sets ha perdido', findMax: (b) => b.s3lose, format: (v) => `${v} veces` },
                 { id:'s2_win', name:'Exprés', emoji:'🚄', desc:'Jugador que más veces ha ganado en 2 sets', findMax: (b) => b.matchesWonIn2, format: (v) => `${v} veces` },
                 { id:'s1_win', name:'Arrancador', emoji:'🥇', desc:'Jugador que más 1er sets ha ganado', findMax: (b) => b.s1win, format: (v) => `${v} veces` },
-                { id:'s1_lose', name:'Frio Inicio', emoji:'🥶', desc:'Jugador que más 1er sets ha perdido', findMax: (b) => b.s1lose, format: (v) => `${v} veces` },
+                { id:'s1_lose', name:'Frio Inicio', emoji:'❄️', desc:'Jugador que más 1er sets ha perdido', findMax: (b) => b.s1lose, format: (v) => `${v} veces` },
             ];
 
             globalBadges.forEach(badge => { 
@@ -414,11 +442,15 @@
                 for(let j in bs) { 
                     if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue; 
                     let val = badge.findMax ? badge.findMax(bs[j], j) : badge.findMin(bs[j], j); 
-                    if(val === 0 || val === 999 || val === 1) continue; // 1 is fallback for minWR
-                    if(badge.findMax && val > bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: val}; } 
-                    else if(badge.findMax && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = val; } 
-                    if(badge.findMin && val < bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: val}; } 
-                    else if(badge.findMin && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = val; } 
+                    if(val === null || val === undefined) continue; 
+                    
+                    // TRUCO: Si es el Talismán, guardamos "Victorias/Total" para mostrarlo en el detalle
+                    let displayVal = (badge.id === 'talisman_bolas' && val > 0) ? `${val}/${bs[j].bolasPj}` : val;
+
+                    if(badge.findMax && val > bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; } 
+                    else if(badge.findMax && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = displayVal; } 
+                    if(badge.findMin && val < bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; } 
+                    else if(badge.findMin && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = displayVal; } 
                 } 
             });
         }
