@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         .leader td { background-color: rgba(255, 215, 0, 0.12); }
         .streak-fire td { background-color: rgba(255, 69, 0, 0.1); }
@@ -48,18 +49,20 @@
             gap: 12px;
             flex-shrink: 0;
         }
-        .sidebar-logo { font-size: 1.5rem; flex-shrink: 0; }
+        .sidebar-logo { font-size: 1.5rem; flex-shrink: 0; color: #34d399; display: flex; align-items: center; }
+        .sidebar-logo i { font-style: normal; }
         .sidebar-title {
             font-size: 0.85rem;
             font-weight: 900;
             color: #34d399;
             letter-spacing: 0.05em;
+            max-width: 0;
             opacity: 0;
-            transition: opacity 0.18s;
+            transition: max-width 0.28s ease, opacity 0.18s ease;
             white-space: nowrap;
             overflow: hidden;
         }
-        #sidebar.expanded .sidebar-title { opacity: 1; }
+        #sidebar.expanded .sidebar-title { max-width: 150px; opacity: 1; }
 
         .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; }
         .sidebar-nav::-webkit-scrollbar { display: none; }
@@ -81,17 +84,19 @@
             color: #34d399;
             border-left-color: #34d399;
         }
-        .sidebar-item .icon { font-size: 1.25rem; flex-shrink: 0; width: 24px; text-align: center; }
+        .sidebar-item .icon { font-size: 1.25rem; flex-shrink: 0; width: 24px; text-align: center; display: flex; align-items: center; justify-content: center; }
+        .sidebar-item .icon i { font-style: normal; }
         .sidebar-item .label {
             font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 0.03em;
+            max-width: 0;
             opacity: 0;
-            transition: opacity 0.18s;
+            transition: max-width 0.28s ease, opacity 0.18s ease;
             overflow: hidden;
             white-space: nowrap;
         }
-        #sidebar.expanded .sidebar-item .label { opacity: 1; }
+        #sidebar.expanded .sidebar-item .label { max-width: 150px; opacity: 1; }
 
         .sidebar-toggle {
             height: 48px;
@@ -107,7 +112,7 @@
         .sidebar-toggle:hover { background: rgba(51,65,85,0.4); color: #94a3b8; }
         .toggle-icon { font-size: 1rem; transition: transform 0.28s; }
         #sidebar.expanded .toggle-icon { transform: rotate(180deg); }
-
+        
         /* ========== MAIN LAYOUT ========== */
         #app-body {
             margin-left: 64px;
@@ -158,31 +163,71 @@
         }
         #filter-panel.expanded { width: 240px; }
 
+        /* ========== BOTÓN FILTROS Y ESTADO COLAPSADO ========== */
         .filter-toggle-btn {
             width: 100%;
-            height: 64px;
+            min-height: 64px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             border-bottom: 1px solid #1e293b;
             cursor: pointer;
-            color: #475569;
-            transition: color 0.18s, background 0.18s;
+            color: #64748b;
+            transition: all 0.2s ease;
             flex-shrink: 0;
             padding: 0 16px;
         }
-        .filter-toggle-btn:hover { background: rgba(51,65,85,0.4); color: #94a3b8; }
-        .filter-toggle-icon { font-size: 1.1rem; flex-shrink: 0; }
+        .filter-toggle-btn:hover { background: rgba(51,65,85,0.4); color: #34d399; }
+        .filter-toggle-icon { font-size: 1.25rem; flex-shrink: 0; transition: all 0.2s; }
+
+        /* Cuando está colapsado: apilar icono y texto verticalmente */
+        #filter-panel:not(.expanded) .filter-toggle-btn {
+            flex-direction: column;
+            padding: 18px 0;
+            gap: 8px;
+        }
+        #filter-panel:not(.expanded) .filter-toggle-icon { 
+            font-size: 1.5rem; 
+            color: #94a3b8; 
+        }
+        #filter-panel:not(.expanded) .filter-toggle-btn:hover { 
+            background: rgba(16,185,129,0.15); 
+        }
+
+        /* Etiqueta "FILTROS" (solo visible expandido) */
         .filter-toggle-label {
             font-size: 0.8rem;
             font-weight: 700;
             color: #34d399;
             letter-spacing: 0.05em;
+            max-width: 0;
             opacity: 0;
-            transition: opacity 0.18s;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: max-width 0.28s ease, opacity 0.18s ease;
         }
-        #filter-panel.expanded .filter-toggle-label { opacity: 1; }
+        #filter-panel.expanded .filter-toggle-label { max-width: 150px; opacity: 1; }
+
+        /* Estado debajo del icono (TODO / FILTRADO) */
+        .filter-collapsed-status {
+            display: none; 
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #475569;
+            text-align: center;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            width: 100%;
+            padding: 0 6px;
+            line-height: 1.2;
+        }
+        #filter-panel:not(.expanded) .filter-collapsed-status {
+            display: block; /* Lo muestra debajo del icono */
+        }
+        #filter-panel.expanded .filter-collapsed-status {
+            display: none !important; /* Asegura que se oculte al expandir */
+        }
 
         .filter-body {
             flex: 1;
@@ -209,13 +254,17 @@
             white-space: nowrap;
         }
         #filter-panel.expanded .filter-section-title { opacity: 1; }
+        /* Ocultar el body del panel de filtros cuando está colapsado */
+        #filter-panel:not(.expanded) .filter-body {
+            display: none;
+}
 
         .filter-collapsed-icon {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            padding: 16px 0;
+            gap: 12px;
+            padding: 20px 0;
             opacity: 1;
             transition: opacity 0.18s;
         }
@@ -250,46 +299,40 @@
     <!-- SIDEBAR IZQUIERDO -->
     <nav id="sidebar">
         <div class="sidebar-header">
-            <span class="sidebar-logo">🎾</span>
-            <span class="sidebar-title">PADEL AMIGOS <span style="background:#10b981;color:#0f172a;font-size:0.6rem;padding:1px 6px;border-radius:999px;margin-left:4px;">2026</span></span>
+            <span class="sidebar-logo" onclick="toggleSidebar()" style="cursor: pointer;"><i class="ri-menu-line"></i></span>
+            <span class="sidebar-title">MENU</span>
         </div>
         <div class="sidebar-nav">
             <div class="sidebar-item active" onclick="switchTab('resumen')" id="nav-resumen">
-                <span class="icon">🏆</span><span class="label">Clasificación</span>
+                <span class="icon"><i class="ri-trophy-line"></i></span><span class="label">Clasificación</span>
             </div>
             <div class="sidebar-item" onclick="switchTab('ficha')" id="nav-ficha">
-                <span class="icon">👤</span><span class="label">Ficha Técnica</span>
+                <span class="icon"><i class="ri-id-card-line"></i></span><span class="label">Ficha Técnica</span>
             </div>
             <div class="sidebar-item" onclick="switchTab('tactico')" id="nav-tactico">
-                <span class="icon">🕸️</span><span class="label">Análisis Táctico</span>
+                <span class="icon"><i class="ri-radar-line"></i></span><span class="label">Análisis Táctico</span>
             </div>
             <div class="sidebar-item" onclick="switchTab('parejas')" id="nav-parejas">
-                <span class="icon">🤝</span><span class="label">Parejas</span>
+                <span class="icon"><i class="ri-team-line"></i></span><span class="label">Parejas</span>
             </div>
             <div class="sidebar-item" onclick="switchTab('partidos')" id="nav-partidos">
-                <span class="icon">🕒</span><span class="label">Historial</span>
+                <span class="icon"><i class="ri-history-line"></i></span><span class="label">Historial</span>
             </div>
             <div class="sidebar-item" onclick="switchTab('logistica')" id="nav-logistica">
-                <span class="icon">💰</span><span class="label">Finanzas</span>
+                <span class="icon"><i class="ri-wallet-3-line"></i></span><span class="label">Finanzas</span>
             </div>
-        </div>
-        <div class="sidebar-toggle" onclick="toggleSidebar()">
-            <span class="toggle-icon">›</span>
         </div>
     </nav>
 
     <!-- PANEL FILTROS DERECHO -->
     <div id="filter-panel">
+        <!-- Botón del Embudo + Estado -->
         <div class="filter-toggle-btn" onclick="toggleFilterPanel()">
-            <span class="filter-toggle-icon">⚙️</span>
+            <span class="filter-toggle-icon"><i class="ri-filter-3-line"></i></span>
             <span class="filter-toggle-label">FILTROS</span>
+            <span id="filter-collapsed-status" class="filter-collapsed-status">TODO</span>
         </div>
-
-        <!-- Icono colapsado -->
-        <div class="filter-collapsed-icon">
-            <span title="Filtros de fecha" style="font-size:1rem;color:#475569;">📅</span>
-            <span title="Tipo de partido" style="font-size:1rem;color:#475569;">🔍</span>
-        </div>
+        
 
         <!-- Contenido expandido -->
         <div class="filter-body">
@@ -334,7 +377,6 @@
     <div id="app-body">
         <div id="topbar">
             <div class="topbar-title">🎾 PADEL AMIGOS <span style="background:#10b981;color:#0f172a;font-size:0.6rem;padding:1px 6px;border-radius:999px;margin-left:4px;vertical-align:middle;">2026</span></div>
-            <div style="font-size:0.75rem;color:#475569;" id="topbar-range">Histórico Completo</div>
         </div>
 
         <div id="loading">
@@ -352,13 +394,37 @@
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Líder de la Tabla</span><span id="kpi-lider" class="text-2xl font-black text-emerald-400 mt-2">-</span></div>
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between relative overflow-hidden"><div class="absolute -right-4 -top-4 opacity-10 text-7xl">🔥</div><span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Pareja Letal</span><span id="kpi-pareja" class="text-xl font-black text-amber-400 mt-2 z-10">-</span></div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-400">🏅 Rendimiento General</h3><p class="text-xs text-slate-500 mb-4">* % V calculado sin empates. Ordenado por % Puntuación.</p><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-[10px] sm:text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">#</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-right">% P</th></tr></thead><tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-xs sm:text-sm"></tbody></table></div></div>
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
                     </div>
-                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><h3 class="text-lg font-bold mb-4 text-slate-200">📊 % Puntuación General</h3><div class="relative h-64 sm:h-96 flex items-center justify-center"><canvas id="rankingChart"></canvas></div></div>
-                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">📊 Resultados Habituales</h3><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-4">Jugador</th><th class="p-4 text-center">Set 1</th><th class="p-4 text-center">Set 2</th><th class="p-4 text-center">Set 3</th></tr></thead><tbody id="habituales-tbody" class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
+                    <!-- GRILLA: Gráfico Puntuación + Matriz de Dominancia -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between">
+                            <h3 class="text-lg font-bold mb-4 text-slate-200">📊 % Puntuación General</h3>
+                            <div class="relative flex-1 flex items-center justify-center min-h-[300px]"><canvas id="rankingChart"></canvas></div>
+                        </div>
+                        
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                            <h3 class="text-xl font-black mb-2 text-sky-400 text-center">🕸️ La Matriz de Dominancia</h3>
+                            <p class="text-xs text-slate-500 mb-4 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
+                            <div class="w-full overflow-x-auto pb-2 flex-1 flex items-start justify-center">
+                                <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
+                            </div>
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-400 mt-4 pt-3 border-t border-slate-700">
+                                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-emerald-800/70 block flex-shrink-0"></span> Dominio (>60%)</div>
+                                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-red-800/70 block flex-shrink-0"></span> Dominado (<40%)</div>
+                                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-800 border border-slate-700 block flex-shrink-0"></span> Igualado (40-60%)</div>
+                                <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-amber-900/40 block flex-shrink-0"></span> Solo empates</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="bg-gradient-to-r from-amber-900/10 to-emerald-900/10 border border-slate-700 rounded-2xl overflow-hidden"><button onclick="toggleAdvancedStats()" class="w-full p-6 text-left flex justify-between items-center hover:bg-slate-800/50 transition-colors"><h3 class="text-lg font-bold text-white flex items-center gap-2">🌟 Estadísticas por Meses</h3><span id="adv-stats-icon" class="text-2xl text-emerald-400 transform transition-transform">+</span></button><div id="advanced-stats-container" class="hidden px-6 pb-6 space-y-3"></div></div>
+                    <!-- CURIOSIDADES -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🧊 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">📅 El Día Maldito</h3><p id="cur-dia" class="text-sm text-slate-400">Calculando...</p></div>
+                    </div>
                 </section>
 
                 <!-- TAB 2: FICHA TÉCNICA -->
@@ -418,21 +484,10 @@
 
                 <!-- TAB 3: ANÁLISIS TÁCTICO -->
                 <section id="tab-tactico" class="tab-content hidden space-y-6">
-                    <!-- CURIOSIDADES -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🧊 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
-                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">📅 El Día Maldito</h3><p id="cur-dia" class="text-sm text-slate-400">Calculando...</p></div>
-                    </div>
-                    <!-- MATRIX + FRECUENCIA -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col items-center">
-                            <h3 class="text-xl font-black mb-2 text-sky-400">🕸️ La Matriz de Dominancia</h3>
-                            <p class="text-xs text-slate-500 mb-6 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
-                            <div class="w-full overflow-x-auto pb-4">
-                                <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
-                            </div>
-                        </div>
-                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col">
+                    
+                    <!-- Frecuencia + Resultados Habituales (A ancho completo) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                        <div class="lg:col-span-2 bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col">
                             <h3 class="text-xl font-black mb-4 text-amber-400">📊 Frecuencia de Sets</h3>
                             <select id="result-selector" onchange="renderResultChart()" class="w-full bg-slate-900 border border-slate-700 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer mb-6">
                                 <option value="">Selecciona un resultado de set...</option>
@@ -451,12 +506,29 @@
                                 <option value="5-7">5-7 (Cierre invertido)</option>
                                 <option value="6-7">6-7 (Tie Break invertido)</option>
                             </select>
-                            <div class="relative h-80 flex items-center justify-center">
+                            <div class="relative flex-1 flex items-center justify-center min-h-[320px]">
                                 <canvas id="resultChart"></canvas>
                                 <p id="result-placeholder" class="text-slate-500 text-sm text-center absolute">Selecciona un resultado para ver su distribución</p>
                             </div>
                         </div>
+                        <div class="lg:col-span-3 bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col">
+                            <h3 class="text-lg font-bold mb-4 text-emerald-400">📊 Resultados Habituales</h3>
+                            <div class="overflow-x-auto rounded-xl flex-1">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-750 text-slate-300 text-base uppercase font-bold border-b border-slate-700">
+                                            <th class="p-4">Jugador</th>
+                                            <th class="p-4 text-center">Set 1</th>
+                                            <th class="p-4 text-center">Set 2</th>
+                                            <th class="p-4 text-center">Set 3</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="habituales-tbody" class="divide-y divide-slate-700/50 text-lg text-slate-300"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
+                    
                 </section>
 
                 <!-- TAB 4: PAREJAS -->
@@ -540,7 +612,14 @@
 
         // ===== SIDEBAR & FILTER PANEL =====
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('expanded');
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('expanded');
+            const icon = sidebar.querySelector('.sidebar-logo i');
+            if (sidebar.classList.contains('expanded')) {
+                icon.className = 'ri-arrow-left-s-line'; // Cambia a flecha para cerrar
+            } else {
+                icon.className = 'ri-menu-line'; // Cambia a 3 rayas para abrir
+            }
         }
         function toggleFilterPanel() {
             const panel = document.getElementById('filter-panel');
@@ -613,14 +692,12 @@
             if (m.length < 2) m = '0' + m; if (d.length < 2) d = '0' + d;
             document.getElementById('dateStart').value = y+'-01-01'; document.getElementById('dateEnd').value = y+'-'+m+'-'+d;
             document.getElementById('rango-badge').innerText = "Este Año";
-            document.getElementById('topbar-range').innerText = "Este Año";
             document.getElementById('filter-status-label').innerText = "Este Año";
             if(rawDataGlobal.length > 0) aplicarFiltrosGlobales();
         }
         function clearDates() {
             document.getElementById('dateStart').value = ""; document.getElementById('dateEnd').value = "";
             document.getElementById('rango-badge').innerText = "Histórico Completo";
-            document.getElementById('topbar-range').innerText = "Histórico Completo";
             document.getElementById('filter-status-label').innerText = "Histórico Completo";
             if(rawDataGlobal.length > 0) aplicarFiltrosGlobales();
         }
@@ -651,8 +728,9 @@
             if (dStart && dEnd) rangeLabel = "Filtrado";
             else if (dStart) rangeLabel = "Desde " + dStart;
             document.getElementById('rango-badge').innerText = rangeLabel;
-            document.getElementById('topbar-range').innerText = rangeLabel;
-            document.getElementById('filter-status-label').innerText = activeDayTypeFilter ? (activeDayTypeFilter === 'finde' ? 'Fin de Semana' : 'Entre Semana') : rangeLabel;
+            let statusText = activeDayTypeFilter ? (activeDayTypeFilter === 'finde' ? 'Fin de Semana' : 'Entre Semana') : rangeLabel;
+            document.getElementById('filter-status-label').innerText = statusText;
+            document.getElementById('filter-collapsed-status').innerText = activeDayTypeFilter ? (activeDayTypeFilter === 'finde' ? 'F. SEMANA' : 'E. SEMANA') : (rangeLabel === "Histórico Completo" ? "TODO" : "FILTRADO");
 
             filteredDataGlobal = rawDataGlobal.filter(row => {
                 let rowTime = parseCSVDate(row.fecha);
@@ -1045,12 +1123,12 @@
                 team2.forEach(p1 => team1.forEach(p2 => { if(!matrixData[p1]) matrixData[p1] = {}; if(!matrixData[p1][p2]) matrixData[p1][p2] = { wins: 0, draws: 0, total: 0 }; matrixData[p1][p2].total++; if (isDraw) matrixData[p1][p2].draws++; else if (winT2) matrixData[p1][p2].wins++; }));
             });
             let html = '<thead><tr><th class="p-2"></th>';
-            players.forEach(p => html += `<th class="p-2 md:p-3 text-[10px] md:text-xs font-bold text-slate-400 whitespace-nowrap" style="writing-mode: vertical-lr; transform: rotate(180deg); min-width: 50px; height: 80px;">${p}</th>`);
+            players.forEach(p => html += `<th class="p-2 md:p-2.5 text-xs md:text-sm font-bold text-slate-400 whitespace-nowrap" style="writing-mode: vertical-lr; transform: rotate(180deg); min-width: 50px; height: 80px;">${p}</th>`);
             html += '</tr></thead><tbody>';
             players.forEach(rowP => {
-                html += `<tr><td class="p-2 md:p-3 font-bold text-slate-200 text-right pr-2 md:pr-4 whitespace-nowrap text-xs md:text-sm">${rowP}</td>`;
+                html += `<td class="p-2 md:p-2.5 font-bold text-slate-200 text-right pr-2 md:pr-4 whitespace-nowrap text-xs md:text-sm">${rowP}</td>`;
                 players.forEach(colP => {
-                    if(rowP === colP) { html += `<td class="p-1 md:p-2"><div class="bg-slate-900 rounded-lg p-2 md:p-3 text-slate-700 text-xs text-center">-</div></td>`; return; }
+                    if(rowP === colP) { html += `<td class="p-1 md:p-1"><div class="bg-slate-900 rounded-lg p-1.5 md:p-2 text-slate-700 text-sm md:text-base text-center">—</div></td>`; return; }
                     let data = (matrixData[rowP] && matrixData[rowP][colP]) ? matrixData[rowP][colP] : null;
                     let decisiveMatches = data ? (data.total - data.draws) : 0;
                     let wr = decisiveMatches > 0 ? (data.wins / decisiveMatches) * 100 : -1;
@@ -1063,12 +1141,29 @@
                     else if (wr >= 20) { bgColor = 'bg-red-900/40'; textColor = 'text-red-300'; }
                     else if (wr >= 0) { bgColor = 'bg-red-800/70'; textColor = 'text-red-200'; }
                     else { bgColor = 'bg-amber-900/40'; textColor = 'text-amber-400'; }
-                    html += `<td class="p-1 md:p-2"><div class="${bgColor} ${textColor} rounded-lg p-2 md:p-3 font-mono font-bold text-xs md:text-sm text-center shadow-sm">${text}</div></td>`;
+                    html += `<td class="p-1 md:p-1"><div class="${bgColor} ${textColor} rounded-lg p-1.5 md:p-2 font-mono font-bold text-sm md:text-base text-center shadow-sm">${text}</div></td>`;
                 });
                 html += '</tr>';
             });
             html += '</tbody>';
             table.innerHTML = html;
+            // Calcular Dato Táctico para el panel lateral
+            let maxWR = 0, rival1 = "", rival2 = "", minMatches = 3;
+            for(let p1 in matrixData) {
+                for(let p2 in matrixData[p1]) {
+                    let d = matrixData[p1][p2];
+                    let dec = d.total - d.draws;
+                    if(dec >= minMatches) {
+                        let wr = (d.wins / dec) * 100;
+                        if(wr > maxWR) { maxWR = wr; rival1 = p1; rival2 = p2; }
+                    }
+                }
+            }
+            let insightEl = document.getElementById('tactical-insight');
+            if(insightEl) {
+                if(maxWR > 0) insightEl.innerText = `🔥 ${rival1} domina abrumadoramente a ${rival2} con un ${maxWR.toFixed(0)}% de victoria en sus enfrentamientos.`;
+                else insightEl.innerText = "No hay suficientes datos de rivalidades aún.";
+            }
         }
 
         let chart1, chart2, chart3;
