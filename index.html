@@ -746,6 +746,17 @@
             });
             filteredDataGlobal.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha));
             procesarDatosInteligentes(filteredDataGlobal);
+            // Calcular y pintar el resultado de set más frecuente por defecto
+            let defaultResult = calculateMostFrequentResult();
+            let resultSelector = document.getElementById('result-selector');
+            if (defaultResult && resultSelector) {
+                resultSelector.value = defaultResult;
+                renderResultChart();
+            } else if (resultSelector) {
+                resultSelector.value = "";
+                if(resultChartInstance) resultChartInstance.destroy();
+                document.getElementById('result-placeholder').classList.remove('hidden');
+            }
         }
 
         function procesarDatosInteligentes(rows) {
@@ -1081,6 +1092,31 @@
         function displayMatches(matches) { const tbody = document.querySelector("#matchesTable tbody"); tbody.innerHTML = ""; matches.forEach((row, idx) => { let isE = String(row.tipo||"").toLowerCase()==="externo", isG = String(row['grabado']||"").toLowerCase()==="true"; let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*"; let bE = isE?`<span class="ml-2 px-1.5 py-0.5 bg-red-950 text-red-400 text-[9px] rounded border border-red-900 font-black">EXT</span>`:""; let bG = isG?`<span class="ml-2 px-1.5 py-0.5 bg-purple-950 text-purple-400 text-[9px] rounded border border-purple-900 font-black">🎬</span>`:""; let bB = isB?`<span class="ml-2 px-1.5 py-0.5 bg-emerald-950 text-emerald-400 text-[9px] rounded border border-emerald-900 font-black">🎾</span>`:""; let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=row['set 3 - p1']?`,${row['set 3 - p1']}-${row['set 3 - p2']}`:""; const tr = document.createElement("tr"); tr.className = `border-b border-slate-800 transition ${isE?'bg-red-950/5 opacity-60':'hover:bg-slate-750/20'}`; tr.innerHTML = `<td class="p-4 text-xs font-mono text-slate-500">${idx+1}</td><td class="p-4 text-xs font-mono text-slate-400 whitespace-nowrap">${row['fecha']||'-'} ${bE} ${bG} ${bB}</td><td class="p-4 font-semibold text-slate-200">${row['pista']||'-'}</td><td class="p-4 text-xs text-slate-300">${row['p1 - jugador a']||'?'}/${row['p1 - jugador b']||'?'}</td><td class="p-4 text-xs text-slate-300">${row['p2 - jugador a']||'?'}/${row['p2 - jugador b']||'?'}</td><td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td><td class="p-4 font-bold text-emerald-400">${row['ganadores']||'-'}</td>`; tbody.appendChild(tr); }); }
 
         let resultChartInstance = null;
+        function calculateMostFrequentResult() {
+            let counts = {};
+            filteredDataGlobal.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
+                let s1 = `${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`;
+                let s2 = `${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`;
+                let s3p1 = parseInt(row['set 3 - p1']||0), s3p2 = parseInt(row['set 3 - p2']||0);
+                let s3 = (s3p1 > 0 || s3p2 > 0) ? `${s3p1}-${s3p2}` : null;
+
+                [s1, s2, s3].forEach(s => {
+                    if(s && s !== "0-0" && !s.includes("NaN")) {
+                        counts[s] = (counts[s] || 0) + 1;
+                    }
+                });
+            });
+
+            let maxCount = 0, bestScore = "";
+            for(let score in counts) {
+                if(counts[score] > maxCount) {
+                    maxCount = counts[score];
+                    bestScore = score;
+                }
+            }
+            return bestScore;
+        }
         function renderResultChart() {
             let selectedResult = document.getElementById('result-selector').value;
             let placeholder = document.getElementById('result-placeholder');
