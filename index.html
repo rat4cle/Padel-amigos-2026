@@ -15,270 +15,514 @@
         .leader-fire td { background: linear-gradient(90deg, rgba(255, 140, 0, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(255, 69, 0, 0.3); }
         .leader-ice td { background: linear-gradient(90deg, rgba(0, 191, 255, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(0, 0, 139, 0.3); }
         .tag-btn.active { background-color: #059669 !important; color: white !important; }
-        /* Oculta la barra de scroll nativa para que quede limpio */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Animación suave al cambiar de expediente */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        /* ========== SIDEBAR ========== */
+        #sidebar {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 64px;
+            background: #0f172a;
+            border-right: 1px solid #1e293b;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.28s cubic-bezier(.4,0,.2,1);
+            white-space: nowrap;
         }
+        #sidebar.expanded { width: 220px; }
+
+        .sidebar-header {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid #1e293b;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .sidebar-logo { font-size: 1.5rem; flex-shrink: 0; }
+        .sidebar-title {
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: #34d399;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            transition: opacity 0.18s;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        #sidebar.expanded .sidebar-title { opacity: 1; }
+
+        .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; }
+        .sidebar-nav::-webkit-scrollbar { display: none; }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 11px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.18s;
+            color: #64748b;
+            text-decoration: none;
+        }
+        .sidebar-item:hover { background: rgba(51,65,85,0.4); color: #cbd5e1; }
+        .sidebar-item.active {
+            background: rgba(16,185,129,0.12);
+            color: #34d399;
+            border-left-color: #34d399;
+        }
+        .sidebar-item .icon { font-size: 1.25rem; flex-shrink: 0; width: 24px; text-align: center; }
+        .sidebar-item .label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            opacity: 0;
+            transition: opacity 0.18s;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        #sidebar.expanded .sidebar-item .label { opacity: 1; }
+
+        .sidebar-toggle {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-top: 1px solid #1e293b;
+            color: #475569;
+            transition: color 0.18s, background 0.18s;
+            flex-shrink: 0;
+        }
+        .sidebar-toggle:hover { background: rgba(51,65,85,0.4); color: #94a3b8; }
+        .toggle-icon { font-size: 1rem; transition: transform 0.28s; }
+        #sidebar.expanded .toggle-icon { transform: rotate(180deg); }
+
+        /* ========== MAIN LAYOUT ========== */
+        #app-body {
+            margin-left: 64px;
+            min-height: 100vh;
+            transition: margin-left 0.28s cubic-bezier(.4,0,.2,1);
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar.expanded ~ #app-body { margin-left: 220px; }
+
+        /* ========== TOP BAR ========== */
+        #topbar {
+            height: 64px;
+            background: rgba(15,23,42,0.85);
+            border-bottom: 1px solid #1e293b;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            gap: 12px;
+        }
+        .topbar-title {
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: #34d399;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
+        }
+
+        /* ========== RIGHT FILTER PANEL ========== */
+        #filter-panel {
+            position: fixed;
+            top: 0; right: 0; bottom: 0;
+            width: 56px;
+            background: #0f172a;
+            border-left: 1px solid #1e293b;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            transition: width 0.28s cubic-bezier(.4,0,.2,1);
+            white-space: nowrap;
+        }
+        #filter-panel.expanded { width: 240px; }
+
+        .filter-toggle-btn {
+            width: 100%;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-bottom: 1px solid #1e293b;
+            cursor: pointer;
+            color: #475569;
+            transition: color 0.18s, background 0.18s;
+            flex-shrink: 0;
+            padding: 0 16px;
+        }
+        .filter-toggle-btn:hover { background: rgba(51,65,85,0.4); color: #94a3b8; }
+        .filter-toggle-icon { font-size: 1.1rem; flex-shrink: 0; }
+        .filter-toggle-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #34d399;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            transition: opacity 0.18s;
+        }
+        #filter-panel.expanded .filter-toggle-label { opacity: 1; }
+
+        .filter-body {
+            flex: 1;
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0;
+        }
+        .filter-body::-webkit-scrollbar { display: none; }
+
+        .filter-section {
+            padding: 16px;
+            border-bottom: 1px solid #1e293b;
+        }
+        .filter-section-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 10px;
+            opacity: 0;
+            transition: opacity 0.18s;
+            white-space: nowrap;
+        }
+        #filter-panel.expanded .filter-section-title { opacity: 1; }
+
+        .filter-collapsed-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 0;
+            opacity: 1;
+            transition: opacity 0.18s;
+        }
+        #filter-panel.expanded .filter-collapsed-icon { display: none; }
+
+        .filter-expanded-content {
+            display: none;
+        }
+        #filter-panel.expanded .filter-expanded-content { display: block; }
+
+        /* ========== CONTENT AREA ========== */
+        #content-area {
+            flex: 1;
+            margin-right: 56px;
+            transition: margin-right 0.28s cubic-bezier(.4,0,.2,1);
+            padding: 24px;
+        }
+        #filter-panel.expanded ~ * #content-area,
+        body.filter-expanded #content-area { margin-right: 240px; }
+
+        /* Ajuste dinámico via JS */
+        #content-area.filter-expanded { margin-right: 240px; }
+
+        /* ========== LOADING ========== */
+        #loading { padding: 64px 24px; text-align: center; color: #64748b; }
+        #main-content { display: none; }
+        #main-content.visible { display: block; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
 
-    <nav class="bg-slate-950/80 border-b border-slate-800 p-4 sticky top-0 z-50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto flex flex-col xl:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl font-black tracking-wider text-emerald-400 flex items-center gap-2">🎾 PADEL AMIGOS <span class="text-xs bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full font-bold">2026</span></h1>
-            <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-700 text-sm">
-                <span class="text-slate-400 font-bold px-2 hidden sm:inline">Filtro:</span>
-                <input type="date" id="dateStart" onchange="aplicarFiltrosGlobales()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 focus:ring-1 focus:ring-emerald-500 cursor-pointer text-xs sm:text-sm">
-                <span class="text-slate-500">-</span>
-                <input type="date" id="dateEnd" onchange="aplicarFiltrosGlobales()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded px-2 py-1 focus:ring-1 focus:ring-emerald-500 cursor-pointer text-xs sm:text-sm">
-                <div class="flex gap-1 border-l border-slate-700 pl-2 ml-1">
-                    <button onclick="setDefaultDates()" class="text-xs bg-emerald-900/30 text-emerald-400 hover:bg-emerald-800/50 rounded px-3 py-1 font-bold transition-colors">Este Año</button>
-                    <button onclick="clearDates()" class="text-xs bg-amber-900/30 text-amber-400 hover:bg-amber-800/50 rounded px-3 py-1 font-bold transition-colors">Ver Todo</button>
-                </div>
+    <!-- SIDEBAR IZQUIERDO -->
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">🎾</span>
+            <span class="sidebar-title">PADEL AMIGOS <span style="background:#10b981;color:#0f172a;font-size:0.6rem;padding:1px 6px;border-radius:999px;margin-left:4px;">2026</span></span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-item active" onclick="switchTab('resumen')" id="nav-resumen">
+                <span class="icon">🏆</span><span class="label">Clasificación</span>
             </div>
-            <div class="flex flex-wrap justify-center bg-slate-800 p-1 rounded-xl border border-slate-700">
-                <button onclick="switchTab('resumen')" id="btn-resumen" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all bg-emerald-500 text-slate-950">🏆 Clasificación</button>
-                <button onclick="switchTab('ficha')" id="btn-ficha" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">👤 Ficha Técnica</button>
-                <button onclick="switchTab('parejas')" id="btn-parejas" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">🤝 Parejas</button>
-                <button onclick="switchTab('partidos')" id="btn-partidos" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">🕒 Historial</button>
-                <button onclick="switchTab('logistica')" id="btn-logistica" class="tab-btn px-3 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all text-slate-400 hover:text-white">💰 Finanzas</button>
+            <div class="sidebar-item" onclick="switchTab('ficha')" id="nav-ficha">
+                <span class="icon">👤</span><span class="label">Ficha Técnica</span>
             </div>
+            <div class="sidebar-item" onclick="switchTab('tactico')" id="nav-tactico">
+                <span class="icon">🕸️</span><span class="label">Análisis Táctico</span>
+            </div>
+            <div class="sidebar-item" onclick="switchTab('parejas')" id="nav-parejas">
+                <span class="icon">🤝</span><span class="label">Parejas</span>
+            </div>
+            <div class="sidebar-item" onclick="switchTab('partidos')" id="nav-partidos">
+                <span class="icon">🕒</span><span class="label">Historial</span>
+            </div>
+            <div class="sidebar-item" onclick="switchTab('logistica')" id="nav-logistica">
+                <span class="icon">💰</span><span class="label">Finanzas</span>
+            </div>
+        </div>
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+            <span class="toggle-icon">›</span>
         </div>
     </nav>
 
-    <div id="loading" class="max-w-7xl mx-auto p-8 text-center text-slate-400">
-        <p id="loading-text" class="text-xl animate-pulse">⚡ Extrayendo datos y calculando estadísticas inteligentes...</p>
-        <div id="error-box" class="hidden mt-4 p-4 bg-red-900/50 border border-red-700 rounded-xl text-red-200 text-sm font-mono max-w-xl mx-auto text-left"></div>
+    <!-- PANEL FILTROS DERECHO -->
+    <div id="filter-panel">
+        <div class="filter-toggle-btn" onclick="toggleFilterPanel()">
+            <span class="filter-toggle-icon">⚙️</span>
+            <span class="filter-toggle-label">FILTROS</span>
+        </div>
+
+        <!-- Icono colapsado -->
+        <div class="filter-collapsed-icon">
+            <span title="Filtros de fecha" style="font-size:1rem;color:#475569;">📅</span>
+            <span title="Tipo de partido" style="font-size:1rem;color:#475569;">🔍</span>
+        </div>
+
+        <!-- Contenido expandido -->
+        <div class="filter-body">
+            <div class="filter-section filter-expanded-content">
+                <div class="filter-section-title">Rango de Fechas</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <div>
+                        <label style="font-size:0.65rem;color:#64748b;font-weight:700;display:block;margin-bottom:4px;">DESDE</label>
+                        <input type="date" id="dateStart" onchange="aplicarFiltrosGlobales()" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px 8px;font-size:0.75rem;width:100%;box-sizing:border-box;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.65rem;color:#64748b;font-weight:700;display:block;margin-bottom:4px;">HASTA</label>
+                        <input type="date" id="dateEnd" onchange="aplicarFiltrosGlobales()" style="background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:6px 8px;font-size:0.75rem;width:100%;box-sizing:border-box;">
+                    </div>
+                    <button onclick="setDefaultDates()" style="background:rgba(6,78,59,0.4);color:#34d399;border:1px solid rgba(16,185,129,0.3);border-radius:6px;padding:6px;font-size:0.7rem;font-weight:700;width:100%;cursor:pointer;margin-top:2px;">Este Año</button>
+                    <button onclick="clearDates()" style="background:rgba(78,52,6,0.4);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);border-radius:6px;padding:6px;font-size:0.7rem;font-weight:700;width:100%;cursor:pointer;">Ver Todo</button>
+                </div>
+            </div>
+
+            <div class="filter-section filter-expanded-content">
+                <div class="filter-section-title">Tipo de Jornada</div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <button onclick="toggleDayTypeFilter('finde')" id="filter-finde" style="background:rgba(51,65,85,0.5);color:#94a3b8;border:1px solid #334155;border-radius:6px;padding:7px;font-size:0.72rem;font-weight:700;width:100%;cursor:pointer;text-align:left;padding-left:10px;transition:all 0.2s;">
+                        🏖️ Fin de Semana
+                    </button>
+                    <button onclick="toggleDayTypeFilter('semana')" id="filter-semana" style="background:rgba(51,65,85,0.5);color:#94a3b8;border:1px solid #334155;border-radius:6px;padding:7px;font-size:0.72rem;font-weight:700;width:100%;cursor:pointer;text-align:left;padding-left:10px;transition:all 0.2s;">
+                        💼 Entre Semana
+                    </button>
+                </div>
+            </div>
+
+            <div class="filter-section filter-expanded-content">
+                <div class="filter-section-title">Estado</div>
+                <div style="font-size:0.72rem;color:#475569;text-align:center;padding:4px 0;" id="filter-status-label">
+                    Histórico Completo
+                </div>
+            </div>
+        </div>
     </div>
 
-    <main id="main-content" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 hidden space-y-6">
-        <section id="tab-resumen" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Partidos Liga <span id="rango-badge" class="ml-2 text-[10px] bg-slate-700 px-2 py-0.5 rounded text-emerald-400">Este Año</span></span><span id="kpi-partidos" class="text-4xl font-black text-white mt-2">0</span></div>
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Líder de la Tabla</span><span id="kpi-lider" class="text-2xl font-black text-emerald-400 mt-2">-</span></div>
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between relative overflow-hidden"><div class="absolute -right-4 -top-4 opacity-10 text-7xl">🔥</div><span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Pareja Letal</span><span id="kpi-pareja" class="text-xl font-black text-amber-400 mt-2 z-10">-</span></div>
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-400">🏅 Rendimiento General</h3><p class="text-xs text-slate-500 mb-4">* % V calculado sin empates. Ordenado por % Puntuación.</p><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-[10px] sm:text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">#</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-right">% P</th></tr></thead><tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-xs sm:text-sm"></tbody></table></div></div>
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><h3 class="text-lg font-bold mb-4 text-slate-200">📊 % Puntuación General</h3><div class="relative h-64 sm:h-96 flex items-center justify-center"><canvas id="rankingChart"></canvas></div></div>
-            <!-- NUEVA PESTAÑA FICHA TÉCNICA -->
-            
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">📊 Resultados Habituales</h3><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-4">Jugador</th><th class="p-4 text-center">Set 1</th><th class="p-4 text-center">Set 2</th><th class="p-4 text-center">Set 3</th></tr></thead><tbody id="habituales-tbody" class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
-            <div class="bg-gradient-to-r from-amber-900/10 to-emerald-900/10 border border-slate-700 rounded-2xl overflow-hidden"><button onclick="toggleAdvancedStats()" class="w-full p-6 text-left flex justify-between items-center hover:bg-slate-800/50 transition-colors"><h3 class="text-lg font-bold text-white flex items-center gap-2">🌟 Estadísticas por Meses</h3><span id="adv-stats-icon" class="text-2xl text-emerald-400 transform transition-transform">+</span></button><div id="advanced-stats-container" class="hidden px-6 pb-6 space-y-3"></div></div>
-            
-            <!-- CURIOSIDADES -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🧊 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
-                <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">📅 El Día Maldito</h3><p id="cur-dia" class="text-sm text-slate-400">Calculando...</p></div>
-            </div>
+    <!-- CUERPO PRINCIPAL -->
+    <div id="app-body">
+        <div id="topbar">
+            <div class="topbar-title">🎾 PADEL AMIGOS <span style="background:#10b981;color:#0f172a;font-size:0.6rem;padding:1px 6px;border-radius:999px;margin-left:4px;vertical-align:middle;">2026</span></div>
+            <div style="font-size:0.75rem;color:#475569;" id="topbar-range">Histórico Completo</div>
+        </div>
 
-            <!-- LAYOUT MATRIX + RESULTADOS -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                
-                <!-- HEATMAP (IZQUIERDA) -->
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col items-center">
-                    <h3 class="text-xl font-black mb-2 text-sky-400">🕸️ La Matriz de Dominancia</h3>
-                    <p class="text-xs text-slate-500 mb-6 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
-                    <div class="w-full overflow-x-auto pb-4">
-                        <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
+        <div id="loading">
+            <p id="loading-text" class="text-xl animate-pulse">⚡ Extrayendo datos y calculando estadísticas inteligentes...</p>
+            <div id="error-box" class="hidden mt-4 p-4 bg-red-900/50 border border-red-700 rounded-xl text-red-200 text-sm font-mono max-w-xl mx-auto text-left"></div>
+        </div>
+
+        <div id="main-content">
+            <div id="content-area">
+
+                <!-- TAB 1: CLASIFICACIÓN -->
+                <section id="tab-resumen" class="tab-content space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Partidos Liga <span id="rango-badge" class="ml-2 text-[10px] bg-slate-700 px-2 py-0.5 rounded text-emerald-400">Este Año</span></span><span id="kpi-partidos" class="text-4xl font-black text-white mt-2">0</span></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Líder de la Tabla</span><span id="kpi-lider" class="text-2xl font-black text-emerald-400 mt-2">-</span></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between relative overflow-hidden"><div class="absolute -right-4 -top-4 opacity-10 text-7xl">🔥</div><span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Pareja Letal</span><span id="kpi-pareja" class="text-xl font-black text-amber-400 mt-2 z-10">-</span></div>
                     </div>
-                </div>
-
-                <!-- HISTOGRAMA DE RESULTADOS (DERECHA) -->
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col">
-                    <h3 class="text-xl font-black mb-4 text-amber-400">📊 Frecuencia de Sets</h3>
-                    <select id="result-selector" onchange="renderResultChart()" class="w-full bg-slate-900 border border-slate-700 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer mb-6">
-                        <option value="">Selecciona un resultado de set...</option>
-                        <option value="6-0">6-0 (Panzerwager)</option>
-                        <option value="6-1">6-1</option>
-                        <option value="6-2">6-2</option>
-                        <option value="6-3">6-3</option>
-                        <option value="6-4">6-4</option>
-                        <option value="7-5">7-5 (Cierre)</option>
-                        <option value="7-6">7-6 (Tie Break)</option>
-                        <option value="0-6">0-6 (Panzerwager invertido)</option>
-                        <option value="1-6">1-6</option>
-                        <option value="2-6">2-6</option>
-                        <option value="3-6">3-6</option>
-                        <option value="4-6">4-6</option>
-                        <option value="5-7">5-7 (Cierre invertido)</option>
-                        <option value="6-7">6-7 (Tie Break invertido)</option>
-                    </select>
-                    <div class="relative h-80 flex items-center justify-center">
-                        <canvas id="resultChart"></canvas>
-                        <p id="result-placeholder" class="text-slate-500 text-sm text-center absolute">Selecciona un resultado para ver su distribución</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-400">🏅 Rendimiento General</h3><p class="text-xs text-slate-500 mb-4">* % V calculado sin empates. Ordenado por % Puntuación.</p><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-[10px] sm:text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">#</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-right">% P</th></tr></thead><tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-xs sm:text-sm"></tbody></table></div></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
                     </div>
-                </div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between"><h3 class="text-lg font-bold mb-4 text-slate-200">📊 % Puntuación General</h3><div class="relative h-64 sm:h-96 flex items-center justify-center"><canvas id="rankingChart"></canvas></div></div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">📊 Resultados Habituales</h3><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-4">Jugador</th><th class="p-4 text-center">Set 1</th><th class="p-4 text-center">Set 2</th><th class="p-4 text-center">Set 3</th></tr></thead><tbody id="habituales-tbody" class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
+                    <div class="bg-gradient-to-r from-amber-900/10 to-emerald-900/10 border border-slate-700 rounded-2xl overflow-hidden"><button onclick="toggleAdvancedStats()" class="w-full p-6 text-left flex justify-between items-center hover:bg-slate-800/50 transition-colors"><h3 class="text-lg font-bold text-white flex items-center gap-2">🌟 Estadísticas por Meses</h3><span id="adv-stats-icon" class="text-2xl text-emerald-400 transform transition-transform">+</span></button><div id="advanced-stats-container" class="hidden px-6 pb-6 space-y-3"></div></div>
+                </section>
 
-            </div>
-        </section>
-        <section id="tab-ficha" class="tab-content hidden space-y-0">
-            <div class="mb-6 pl-2 sm:pl-4">
-                <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-3 tracking-wide">
-                    <span class="text-3xl sm:text-4xl">🗂️</span> Archivo de Jugadores
-                </h1>
-                <p class="text-slate-400 mt-1 font-medium text-xs sm:text-sm">Haz clic en las pestañas para extraer el expediente confidencial.</p>
-            </div>
-
-            <!-- PESTAÑAS DE CARPETAS (Los nombres de jugadores) -->
-            <div id="player-folder-tabs" class="flex items-end pl-2 sm:pl-6 overflow-visible w-full overflow-x-auto hide-scrollbar">
-            </div>
-
-            <!-- CONTENEDOR DEL EXPEDIENTE (El contenido) -->
-            <div class="bg-slate-800 border border-slate-600 rounded-b-2xl rounded-tr-2xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] p-6 sm:p-10 relative z-50 -mt-[1px] min-h-[400px] transition-all duration-300">
-                
-                <div id="player-stats-container" class="hidden animate-fade-in">
-                    
-                    <!-- PESTAÑAS INTERNAS (Resumen, Evolución, Radar) -->
-                    <div class="flex gap-2 mb-6 border-b border-slate-700 pb-3">
-                        <button onclick="switchProfileTab('resumen')" id="profile-btn-resumen" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-500 text-slate-950">📊 Resumen</button>
-                        <button onclick="switchProfileTab('evolucion')" id="profile-btn-evolucion" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">📈 Evolución</button>
-                        <button onclick="switchProfileTab('radar')" id="profile-btn-radar" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🕸️ Radar</button>
+                <!-- TAB 2: FICHA TÉCNICA -->
+                <section id="tab-ficha" class="tab-content hidden space-y-0">
+                    <div class="mb-6 pl-2 sm:pl-4">
+                        <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-3 tracking-wide">
+                            <span class="text-3xl sm:text-4xl">🗂️</span> Archivo de Jugadores
+                        </h1>
+                        <p class="text-slate-400 mt-1 font-medium text-xs sm:text-sm">Haz clic en las pestañas para extraer el expediente confidencial.</p>
                     </div>
-
-                    <!-- PESTAÑA INTERNA 1: RESUMEN (Diseño Expediente) -->
-                    <div id="profile-tab-resumen" class="profile-tab-content">
-                        <div class="border-b border-slate-700 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <h2 class="text-xl sm:text-2xl font-black text-white tracking-widest uppercase">
-                                EXPEDIENTE: <span id="prof-nombre" class="text-emerald-400">#001 - JUGADOR</span>
-                            </h2>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <!-- Columna Izquierda: Avatar y Win Rate -->
-                            <div class="bg-slate-900/60 rounded-xl border border-slate-700 p-6 flex flex-col items-center justify-center shadow-inner">
-                                <div class="w-28 h-28 sm:w-32 sm:h-32 bg-slate-800 rounded-full border-4 border-slate-600 mb-4 flex items-center justify-center overflow-hidden relative shadow-lg">
-                                    <span class="text-6xl opacity-20 transform translate-y-2">👤</span>
-                                </div>
-                                <h3 id="prof-nombre-card" class="text-2xl font-black text-slate-200 tracking-wide">-</h3>
-                                <div class="text-5xl font-black text-white mt-4"><span id="prof-winrate-main">0%</span></div>
-                                <div class="text-xs text-slate-500 font-bold mt-1">(<span id="prof-victorias-main">0</span>V / <span id="prof-partidosJug-main">0</span>PJ)</div>
-                                <div id="profile-badges" class="flex flex-wrap gap-2 mt-4 justify-center"></div>
+                    <div id="player-folder-tabs" class="flex items-end pl-2 sm:pl-6 overflow-visible w-full overflow-x-auto hide-scrollbar"></div>
+                    <div class="bg-slate-800 border border-slate-600 rounded-b-2xl rounded-tr-2xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] p-6 sm:p-10 relative z-50 -mt-[1px] min-h-[400px] transition-all duration-300">
+                        <div id="player-stats-container" class="hidden animate-fade-in">
+                            <div class="flex gap-2 mb-6 border-b border-slate-700 pb-3">
+                                <button onclick="switchProfileTab('resumen')" id="profile-btn-resumen" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-500 text-slate-950">📊 Resumen</button>
+                                <button onclick="switchProfileTab('evolucion')" id="profile-btn-evolucion" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">📈 Evolución</button>
+                                <button onclick="switchProfileTab('insignias')" id="profile-btn-insignias" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🎖️ Insignias</button>
+                                <button onclick="switchProfileTab('radar')" id="profile-btn-radar" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🕸️ Radar</button>
                             </div>
-
-                            <!-- Columna Derecha: Stats y Gráficos -->
-                            <div class="lg:col-span-2 grid grid-cols-2 gap-4">
-                                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center">
-                                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Posición Favorita</span>
-                                    <span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span>
-                                    <span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span>
+                            <div id="profile-tab-resumen" class="profile-tab-content">
+                                <div class="border-b border-slate-700 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                    <h2 class="text-xl sm:text-2xl font-black text-white tracking-widest uppercase">EXPEDIENTE: <span id="prof-nombre" class="text-emerald-400">#001 - JUGADOR</span></h2>
                                 </div>
-                                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center">
-                                     <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Compañero Frecuente</span>
-                                     <span id="prof-most-mate" class="text-sm font-bold text-sky-400 block mt-2">-</span>
-                                </div>
-                                <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-amber-900/20 p-4 rounded-xl border border-amber-900/30 flex flex-col justify-center">
-                                    <span class="text-[10px] text-amber-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">🏆 Socio de Oro</span>
-                                    <span id="prof-socio" class="text-xl font-black text-amber-400">-</span>
-                                    <span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold mt-1">-</span>
-                                </div>
-                                <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-red-900/20 p-4 rounded-xl border border-red-900/30 flex flex-col justify-center">
-                                    <span class="text-[10px] text-red-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">⚠️ El Némesis</span>
-                                    <span id="prof-nemesis" class="text-xl font-black text-red-400">-</span>
-                                </div>
-                                <div class="col-span-2 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                                    <h4 class="text-md font-bold mb-2 text-slate-300 uppercase tracking-wider text-center">🎾 Rendimiento por Posición</h4>
-                                    <div class="grid grid-cols-2 gap-8 mt-2">
-                                        <div class="flex flex-col items-center"><h5 class="text-sm font-black text-emerald-400 mb-1">REVÉS</h5><div class="w-28 h-28 relative"><canvas id="chartReves"></canvas></div></div>
-                                        <div class="flex flex-col items-center"><h5 class="text-sm font-black text-sky-400 mb-1">DRIVE</h5><div class="w-28 h-28 relative"><canvas id="chartDrive"></canvas></div></div>
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <div class="bg-slate-900/60 rounded-xl border border-slate-700 p-6 flex flex-col items-center justify-center shadow-inner">
+                                        <div class="w-28 h-28 sm:w-32 sm:h-32 bg-slate-800 rounded-full border-4 border-slate-600 mb-4 flex items-center justify-center overflow-hidden relative shadow-lg">
+                                            <img id="prof-foto" src="" alt="Foto" class="w-full h-full object-cover hidden">
+                                            <span id="prof-foto-placeholder" class="text-6xl opacity-20 transform translate-y-2">👤</span>
+                                        </div>
+                                        <h3 id="prof-nombre-card" class="text-2xl font-black text-slate-200 tracking-wide">-</h3>
+                                        <div class="text-5xl font-black text-white mt-4"><span id="prof-winrate-main">0%</span></div>
+                                        <div class="text-xs text-slate-500 font-bold mt-1">(<span id="prof-victorias-main">0</span>V / <span id="prof-partidosJug-main">0</span>PJ)</div>
+                                    </div>
+                                    <div class="lg:col-span-2 grid grid-cols-2 gap-4">
+                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Posición Favorita</span><span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span><span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span></div>
+                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Compañero Frecuente</span><span id="prof-most-mate" class="text-sm font-bold text-sky-400 block mt-2">-</span></div>
+                                        <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-amber-900/20 p-4 rounded-xl border border-amber-900/30 flex flex-col justify-center"><span class="text-[10px] text-amber-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">🏆 Socio de Oro</span><span id="prof-socio" class="text-xl font-black text-amber-400">-</span><span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold mt-1">-</span></div>
+                                        <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-red-900/20 p-4 rounded-xl border border-red-900/30 flex flex-col justify-center"><span class="text-[10px] text-red-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">⚠️ El Némesis</span><span id="prof-nemesis" class="text-xl font-black text-red-400">-</span></div>
+                                        <div class="col-span-2 bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-2 text-slate-300 uppercase tracking-wider text-center">🎾 Rendimiento por Posición</h4><div class="grid grid-cols-2 gap-8 mt-2"><div class="flex flex-col items-center"><h5 class="text-sm font-black text-emerald-400 mb-1">REVÉS</h5><div class="w-28 h-28 relative"><canvas id="chartReves"></canvas></div></div><div class="flex flex-col items-center"><h5 class="text-sm font-black text-sky-400 mb-1">DRIVE</h5><div class="w-28 h-28 relative"><canvas id="chartDrive"></canvas></div></div></div></div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div id="badge-detail" class="hidden mt-6 bg-slate-900 p-4 rounded-xl border border-amber-900/30 transition-all duration-300"></div>
-                    </div>
-
-                    <!-- PESTAÑA INTERNA 2: EVOLUCIÓN -->
-                    <div id="profile-tab-evolucion" class="profile-tab-content hidden space-y-6">
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                            <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">📈 Evolución Mensual (Global)</h4>
-                            <div class="relative h-64"><canvas id="chartMonthlyEvolution"></canvas></div>
-                        </div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-emerald-900/30 bg-gradient-to-br from-slate-900/50 to-emerald-900/10">
-                            <h4 class="text-md font-bold mb-4 text-emerald-300 uppercase tracking-wider">📊 Evolución en Rango (Partido a Partido)</h4>
-                            <div class="relative h-64"><canvas id="chartMatchEvolution"></canvas></div>
+                            <div id="profile-tab-evolucion" class="profile-tab-content hidden space-y-6">
+                                <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">📈 Evolución Mensual (Global)</h4><div class="relative h-64"><canvas id="chartMonthlyEvolution"></canvas></div></div>
+                                <div class="bg-slate-900/50 p-4 rounded-xl border border-emerald-900/30 bg-gradient-to-br from-slate-900/50 to-emerald-900/10"><h4 class="text-md font-bold mb-4 text-emerald-300 uppercase tracking-wider">📊 Evolución en Rango (Partido a Partido)</h4><div class="relative h-64"><canvas id="chartMatchEvolution"></canvas></div></div>
+                            </div>
+                            <div id="profile-tab-insignias" class="profile-tab-content hidden">
+                                <div id="badge-detail" class="hidden mb-6 bg-slate-900 p-5 rounded-xl border border-amber-900/30 transition-all duration-300 animate-fade-in"></div>
+                                <div id="profile-badges" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+                            </div>
+                            <div id="profile-tab-radar" class="profile-tab-content hidden space-y-6">
+                                <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">🕸️ Perfil Radar (vs Media Grupo)</h4><div class="relative h-72"><canvas id="chartRadar"></canvas></div></div>
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                    <!-- PESTAÑA INTERNA 3: RADAR -->
-                    <div id="profile-tab-radar" class="profile-tab-content hidden space-y-6">
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                            <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">🕸️ Perfil Radar (vs Media Grupo)</h4>
-                            <div class="relative h-72"><canvas id="chartRadar"></canvas></div>
+                <!-- TAB 3: ANÁLISIS TÁCTICO -->
+                <section id="tab-tactico" class="tab-content hidden space-y-6">
+                    <!-- CURIOSIDADES -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🧊 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">📅 El Día Maldito</h3><p id="cur-dia" class="text-sm text-slate-400">Calculando...</p></div>
+                    </div>
+                    <!-- MATRIX + FRECUENCIA -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col items-center">
+                            <h3 class="text-xl font-black mb-2 text-sky-400">🕸️ La Matriz de Dominancia</h3>
+                            <p class="text-xs text-slate-500 mb-6 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
+                            <div class="w-full overflow-x-auto pb-4">
+                                <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
+                            </div>
+                        </div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col">
+                            <h3 class="text-xl font-black mb-4 text-amber-400">📊 Frecuencia de Sets</h3>
+                            <select id="result-selector" onchange="renderResultChart()" class="w-full bg-slate-900 border border-slate-700 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer mb-6">
+                                <option value="">Selecciona un resultado de set...</option>
+                                <option value="6-0">6-0 (Panzerwager)</option>
+                                <option value="6-1">6-1</option>
+                                <option value="6-2">6-2</option>
+                                <option value="6-3">6-3</option>
+                                <option value="6-4">6-4</option>
+                                <option value="7-5">7-5 (Cierre)</option>
+                                <option value="7-6">7-6 (Tie Break)</option>
+                                <option value="0-6">0-6 (Panzerwager invertido)</option>
+                                <option value="1-6">1-6</option>
+                                <option value="2-6">2-6</option>
+                                <option value="3-6">3-6</option>
+                                <option value="4-6">4-6</option>
+                                <option value="5-7">5-7 (Cierre invertido)</option>
+                                <option value="6-7">6-7 (Tie Break invertido)</option>
+                            </select>
+                            <div class="relative h-80 flex items-center justify-center">
+                                <canvas id="resultChart"></canvas>
+                                <p id="result-placeholder" class="text-slate-500 text-sm text-center absolute">Selecciona un resultado para ver su distribución</p>
+                            </div>
                         </div>
                     </div>
+                </section>
 
-                </div>
-            </div>
-        </section>
-        <section id="tab-parejas" class="tab-content hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">🏆 Top 3 Mejores</h3><div id="top-parejas-body" class="space-y-3"></div></div>
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-red-400">💀 Top 3 Peores</h3><div id="worst-parejas-body" class="space-y-3"></div></div>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-purple-800/50 bg-gradient-to-br from-slate-800 to-purple-900/10">
-                <h3 class="text-lg font-bold mb-4 text-purple-400">🎰 Creador de Equipos</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <select id="mm-p1" onchange="updateMMSelectors(1)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
-                    <select id="mm-p2" onchange="updateMMSelectors(2)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
-                    <select id="mm-p3" onchange="updateMMSelectors(3)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
-                    <select id="mm-p4" onchange="updateMMSelectors(4)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
-                </div>
-                <div class="grid grid-cols-5 gap-4 mb-4">
-                    <button onclick="createTeams('random')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🎲 Aleatorio</button>
-                    <button onclick="createTeams('balanced')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">⚖️ Equilibrado</button>
-                    <button onclick="createTeams('least')" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🧊 Menos Visto</button>
-                    <button onclick="createTeams('most')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🔥 Más Visto</button>
-                    <button onclick="resetMMSelectors()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition-colors text-sm">🔄 Reset</button>
-                </div>
-                <div id="mm-result" class="hidden bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center"></div>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-amber-400">⚖️ Comparador de Parejas</h3><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-2"><div><label class="text-xs text-slate-400 block mb-1">P1 (J1)</label><select id="cmp-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(1)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P1 (J2)</label><select id="cmp-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex justify-center text-2xl font-black text-red-500 py-2">VS</div><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-4"><div><label class="text-xs text-slate-400 block mb-1">P2 (J3)</label><select id="cmp-p3" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(2)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P2 (J4)</label><select id="cmp-p4" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex items-center gap-3 mb-6 bg-slate-900/50 p-3 rounded-lg border border-slate-700"><input type="checkbox" id="cmp-respectOrder" class="w-5 h-5 bg-slate-900 border-slate-700 rounded text-emerald-500 focus:ring-emerald-500 cursor-pointer"><label for="cmp-respectOrder" class="text-xs text-slate-300 cursor-pointer font-bold">Respetar posición exacta</label></div><button onclick="compararParejas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-2 rounded-xl transition-colors">Comparar Histórico</button><div id="cmp-result" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Historial</h4><div id="cmp-historial" class="text-2xl font-black text-center py-4"></div></div><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Sets Habituales</h4><div id="cmp-sets" class="text-center py-4 space-y-1"></div></div></div></div>
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-sky-400">🎾 Resultado Habitual de Pareja</h3><div class="flex flex-col sm:flex-row gap-4 items-end mb-4"><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 1</label><select id="hab-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center text-xl font-bold text-slate-500 pt-4 px-2">&</div><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 2</label><select id="hab-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><button onclick="calcHabPareja()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">Ver Resultado</button></div><div id="hab-pareja-result" class="hidden mt-4 bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center font-mono"></div></div>
-        </section>
-
-        <section id="tab-partidos" class="tab-content hidden space-y-4">
-             <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col gap-4">
-                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                    <h3 class="text-lg font-bold text-slate-200">📅 Buscador de Partidos</h3>
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <input type="text" id="searchInput" onkeyup="filterMatches()" placeholder="Ej: David Pablo (AND)" class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-sm w-full sm:w-80 focus:outline-none focus:border-emerald-500 transition">
+                <!-- TAB 4: PAREJAS -->
+                <section id="tab-parejas" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">🏆 Top 3 Mejores</h3><div id="top-parejas-body" class="space-y-3"></div></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-red-400">💀 Top 3 Peores</h3><div id="worst-parejas-body" class="space-y-3"></div></div>
                     </div>
-                </div>
-                <div class="flex flex-wrap gap-2 border-t border-slate-700 pt-3">
-                    <span class="text-xs text-slate-500 font-bold self-center mr-1">Filtros:</span>
-                    <button onclick="filterRecorded()" id="btn-videoteca" class="tag-btn text-xs bg-purple-900/30 text-purple-400 hover:bg-purple-800/50 rounded-lg px-3 py-1 font-bold transition-colors border border-purple-800/50">🎬 Videoteca</button>
-                    <button onclick="toggleTagFilter('3set')" id="tag-3set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">3️⃣ 3 Sets</button>
-                    <button onclick="toggleTagFilter('2set')" id="tag-2set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">2️⃣ 2 Sets</button>
-                    <button onclick="toggleTagFilter('tb')" id="tag-tb" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">⛓️ Tie Break</button>
-                    <button onclick="toggleTagFilter('empate')" id="tag-empate" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">🤝 Empate</button>
-                    <button onclick="toggleTagFilter('bolas')" id="tag-bolas" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">🎾 Bolas Nuevas</button>
-                </div>
-            </div>
-            <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><div class="overflow-x-auto max-h-[600px] overflow-y-auto"><table class="w-full text-left border-collapse" id="matchesTable"><thead class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700 sticky top-0 z-10"><tr><th class="p-4">#</th><th class="p-4">Fecha</th><th class="p-4">Pista</th><th class="p-4">Pareja 1</th><th class="p-4">Pareja 2</th><th class="p-4 text-center">Resultado</th><th class="p-4">Ganadores</th></tr></thead><tbody class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
-        </section>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-purple-800/50 bg-gradient-to-br from-slate-800 to-purple-900/10">
+                        <h3 class="text-lg font-bold mb-4 text-purple-400">🎰 Creador de Equipos</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <select id="mm-p1" onchange="updateMMSelectors(1)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
+                            <select id="mm-p2" onchange="updateMMSelectors(2)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
+                            <select id="mm-p3" onchange="updateMMSelectors(3)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
+                            <select id="mm-p4" onchange="updateMMSelectors(4)" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div class="grid grid-cols-5 gap-4 mb-4">
+                            <button onclick="createTeams('random')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🎲 Aleatorio</button>
+                            <button onclick="createTeams('balanced')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">⚖️ Equilibrado</button>
+                            <button onclick="createTeams('least')" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🧊 Menos Visto</button>
+                            <button onclick="createTeams('most')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded-lg transition-colors text-sm">🔥 Más Visto</button>
+                            <button onclick="resetMMSelectors()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition-colors text-sm">🔄 Reset</button>
+                        </div>
+                        <div id="mm-result" class="hidden bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center"></div>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-amber-400">⚖️ Comparador de Parejas</h3><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-2"><div><label class="text-xs text-slate-400 block mb-1">P1 (J1)</label><select id="cmp-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(1)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P1 (J2)</label><select id="cmp-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex justify-center text-2xl font-black text-red-500 py-2">VS</div><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-4"><div><label class="text-xs text-slate-400 block mb-1">P2 (J3)</label><select id="cmp-p3" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(2)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P2 (J4)</label><select id="cmp-p4" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex items-center gap-3 mb-6 bg-slate-900/50 p-3 rounded-lg border border-slate-700"><input type="checkbox" id="cmp-respectOrder" class="w-5 h-5 bg-slate-900 border-slate-700 rounded text-emerald-500 focus:ring-emerald-500 cursor-pointer"><label for="cmp-respectOrder" class="text-xs text-slate-300 cursor-pointer font-bold">Respetar posición exacta</label></div><button onclick="compararParejas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-2 rounded-xl transition-colors">Comparar Histórico</button><div id="cmp-result" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Historial</h4><div id="cmp-historial" class="text-2xl font-black text-center py-4"></div></div><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Sets Habituales</h4><div id="cmp-sets" class="text-center py-4 space-y-1"></div></div></div></div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-sky-400">🎾 Resultado Habitual de Pareja</h3><div class="flex flex-col sm:flex-row gap-4 items-end mb-4"><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 1</label><select id="hab-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center text-xl font-bold text-slate-500 pt-4 px-2">&</div><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 2</label><select id="hab-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><button onclick="calcHabPareja()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">Ver Resultado</button></div><div id="hab-pareja-result" class="hidden mt-4 bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center font-mono"></div></div>
+                </section>
 
-        <section id="tab-logistica" class="tab-content hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gradient-to-r from-amber-900/20 to-red-900/20 border border-amber-800/50 p-6 rounded-2xl text-amber-200"><h3 class="text-xl font-black mb-2 flex items-center gap-2">💸 El Deudor del Grupo</h3><p id="deudor-insight" class="text-sm text-amber-300/80">Calculando...</p></div>
-                <div class="bg-gradient-to-r from-emerald-900/20 to-sky-900/20 border border-emerald-800/50 p-6 rounded-2xl text-emerald-200"><h3 class="text-xl font-black mb-2 flex items-center gap-2">🎾 El Proveedor de Bolas</h3><p id="bolas-insight" class="text-sm text-emerald-300/80">Calculando...</p></div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-amber-400">💰 Pagos de Reservas</h3><div class="h-64 flex items-center justify-center"><canvas id="pagosChart"></canvas></div></div>
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">🎾 Aportaciones de Bolas</h3><div class="h-64 flex items-center justify-center"><canvas id="bolasChart"></canvas></div></div>
-            </div>
-        </section>
-    </main>
+                <!-- TAB 5: HISTORIAL -->
+                <section id="tab-partidos" class="tab-content hidden space-y-4">
+                    <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col gap-4">
+                        <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                            <h3 class="text-lg font-bold text-slate-200">📅 Buscador de Partidos</h3>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <input type="text" id="searchInput" onkeyup="filterMatches()" placeholder="Ej: David Pablo (AND)" class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-sm w-full sm:w-80 focus:outline-none focus:border-emerald-500 transition">
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 border-t border-slate-700 pt-3">
+                            <span class="text-xs text-slate-500 font-bold self-center mr-1">Filtros:</span>
+                            <button onclick="filterRecorded()" id="btn-videoteca" class="tag-btn text-xs bg-purple-900/30 text-purple-400 hover:bg-purple-800/50 rounded-lg px-3 py-1 font-bold transition-colors border border-purple-800/50">🎬 Videoteca</button>
+                            <button onclick="toggleTagFilter('3set')" id="tag-3set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">3️⃣ 3 Sets</button>
+                            <button onclick="toggleTagFilter('2set')" id="tag-2set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">2️⃣ 2 Sets</button>
+                            <button onclick="toggleTagFilter('tb')" id="tag-tb" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">⛓️ Tie Break</button>
+                            <button onclick="toggleTagFilter('empate')" id="tag-empate" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">🤝 Empate</button>
+                            <button onclick="toggleTagFilter('bolas')" id="tag-bolas" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">🎾 Bolas Nuevas</button>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><div class="overflow-x-auto max-h-[600px] overflow-y-auto"><table class="w-full text-left border-collapse" id="matchesTable"><thead class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700 sticky top-0 z-10"><tr><th class="p-4">#</th><th class="p-4">Fecha</th><th class="p-4">Pista</th><th class="p-4">Pareja 1</th><th class="p-4">Pareja 2</th><th class="p-4 text-center">Resultado</th><th class="p-4">Ganadores</th></tr></thead><tbody class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
+                </section>
+
+                <!-- TAB 6: FINANZAS -->
+                <section id="tab-logistica" class="tab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-r from-amber-900/20 to-red-900/20 border border-amber-800/50 p-6 rounded-2xl text-amber-200"><h3 class="text-xl font-black mb-2 flex items-center gap-2">💸 El Deudor del Grupo</h3><p id="deudor-insight" class="text-sm text-amber-300/80">Calculando...</p></div>
+                        <div class="bg-gradient-to-r from-emerald-900/20 to-sky-900/20 border border-emerald-800/50 p-6 rounded-2xl text-emerald-200"><h3 class="text-xl font-black mb-2 flex items-center gap-2">🎾 El Proveedor de Bolas</h3><p id="bolas-insight" class="text-sm text-emerald-300/80">Calculando...</p></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-amber-400">💰 Pagos de Reservas</h3><div class="h-64 flex items-center justify-center"><canvas id="pagosChart"></canvas></div></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">🎾 Aportaciones de Bolas</h3><div class="h-64 flex items-center justify-center"><canvas id="bolasChart"></canvas></div></div>
+                    </div>
+                </section>
+
+            </div><!-- /content-area -->
+        </div><!-- /main-content -->
+    </div><!-- /app-body -->
 
     <script>
         const urlGoogleSheets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTe6pQbD3p4NroFXhb1ypqFS9JmXeJjZq90ebqDEleUkR80fvdVarM1cXyaXU8CDY1BwTwuWV1OBCaB/pub?gid=2133685853&single=true&output=csv";
@@ -286,72 +530,148 @@
         const POINTS_SYS = [10, 7, 5, 3, 1]; const TRAMO_SIZE = 20;
         const TRAMO1_END_DATE = new Date('2026-05-16T23:59:59').getTime();
         const PLAYER_COLORS = { 'Vijay': '#22c55e', 'Pablo': '#ef4444', 'Jordi': '#3b82f6', 'David': '#22d3ee', 'Garrido': '#a78bfa', 'Jesus': '#ec4899', 'Josemi': '#f97316', 'Lucas': '#fbbf24' };
+        const PLAYER_IMAGES = { 'Garrido': './garrido.png', 'Pablo': './pablo.png', 'David': './david.png', 'Jordi': './jordi.png', 'Vijay': './vijay.png' };
         let rawDataGlobal = []; let filteredDataGlobal = []; let jugadoresGlobales = [];
         let selectedPlayerName = "";
         let chartRevesInstance = null; let chartDriveInstance = null; let chartMonthlyInstance = null; let chartMatchInstance = null; let globalBadgeStats = {};
         let tramosData = {}; let globalRankingArray = []; let activeTagFilters = []; let globalJugadoresStats = {};
         let globalFaceOffs = {}; let globalPairFaceOffs = {}; let globalBadges = [];
+        let activeDayTypeFilter = null; // 'finde' | 'semana' | null
+
+        // ===== SIDEBAR & FILTER PANEL =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('expanded');
+        }
+        function toggleFilterPanel() {
+            const panel = document.getElementById('filter-panel');
+            const contentArea = document.getElementById('content-area');
+            panel.classList.toggle('expanded');
+            if (panel.classList.contains('expanded')) {
+                contentArea.classList.add('filter-expanded');
+            } else {
+                contentArea.classList.remove('filter-expanded');
+            }
+        }
+
+        // ===== DAY TYPE FILTER =====
+        function toggleDayTypeFilter(type) {
+            if (activeDayTypeFilter === type) {
+                activeDayTypeFilter = null;
+            } else {
+                activeDayTypeFilter = type;
+            }
+            // Update button styles
+            ['finde','semana'].forEach(t => {
+                let btn = document.getElementById('filter-' + t);
+                if (activeDayTypeFilter === t) {
+                    btn.style.background = 'rgba(16,185,129,0.25)';
+                    btn.style.color = '#34d399';
+                    btn.style.borderColor = 'rgba(16,185,129,0.5)';
+                } else {
+                    btn.style.background = 'rgba(51,65,85,0.5)';
+                    btn.style.color = '#94a3b8';
+                    btn.style.borderColor = '#334155';
+                }
+            });
+            aplicarFiltrosGlobales();
+        }
 
         function getModes(arr) { if(arr.length === 0) return "-"; let freq = {}; arr.forEach(e => { freq[e] = (freq[e] || 0) + 1; }); let max = 0; for(let e in freq) { if(freq[e] > max) max = freq[e]; } let modes = []; for(let e in freq) { if(freq[e] === max) modes.push(e); } return modes.join(", "); }
         function formatScoreMode(modeStr) { if (!modeStr || modeStr === "-") return "-"; return modeStr.split(", ").map(score => { let parts = score.split("-"); if (parts.length === 2) { let p1 = parseInt(parts[0]), p2 = parseInt(parts[1]); if (p1 > p2) return '<span class="text-emerald-400 font-bold">'+score+'</span>'; if (p1 < p2) return '<span class="text-red-400 font-bold">'+score+'</span>'; return '<span class="text-amber-400 font-bold">'+score+'</span>'; } return score; }).join("<span class='text-slate-500'>, </span>"); }
-        function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.getElementById('tab-' + tabId).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400', 'hover:text-white'); }); document.getElementById('btn-' + tabId).classList.remove('text-slate-400', 'hover:text-white'); document.getElementById('btn-' + tabId).classList.add('bg-emerald-500', 'text-slate-950'); }        function renderPlayerFolderTabs() {
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.querySelectorAll('.sidebar-item').forEach(btn => btn.classList.remove('active'));
+            let navEl = document.getElementById('nav-' + tabId);
+            if (navEl) navEl.classList.add('active');
+        }
+
+        function renderPlayerFolderTabs() {
             const tabsContainer = document.getElementById('player-folder-tabs');
             if(!tabsContainer) return;
             let html = '';
-            
             globalRankingArray.forEach((r, index) => {
                 const isActive = r.nombre === selectedPlayerName;
                 const zIndex = isActive ? 50 : (30 - index);
                 const pIndex = String(index + 1).padStart(3, '0');
-
-                // Clases base para el efecto carpeta
                 let tabClasses = "relative px-4 sm:px-6 py-2.5 rounded-t-xl cursor-pointer select-none transition-all duration-300 -mr-4 border-t border-l border-r border-b-0 flex items-center justify-center font-bold tracking-wider text-[11px] sm:text-sm ";
-
                 if (isActive) {
-                    // Carpeta Activa: Se une al fondo y resalta
                     tabClasses += "bg-slate-800 border-slate-600 text-emerald-400 pb-4 top-[1px] shadow-[0_-5px_15px_rgba(0,0,0,0.25)]";
                 } else {
-                    // Carpeta Inactiva: Efecto oscurecido, sube al hover
                     tabClasses += "bg-slate-900 border-slate-700 text-slate-500 hover:bg-slate-800/80 hover:-translate-y-1 hover:text-slate-300 pb-3 shadow-inner";
                 }
-
                 html += `<div onclick="selectPlayer('${r.nombre}')" class="${tabClasses}" style="z-index: ${zIndex}; min-width: 90px;">${pIndex} ${r.nombre}</div>`;
             });
-
             tabsContainer.innerHTML = html;
         }
+
         function parseCSVDate(dateStr) { if(!dateStr) return 0; dateStr = String(dateStr).trim().split(" ")[0]; let parts; if (dateStr.includes('-')) parts = dateStr.split('-'); else if (dateStr.includes('/')) parts = dateStr.split('/'); else return isNaN(new Date(dateStr).getTime()) ? 0 : new Date(dateStr).getTime(); if (parts && parts.length === 3) { let p0 = parseInt(parts[0], 10), p1 = parseInt(parts[1], 10) - 1, p2 = parseInt(parts[2], 10); if (parts[2].length === 4) return new Date(p2, p1, p0).getTime(); else return new Date(p0, p1, p2).getTime(); } return 0; }
-        function setDefaultDates() { const today = new Date(); const y = today.getFullYear(); let m = '' + (today.getMonth() + 1), d = '' + today.getDate(); if (m.length < 2) m = '0' + m; if (d.length < 2) d = '0' + d; document.getElementById('dateStart').value = y+'-01-01'; document.getElementById('dateEnd').value = y+'-'+m+'-'+d; document.getElementById('rango-badge').innerText = "Este Año"; if(rawDataGlobal.length > 0) aplicarFiltrosGlobales(); }
-        function clearDates() { document.getElementById('dateStart').value = ""; document.getElementById('dateEnd').value = ""; document.getElementById('rango-badge').innerText = "Histórico Completo"; if(rawDataGlobal.length > 0) aplicarFiltrosGlobales(); }
+
+        function setDefaultDates() {
+            const today = new Date(); const y = today.getFullYear(); let m = '' + (today.getMonth() + 1), d = '' + today.getDate();
+            if (m.length < 2) m = '0' + m; if (d.length < 2) d = '0' + d;
+            document.getElementById('dateStart').value = y+'-01-01'; document.getElementById('dateEnd').value = y+'-'+m+'-'+d;
+            document.getElementById('rango-badge').innerText = "Este Año";
+            document.getElementById('topbar-range').innerText = "Este Año";
+            document.getElementById('filter-status-label').innerText = "Este Año";
+            if(rawDataGlobal.length > 0) aplicarFiltrosGlobales();
+        }
+        function clearDates() {
+            document.getElementById('dateStart').value = ""; document.getElementById('dateEnd').value = "";
+            document.getElementById('rango-badge').innerText = "Histórico Completo";
+            document.getElementById('topbar-range').innerText = "Histórico Completo";
+            document.getElementById('filter-status-label').innerText = "Histórico Completo";
+            if(rawDataGlobal.length > 0) aplicarFiltrosGlobales();
+        }
         function toggleAdvancedStats() { let el = document.getElementById('advanced-stats-container'); let icon = document.getElementById('adv-stats-icon'); el.classList.toggle('hidden'); icon.innerText = el.classList.contains('hidden') ? '+' : '-'; }
-        function toggleExpandProfile() { let el = document.getElementById('profile-expanded'); el.classList.toggle('hidden'); renderPlayerProfile(); }
         function showBadgeDetail(id) { let badge = globalBadges.find(b => b.id === id); let player = selectedPlayerName; if(!badge || !player) return; let val = badge.winnerValues[player]; let detailDiv = document.getElementById('badge-detail'); if(!detailDiv.classList.contains('hidden') && detailDiv.dataset.currentId === id) { detailDiv.classList.add('hidden'); return; } detailDiv.dataset.currentId = id; detailDiv.classList.remove('hidden'); let formattedVal = badge.format ? badge.format(val) : val; detailDiv.innerHTML = '<div class="flex items-center gap-2 mb-2"><span class="text-2xl">'+badge.emoji+'</span><span class="text-lg font-bold text-white">'+badge.name+'</span></div><p class="text-sm text-slate-400 mb-3">'+badge.desc+'</p><div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400">'+formattedVal+'</div>'; }
 
-        window.onload = function() { Papa.parse(urlGoogleSheets, { download: true, header: true, skipEmptyLines: true, complete: function(results) { if (results && results.data && results.data.length > 0) { rawDataGlobal = results.data.map(rawRow => { let row = {}; Object.keys(rawRow).forEach(k => { if(k && rawRow[k] !== undefined && rawRow[k] !== null) { let cleanKey = String(k).replace(/[^a-zA-Z0-9\- ]/g, '').trim().toLowerCase(); row[cleanKey] = rawRow[k]; } }); return row; }).filter(r => r.fecha && String(r.fecha).trim() !== "" && String(r.fecha).trim() !== "*"); if(rawDataGlobal.length === 0) { mostrarErrorPantalla("No se han encontrado partidos válidos."); return; } document.getElementById('loading').classList.add('hidden'); document.getElementById('main-content').classList.remove('hidden'); setDefaultDates(); } else { mostrarErrorPantalla("El documento está vacío."); } }, error: function(err) { mostrarErrorPantalla("No se pudo conectar."); } }); };
+        window.onload = function() {
+            Papa.parse(urlGoogleSheets, { download: true, header: true, skipEmptyLines: true, complete: function(results) {
+                if (results && results.data && results.data.length > 0) {
+                    rawDataGlobal = results.data.map(rawRow => { let row = {}; Object.keys(rawRow).forEach(k => { if(k && rawRow[k] !== undefined && rawRow[k] !== null) { let cleanKey = String(k).replace(/[^a-zA-Z0-9\- ]/g, '').trim().toLowerCase(); row[cleanKey] = rawRow[k]; } }); return row; }).filter(r => r.fecha && String(r.fecha).trim() !== "" && String(r.fecha).trim() !== "*");
+                    if(rawDataGlobal.length === 0) { mostrarErrorPantalla("No se han encontrado partidos válidos."); return; }
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main-content').classList.add('visible');
+                    setDefaultDates();
+                } else { mostrarErrorPantalla("El documento está vacío."); }
+            }, error: function(err) { mostrarErrorPantalla("No se pudo conectar."); } });
+        };
+
         function mostrarErrorPantalla(msg) { document.getElementById('loading-text').innerText = "❌ Error"; document.getElementById('loading-text').classList.remove('animate-pulse'); document.getElementById('error-box').classList.remove('hidden'); document.getElementById('error-box').innerText = msg; }
-        
-        function selectPlayer(nombre) {
-            selectedPlayerName = nombre;
-            renderPlayerFolderTabs(); // Actualiza el estilo de las carpetas
-            renderPlayerProfile();    // Pinta los datos
+
+        function selectPlayer(nombre) { selectedPlayerName = nombre; renderPlayerFolderTabs(); renderPlayerProfile(); }
+        function switchProfileTab(tabId) { document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.add('hidden')); document.getElementById('profile-tab-' + tabId).classList.remove('hidden'); document.querySelectorAll('.profile-tab-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400', 'hover:text-white'); }); let activeBtn = document.getElementById('profile-btn-' + tabId); if(activeBtn) { activeBtn.classList.remove('text-slate-400', 'hover:text-white'); activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); } }
+
+        function aplicarFiltrosGlobales() {
+            let dStart = document.getElementById('dateStart').value, dEnd = document.getElementById('dateEnd').value;
+            let timeStart = dStart ? new Date(dStart).getTime() : 0, timeEnd = dEnd ? new Date(dEnd).getTime() + 86400000 : Infinity;
+            let rangeLabel = "Histórico Completo";
+            if (dStart && dEnd) rangeLabel = "Filtrado";
+            else if (dStart) rangeLabel = "Desde " + dStart;
+            document.getElementById('rango-badge').innerText = rangeLabel;
+            document.getElementById('topbar-range').innerText = rangeLabel;
+            document.getElementById('filter-status-label').innerText = activeDayTypeFilter ? (activeDayTypeFilter === 'finde' ? 'Fin de Semana' : 'Entre Semana') : rangeLabel;
+
+            filteredDataGlobal = rawDataGlobal.filter(row => {
+                let rowTime = parseCSVDate(row.fecha);
+                if (rowTime < timeStart || rowTime > timeEnd) return false;
+                // Filtro día de semana
+                if (activeDayTypeFilter) {
+                    let dow = new Date(rowTime).getDay(); // 0=dom, 6=sab
+                    let isFinde = (dow === 0 || dow === 6);
+                    if (activeDayTypeFilter === 'finde' && !isFinde) return false;
+                    if (activeDayTypeFilter === 'semana' && isFinde) return false;
+                }
+                return true;
+            });
+            filteredDataGlobal.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha));
+            procesarDatosInteligentes(filteredDataGlobal);
         }
-        function switchProfileTab(tabId) { 
-            document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.add('hidden')); 
-            document.getElementById('profile-tab-' + tabId).classList.remove('hidden'); 
-            document.querySelectorAll('.profile-tab-btn').forEach(btn => { 
-                btn.classList.remove('bg-emerald-500', 'text-slate-950'); 
-                btn.classList.add('text-slate-400', 'hover:text-white'); 
-            }); 
-            let activeBtn = document.getElementById('profile-btn-' + tabId); 
-            if(activeBtn) { 
-                activeBtn.classList.remove('text-slate-400', 'hover:text-white'); 
-                activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); 
-            } 
-        }
-        function aplicarFiltrosGlobales() { let dStart = document.getElementById('dateStart').value, dEnd = document.getElementById('dateEnd').value; let timeStart = dStart ? new Date(dStart).getTime() : 0, timeEnd = dEnd ? new Date(dEnd).getTime() + 86400000 : Infinity; if(dStart && dEnd) document.getElementById('rango-badge').innerText = "Filtrado"; filteredDataGlobal = rawDataGlobal.filter(row => { let rowTime = parseCSVDate(row.fecha); return rowTime >= timeStart && rowTime <= timeEnd; }); filteredDataGlobal.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); procesarDatosInteligentes(filteredDataGlobal); }
 
         function procesarDatosInteligentes(rows) {
-            let totalPartidosInternos = 0, jugadoresStats = {}, pagosCount = {}, bolasCount = {}, parejasStats = {}, jugadoresUnicosSet = new Set(), rachasData = {}; 
+            let totalPartidosInternos = 0, jugadoresStats = {}, pagosCount = {}, bolasCount = {}, parejasStats = {}, jugadoresUnicosSet = new Set(), rachasData = {};
             rows.forEach(row => {
                 let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
                 let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
@@ -376,22 +696,18 @@
             jugadoresGlobales = [...jugadoresUnicosSet].sort(); populateSelectors(jugadoresGlobales); globalJugadoresStats = jugadoresStats;
             let parejasArray = []; for(let p in parejasStats) { let pDecisivos = parejasStats[p].w + parejasStats[p].l; let wr = pDecisivos > 0 ? (parejasStats[p].w / pDecisivos) : 0; parejasArray.push({ name: p, w: parejasStats[p].w, l: parejasStats[p].l, d: parejasStats[p].d, p: parejasStats[p].p, wr: wr }); }
             let parejasElegibles = parejasArray.filter(p => p.p >= 3).sort((a, b) => b.wr - a.wr); let parejaLetalText = parejasElegibles.length > 0 ? `${parejasElegibles[0].name} (${(parejasElegibles[0].wr*100).toFixed(0)}%)` : "Ninguna";
-            
             globalRankingArray = [];
             for(let j in jugadoresStats) { let s = jugadoresStats[j]; if(s.partidos < 3 && !MANDATORY_PLAYERS.includes(j)) continue; let puntos = (s.victorias * 3) + (s.empates * 1), maxPuntos = s.partidos * 3; let puntuacion = maxPuntos > 0 ? ((puntos / maxPuntos) * 100).toFixed(1) : 0; let partidosDecisivos = s.victorias + s.derrotas; let winRateVic = partidosDecisivos > 0 ? ((s.victorias / partidosDecisivos) * 100).toFixed(1) : 0; let streakIcon = "", streakType = ""; let results = (rachasData[j] || []).filter(r => r !== 'D');
                 if(results.length > 0) { let last = results[results.length - 1]; let count = 0; for(let i = results.length - 1; i >= 0; i--) { if(results[i] === last) count++; else break; } if(last === 'W' && count >= 3) { streakIcon = `🔥${count}`; streakType = "fire"; } if(last === 'L' && count >= 3) { streakIcon = `🧊${count}`; streakType = "ice"; } } globalRankingArray.push({ nombre: j, puntuacionValor: parseFloat(puntuacion), partidos: s.partidos, victorias: s.victorias, empates: s.empates, derrotas: s.derrotas, difSets: s.sf - s.sc, winRateVic: parseFloat(winRateVic), puntuacion: parseFloat(puntuacion), streak: streakIcon, streakType: streakType }); }
             MANDATORY_PLAYERS.forEach(mp => { if(!jugadoresStats[mp]) globalRankingArray.push({ nombre: mp, puntuacionValor: 0, partidos: 0, victorias: 0, empates: 0, derrotas: 0, difSets: 0, winRateVic: 0, puntuacion: 0, streak: "", streakType: "" }); });
             globalRankingArray.sort((a,b) => b.puntuacion - a.puntuacion || b.difSets - a.difSets);
             document.getElementById('kpi-partidos').innerText = totalPartidosInternos; document.getElementById('kpi-lider').innerText = globalRankingArray.length > 0 ? `${globalRankingArray[0].nombre} (${globalRankingArray[0].puntuacion}%)` : "-"; document.getElementById('kpi-pareja').innerText = parejaLetalText;
-            calculateTramos(filteredDataGlobal); calculatePlayerOfMonth(filteredDataGlobal); calculateFaceOffs(rawDataGlobal); calculateBadges(rawDataGlobal); calculateDeudor(jugadoresStats, pagosCount, bolasCount);
-            renderRankingTable(globalRankingArray); renderResultadosHabituales(rows); renderParejasTopBottom(parejasElegibles); displayMatches(filteredDataGlobal); renderCharts(globalRankingArray, pagosCount, bolasCount);             
-            // Auto-seleccionar al líder si no hay nadie seleccionado aún
-            if (selectedPlayerName === "" && globalRankingArray.length > 0) {
-                selectedPlayerName = globalRankingArray[0].nombre;
-            }
-            renderPlayerFolderTabs(); // <--- CAMBIO AQUÍ
+            calculateTramos(rawDataGlobal); calculatePlayerOfMonth(filteredDataGlobal); calculateFaceOffs(rawDataGlobal); calculateBadges(rawDataGlobal); calculateDeudor(jugadoresStats, pagosCount, bolasCount);
+            renderRankingTable(globalRankingArray); renderResultadosHabituales(rows); renderParejasTopBottom(parejasElegibles); displayMatches(filteredDataGlobal); renderCharts(globalRankingArray, pagosCount, bolasCount);
+            if (selectedPlayerName === "" && globalRankingArray.length > 0) { selectedPlayerName = globalRankingArray[0].nombre; }
+            renderPlayerFolderTabs();
             renderPlayerProfile();
-            
+
             // CURIOSIDAD: El Frigorífico
             let lastDates = {};
             rows.forEach(row => { let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let d = parseCSVDate(row.fecha); [j1A,j1B,j2A,j2B].forEach(j => { if(j&&j!=="Playtomic") { if(!lastDates[j]||d>lastDates[j]) lastDates[j]=d; } }); });
@@ -400,7 +716,7 @@
             document.getElementById('cur-frio').innerText = `🥶 ${frozen} lleva ${maxDays} días sin jugar. ¡Sacadlo del congelador!`;
 
             // CURIOSIDAD: El Día Maldito
-            let dayStats = {}; // {1: {w:0, p:0}}
+            let dayStats = {};
             rows.forEach(row => {
                 let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
                 let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
@@ -418,21 +734,18 @@
 
         function calculatePlayerOfMonth(rows) { let monthlyStats = {}; rows.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let setsP1 = parseInt(row['sets p1'] || 0), setsP2 = parseInt(row['sets p2'] || 0); let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; [j1A, j1B, j2A, j2B].forEach(j => { if(j && j !== "Playtomic") { if(!monthlyStats[monthKey]) monthlyStats[monthKey] = {}; if(!monthlyStats[monthKey][j]) monthlyStats[monthKey][j] = {pj:0, v:0, e:0, sf:0, sc:0}; } }); [[j1A, j1B, setsP1, setsP2], [j2A, j2B, setsP2, setsP1]].forEach(team => { team.slice(0,2).forEach(j => { if(j && j !== "Playtomic") { monthlyStats[monthKey][j].pj += 1; monthlyStats[monthKey][j].sf += team[2]; monthlyStats[monthKey][j].sc += team[3]; if(isDraw) monthlyStats[monthKey][j].e += 1; else if(ganadores.includes(j)) monthlyStats[monthKey][j].v += 1; } }); }); }); let container = document.getElementById('advanced-stats-container'); container.innerHTML = ""; let sortedMonths = Object.keys(monthlyStats).sort().reverse(); sortedMonths.forEach(monthKey => { let monthPlayers = []; for(let j in monthlyStats[monthKey]) { let s = monthlyStats[monthKey][j]; if(s.pj < 3) continue; let pts = (s.v * 3) + s.e, maxPts = s.pj * 3; monthPlayers.push({nombre: j, punt: maxPts > 0 ? (pts/maxPts)*100 : 0, v: s.v, pj: s.pj, difS: s.sf - s.sc}); } monthPlayers.sort((a,b) => b.punt - a.punt || b.difS - a.difS); if(monthPlayers.length === 0) return; let p = monthPlayers[0]; let dateObj = new Date(monthKey + "-02"); let monthName = dateObj.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }); container.innerHTML += `<div class="bg-slate-900/50 p-4 rounded-xl border border-amber-800/20 flex flex-col sm:flex-row justify-between items-center gap-2"><div class="text-center sm:text-left"><span class="text-xs text-slate-500 uppercase font-bold block">${monthName}</span><span class="text-2xl font-black text-amber-400 block">${p.nombre} 👑</span></div><div class="text-center sm:text-right"><span class="text-lg font-bold text-white">${p.punt.toFixed(1)}% Punt.</span><span class="text-xs text-slate-400 block">${p.v}V / ${p.pj} PJ | Dif. Sets: ${p.difS > 0 ? '+' : ''}${p.difS}</span></div></div>`; }); }
 
-        function calculateFaceOffs(rows) { 
-            globalFaceOffs = {}; globalPairFaceOffs = {}; globalH2H_Wins = {}; // <--- AÑADIR AQUÍ
-            rows.forEach(row => { 
-                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; 
+        function calculateFaceOffs(rows) {
+            globalFaceOffs = {}; globalPairFaceOffs = {}; globalH2H_Wins = {};
+            rows.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
                 let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
                 let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
                 let winT1 = String(row['ganadores'] || "").includes(j1A) && String(row['ganadores'] || "").includes(j1B); let winT2 = String(row['ganadores'] || "").includes(j2A) && String(row['ganadores'] || "").includes(j2B);
-                // ... (DEJA EL CÓDIGO EXISTENTE DE globalFaceOffs y globalPairFaceOffs) ...
-                
-                // LÓGICA NUEVA PARA HEATMAP
                 if(!isDraw) {
                     if(winT1) { [j1A, j1B].forEach(w => [j2A, j2B].forEach(l => { if(w&&l&&w!=="Playtomic"&&l!=="Playtomic") { if(!globalH2H_Wins[w])globalH2H_Wins[w]={}; globalH2H_Wins[w][l]=(globalH2H_Wins[w][l]||0)+1; } })); }
                     if(winT2) { [j2A, j2B].forEach(w => [j1A, j1B].forEach(l => { if(w&&l&&w!=="Playtomic"&&l!=="Playtomic") { if(!globalH2H_Wins[w])globalH2H_Wins[w]={}; globalH2H_Wins[w][l]=(globalH2H_Wins[w][l]||0)+1; } })); }
                 }
-            }); 
+            });
         }
 
         function calculateBadges(rows) {
@@ -444,13 +757,8 @@
             let streakBreaks = {};
             let curseBreaks = {};
 
-            const init = (j) => { 
-                if(!bs[j]) bs[j] = {
-                    pj:0, tb:0, remontadas:0, bolasW:0, bolasPj:0, posRev:0, posDriv:0, mates:{}, maxW:0, maxL:0, curW:0, curL:0, s3reach:0, s3win:0, matchesWonIn2:0, s1win:0, s1lose:0, s2lose:0, s3lose:0,
-                    cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{},
-                    firstHalf: {w:0, p:0}, secondHalf: {w:0, p:0},
-                    defeatsBy:{}, tbWin:0 // <--- AÑADIR ESTO
-                }; 
+            const init = (j) => {
+                if(!bs[j]) bs[j] = { pj:0, tb:0, remontadas:0, bolasW:0, bolasPj:0, posRev:0, posDriv:0, mates:{}, maxW:0, maxL:0, curW:0, curL:0, s3reach:0, s3win:0, matchesWonIn2:0, s1win:0, s1lose:0, s2lose:0, s3lose:0, cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{}, firstHalf: {w:0, p:0}, secondHalf: {w:0, p:0}, defeatsBy:{}, tbWin:0 };
             };
 
             let midIndex = Math.floor(rows.length / 2);
@@ -467,48 +775,31 @@
                 let winT1 = ganadores.includes(j1A) && ganadores.includes(j1B); let winT2 = ganadores.includes(j2A) && ganadores.includes(j2B);
                 let court = String(row['pista']||"").trim();
 
-                // Pair Matches
                 if(j1A && j1B) pairMatchesCount[[j1A, j1B].sort().join(" & ")] = (pairMatchesCount[[j1A, j1B].sort().join(" & ")] || 0) + 1;
                 if(j2A && j2B) pairMatchesCount[[j2A, j2B].sort().join(" & ")] = (pairMatchesCount[[j2A, j2B].sort().join(" & ")] || 0) + 1;
 
-                // Bajonazo (ChokeJob) - CORREGIDO
                 if (!isDraw) {
-                    let t1Won1st = s1p1 > s1p2;
-                    let t2Won1st = s1p2 > s1p1;
+                    let t1Won1st = s1p1 > s1p2; let t2Won1st = s1p2 > s1p1;
                     if (t1Won1st && winT2) { [j1A, j1B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].chokeJobs++; } }); }
                     if (t2Won1st && winT1) { [j2A, j2B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].chokeJobs++; } }); }
                 }
 
-                // Criptonita
                 if (top1Player && !isDraw) {
                     if (winT1 && [j2A, j2B].includes(top1Player)) { [j1A, j1B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].kryptoWins++; } }); }
                     if (winT2 && [j1A, j1B].includes(top1Player)) { [j2A, j2B].forEach(j => { if(j && j!=="Playtomic") { init(j); bs[j].kryptoWins++; } }); }
                 }
 
-                // Timeline processing for Muro and Maldiciones
                 if (!isDraw) {
                     let matchResults = {};
                     [j1A, j1B].forEach(p => { if(p && p!=="Playtomic") { matchResults[p] = winT1 ? 'W' : 'L'; if(!playerHistory[p]) playerHistory[p] = []; if(!activeStreaks[p]) activeStreaks[p] = {type: null, count: 0}; } });
                     [j2A, j2B].forEach(p => { if(p && p!=="Playtomic") { matchResults[p] = winT2 ? 'W' : 'L'; if(!playerHistory[p]) playerHistory[p] = []; if(!activeStreaks[p]) activeStreaks[p] = {type: null, count: 0}; } });
-
                     for (let p in matchResults) {
-                        let res = matchResults[p];
-                        playerHistory[p].push(res);
-
-                        if (activeStreaks[p].type === res) {
-                            activeStreaks[p].count++;
-                        } else {
+                        let res = matchResults[p]; playerHistory[p].push(res);
+                        if (activeStreaks[p].type === res) { activeStreaks[p].count++; }
+                        else {
                             if (activeStreaks[p].type !== null) {
-                                if (activeStreaks[p].type === 'W' && activeStreaks[p].count >= 3 && res === 'L') {
-                                    let opponents = [j1A, j1B].includes(p) ? [j2A, j2B] : [j1A, j1B];
-                                    opponents.forEach(opp => { if(opp && opp!=="Playtomic") { streakBreaks[opp] = (streakBreaks[opp]||0) + 1; }});
-                                }
-                                if (activeStreaks[p].type === 'L' && activeStreaks[p].count >= 3 && res === 'W') {
-                                    let partner = [j1A, j1B].includes(p) ? (p===j1A?j1B:j1A) : (p===j2A?j2B:j2A);
-                                    if (partner && partner !== "Playtomic") {
-                                        curseBreaks[partner] = (curseBreaks[partner]||0) + 1;
-                                    }
-                                }
+                                if (activeStreaks[p].type === 'W' && activeStreaks[p].count >= 3 && res === 'L') { let opponents = [j1A, j1B].includes(p) ? [j2A, j2B] : [j1A, j1B]; opponents.forEach(opp => { if(opp && opp!=="Playtomic") { streakBreaks[opp] = (streakBreaks[opp]||0) + 1; }}); }
+                                if (activeStreaks[p].type === 'L' && activeStreaks[p].count >= 3 && res === 'W') { let partner = [j1A, j1B].includes(p) ? (p===j1A?j1B:j1A) : (p===j2A?j2B:j2A); if (partner && partner !== "Playtomic") { curseBreaks[partner] = (curseBreaks[partner]||0) + 1; } }
                             }
                             activeStreaks[p] = { type: res, count: 1 };
                         }
@@ -518,101 +809,35 @@
                 [[j1A, j1B, 1, 2], [j2A, j2B, 2, 1]].forEach(t => {
                     let pA = t[0], pB = t[1], tNum = t[2];
                     let teamWon = (tNum===1&&winT1)||(tNum===2&&winT2);
-
                     [pA, pB].forEach(j => {
                         if(!j || j==="Playtomic") return; init(j);
                         bs[j].pj++;
-                        if(isTB) bs[j].tb++;
                         if(isTB) { bs[j].tb++; if(teamWon) bs[j].tbWin++; }
                         if(isB) { bs[j].bolasPj++; if(teamWon) bs[j].bolasW++; }
                         if(tNum===1) bs[j].posRev++; else bs[j].posDriv++;
-                        
-                        let partner = (j === pA) ? pB : pA; // FIX: Calculamos el compañero real dinámicamente
-                        
+                        let partner = (j === pA) ? pB : pA;
                         if(!bs[j].mates[partner]) bs[j].mates[partner] = {w:0, p:0, d:0}; bs[j].mates[partner].p++;
-                        
                         let isSecondHalf = rowIndex >= midIndex;
-                        if(teamWon) { 
-                            bs[j].mates[partner].w++; bs[j].curW++; bs[j].curL=0; if(bs[j].curW > bs[j].maxW) bs[j].maxW = bs[j].curW; 
-                            if(!has3Set) bs[j].matchesWonIn2++;
-                            if(!bs[j].winsWith[partner]) bs[j].winsWith[partner] = 0; bs[j].winsWith[partner]++;
-                            if(isSecondHalf) { bs[j].secondHalf.w++; bs[j].secondHalf.p++; } else { bs[j].firstHalf.w++; bs[j].firstHalf.p++; }
-                        } 
-                        else if(!isDraw) { 
-                            bs[j].curL++; bs[j].curW=0; if(bs[j].curL > bs[j].maxL) bs[j].maxL = bs[j].curL;
-                            if(isSecondHalf) { bs[j].secondHalf.p++; } else { bs[j].firstHalf.p++; }
-                            // Lógica para El Verdugo
-                            let rivals = (tNum === 1) ? [j2A, j2B] : [j1A, j1B];
-                            rivals.forEach(r => { if(r && r!=="Playtomic") { if(!bs[j].defeatsBy[r]) bs[j].defeatsBy[r] = 0; bs[j].defeatsBy[r]++; } });
-                        }
+                        if(teamWon) { bs[j].mates[partner].w++; bs[j].curW++; bs[j].curL=0; if(bs[j].curW > bs[j].maxW) bs[j].maxW = bs[j].curW; if(!has3Set) bs[j].matchesWonIn2++; if(!bs[j].winsWith[partner]) bs[j].winsWith[partner] = 0; bs[j].winsWith[partner]++; if(isSecondHalf) { bs[j].secondHalf.w++; bs[j].secondHalf.p++; } else { bs[j].firstHalf.w++; bs[j].firstHalf.p++; } }
+                        else if(!isDraw) { bs[j].curL++; bs[j].curW=0; if(bs[j].curL > bs[j].maxL) bs[j].maxL = bs[j].curL; if(isSecondHalf) { bs[j].secondHalf.p++; } else { bs[j].firstHalf.p++; } let rivals = (tNum === 1) ? [j2A, j2B] : [j1A, j1B]; rivals.forEach(r => { if(r && r!=="Playtomic") { if(!bs[j].defeatsBy[r]) bs[j].defeatsBy[r] = 0; bs[j].defeatsBy[r]++; } }); }
                         else { bs[j].mates[partner].d++; }
-
-                        // Courts (Contabilizamos W, L, D y P para calcular % sin empates)
-                        if(court && court !== "Playtomic") {
-                            if(!bs[j].courts[court]) bs[j].courts[court] = {w:0, l:0, d:0, p:0};
-                            bs[j].courts[court].p++;
-                            if(teamWon) bs[j].courts[court].w++;
-                            else if(!isDraw) bs[j].courts[court].l++;
-                            else bs[j].courts[court].d++;
-                        }
-
+                        if(court && court !== "Playtomic") { if(!bs[j].courts[court]) bs[j].courts[court] = {w:0, l:0, d:0, p:0}; bs[j].courts[court].p++; if(teamWon) bs[j].courts[court].w++; else if(!isDraw) bs[j].courts[court].l++; else bs[j].courts[court].d++; }
                         let sP, sR;
                         sP = tNum===1 ? s1p1 : s1p2; sR = tNum===1 ? s1p2 : s1p1;
-                        if(sP > sR) { 
-                            bs[j].s1win++; 
-                            if(sP >= 6 && sR <= 1) bs[j].cleanSets++;
-                        } else if(sP < sR) { 
-                            bs[j].s1lose++; 
-                        }
+                        if(sP > sR) { bs[j].s1win++; if(sP >= 6 && sR <= 1) bs[j].cleanSets++; } else if(sP < sR) { bs[j].s1lose++; }
                         if((sP===7&&sR===5)||(sP===5&&sR===7)) { bs[j].closeSetPlayed++; if(sP===7) bs[j].closeSetWins++; }
-
                         sP = tNum===1 ? s2p1 : s2p2; sR = tNum===1 ? s2p2 : s2p1;
-                        if(sP > sR) { 
-                            if(sP >= 6 && sR <= 1) bs[j].cleanSets++;
-                        } else if(sP < sR) { 
-                            bs[j].s2lose++; 
-                        }
+                        if(sP > sR) { if(sP >= 6 && sR <= 1) bs[j].cleanSets++; } else if(sP < sR) { bs[j].s2lose++; }
                         if((sP===7&&sR===5)||(sP===5&&sR===7)) { bs[j].closeSetPlayed++; if(sP===7) bs[j].closeSetWins++; }
-
-                        if(has3Set) {
-                            bs[j].s3reach++;
-                            sP = tNum===1 ? s3p1 : s3p2; sR = tNum===1 ? s3p2 : s3p1;
-                            if(sP > sR) { 
-                                bs[j].s3win++; 
-                                if(sP >= 6 && sR <= 1) bs[j].cleanSets++;
-                            } else if(sP < sR) { 
-                                bs[j].s3lose++; 
-                            }
-                            if((sP===7&&sR===5)||(sP===5&&sR===7)) { bs[j].closeSetPlayed++; if(sP===7) bs[j].closeSetWins++; }
-
-                            let lost1st = (tNum===1 && s1p1 < s1p2) || (tNum===2 && s1p2 < s1p1);
-                            if(lost1st && teamWon) {
-                                bs[j].remontadas++;
-                                let sP1 = tNum===1 ? s1p1 : s1p2;
-                                let sR1 = tNum===1 ? s1p2 : s1p1;
-                                if(sP1 <= 2 && sR1 >= 6) bs[j].extComebacks++;
-                            }
-                        }
+                        if(has3Set) { bs[j].s3reach++; sP = tNum===1 ? s3p1 : s3p2; sR = tNum===1 ? s3p2 : s3p1; if(sP > sR) { bs[j].s3win++; if(sP >= 6 && sR <= 1) bs[j].cleanSets++; } else if(sP < sR) { bs[j].s3lose++; } if((sP===7&&sR===5)||(sP===5&&sR===7)) { bs[j].closeSetPlayed++; if(sP===7) bs[j].closeSetWins++; } let lost1st = (tNum===1 && s1p1 < s1p2) || (tNum===2 && s1p2 < s1p1); if(lost1st && teamWon) { bs[j].remontadas++; let sP1 = tNum===1 ? s1p1 : s1p2; let sR1 = tNum===1 ? s1p2 : s1p1; if(sP1 <= 2 && sR1 >= 6) bs[j].extComebacks++; } }
                     });
                 });
             });
 
-            // Calculamos las alternancias para Montaña Rusa
             let alternations = {};
-            for(let j in playerHistory) {
-                let hist = playerHistory[j];
-                let trans = 0;
-                for(let i=1; i<hist.length; i++) { if(hist[i] !== hist[i-1]) trans++; }
-                alternations[j] = hist.length > 1 ? trans / (hist.length - 1) : 0;
-            }
-
-            // Calculamos Matrimonio de Conveniencia
-            let maxPairCount = 0, maxPairName = "";
-            for(let pair in pairMatchesCount) { if(pairMatchesCount[pair] > maxPairCount) { maxPairCount = pairMatchesCount[pair]; maxPairName = pair; } }
-
-            // Cálculo de El Verdugo
-            let verdugoCount = {};
-            for(let j in bs) { if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue; let maxD=0, nems=[]; for(let r in bs[j].defeatsBy) { if(bs[j].defeatsBy[r]>maxD){maxD=bs[j].defeatsBy[r];nems=[r];}else if(bs[j].defeatsBy[r]===maxD)nems.push(r); } if(maxD>0) nems.forEach(n => verdugoCount[n]=(verdugoCount[n]||0)+1); }
+            for(let j in playerHistory) { let hist = playerHistory[j]; let trans = 0; for(let i=1; i<hist.length; i++) { if(hist[i] !== hist[i-1]) trans++; } alternations[j] = hist.length > 1 ? trans / (hist.length - 1) : 0; }
+            let maxPairCount = 0, maxPairName = ""; for(let pair in pairMatchesCount) { if(pairMatchesCount[pair] > maxPairCount) { maxPairCount = pairMatchesCount[pair]; maxPairName = pair; } }
+            let verdugoCount = {}; for(let j in bs) { if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue; let maxD=0, nems=[]; for(let r in bs[j].defeatsBy) { if(bs[j].defeatsBy[r]>maxD){maxD=bs[j].defeatsBy[r];nems=[r];}else if(bs[j].defeatsBy[r]===maxD)nems.push(r); } if(maxD>0) nems.forEach(n => verdugoCount[n]=(verdugoCount[n]||0)+1); }
 
             globalBadges = [
                 { id:'clean_sets', name:'Cirujano', emoji:'🔪', desc:'El rey del set limpio (6-0 o 6-1)', findMax: (b) => b.pj >= 3 ? b.cleanSets : null, format: (v) => `${v} sets limpios` },
@@ -622,37 +847,22 @@
                 { id:'adaptable', name:'Camaleón', emoji:'🦎', desc:'Ha ganado al menos 1 partido con todos los miembros fijos del grupo', findMax: (b, name) => { let group = MANDATORY_PLAYERS.filter(p => p !== name); if(group.length === 0) return null; return group.every(mate => b.winsWith[mate] > 0) ? group.length : null; }, format: (v) => `Ha ganado con los ${v} fijos` },
                 { id:'kryptonite', name:'Cazagigantes', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
                 { id:'matrimonio', name:'Matrimonio', emoji:'💍', desc:'La pareja fija que más partidos ha jugado junta', findMax: (b, name) => maxPairName.includes(name) ? maxPairCount : null, format: (v) => `${maxPairName} (${v} partidos)` },
-                { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', desc:'El compañero con el que peor % de victoria ponderado se tiene', findMin: (b) => { 
-                    let mates = Object.values(b.mates); if(mates.length < 2) return null; 
-                    let sumWRxP = 0; let sumP = 0; 
-                    mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); 
-                    let avgWR = sumP > 0 ? (sumWRxP / sumP) * 100 : null;
-                    return avgWR; 
-                }, format: (v) => `${v.toFixed(1)}% WR ponderado con compas` },
+                { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', desc:'El compañero con el que peor % de victoria ponderado se tiene', findMin: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); let avgWR = sumP > 0 ? (sumWRxP / sumP) * 100 : null; return avgWR; }, format: (v) => `${v.toFixed(1)}% WR ponderado con compas` },
                 { id:'rey_granja', name:'Rey de La Granja', emoji:'🌾', desc:'Mayor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
                 { id:'rey_indoor', name:'Indoor Pro', emoji:'🏛️', desc:'Mayor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
                 { id:'victima_granja', name:'Forastero', emoji:'⛈️', desc:'Menor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
                 { id:'victima_indoor', name:'Indoor Rookie', emoji:'🧊', desc:'Menor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
-                { id:'evolucion', name:'La Evolución', emoji:'📈', desc:'Mayor mejora de % victoria comparando 1ª y 2ª mitad de temporada', findMax: (b) => { 
-                    let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; 
-                    let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; 
-                    if(wr1 === null || wr2 === null) return null;
-                    return wr2 - wr1; 
-                }, format: (v) => `+${v.toFixed(1)}% de mejora` },
+                { id:'evolucion', name:'La Evolución', emoji:'📈', desc:'Mayor mejora de % victoria comparando 1ª y 2ª mitad de temporada', findMax: (b) => { let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; if(wr1 === null || wr2 === null) return null; return wr2 - wr1; }, format: (v) => `+${v.toFixed(1)}% de mejora` },
                 { id:'abonado', name:'El Abonado', emoji:'🎟️', desc:'El jugador que más partidos totales acumula', findMax: (b) => b.pj, format: (v) => `${v} partidos totales` },
                 { id:'talisman_bolas', name:'Talismán Bolas', emoji:'✨', desc:'El jugador que más veces ha ganado con bolas nuevas', findMax: (b) => b.bolasW > 0 ? b.bolasW : null, format: (v) => `${v} victorias con bolas nuevas` },
                 { id:'muro', name:'Aguafiestas', emoji:'🥳', desc:'Corta la racha de victorias de otros', findMax: (b, name) => (streakBreaks[name] || 0) > 0 ? streakBreaks[name] : null, format: (v) => `${v} rachas cortadas` },
                 { id:'maldiciones', name:'Rompe-maldiciones', emoji:'🧿', desc:'Era compañero cuando alguien cortó su racha de derrotas', findMax: (b, name) => (curseBreaks[name] || 0) > 0 ? curseBreaks[name] : null, format: (v) => `${v} maldiciones rotas como compañero` },
                 { id:'montaña_rusa', name:'Montaña Rusa', emoji:'🎢', desc:'El más irregular (alterna V-D-V-D)', findMax: (b, name) => alternations[name] > 0 ? alternations[name] : null, format: (v) => `${(v * 100).toFixed(1)}% de alternancia` },
-                { id:'tb_most', name:'Tiebreaker', emoji:'⛓️', desc:'Jugador con más Tie Breaks', findMax: (b) => b.tb > 0 ? b.tb : null, format: (v) => `${v} Tie Breaks` },
-                { id:'tb_least', name:'Evita Problemas', emoji:'🧘', desc:'Jugador con menos Tie Breaks (mín. 3 partidos)', findMin: (b) => b.pj >= 3 ? b.tb : null, format: (v) => `${v} Tie Breaks` },
+                { id:'tb_most', name:'Tiebreaker', emoji:'⛓️', desc:'Jugador con más partidos con Tie Break', findMax: (b) => b.tb > 0 ? b.tb : null, format: (v) => `${v} partidos con Tie Break` },
+                { id:'tb_least', name:'Evita Problemas', emoji:'🧘', desc:'Jugador con menos partidos con Tie Break (mín. 3 partidos)', findMin: (b) => b.pj >= 3 ? b.tb : null, format: (v) => `${v} partidos con Tie Break` },
                 { id:'comeback', name:'Remontador', emoji:'🦸‍♂️', desc:'Más victorias perdiendo el 1er set', findMax: (b) => b.remontadas > 0 ? b.remontadas : null, format: (v) => `${v} remontadas` },
                 { id:'fixed_pos', name:'Inamovible', emoji:'🗿', desc:'Jugador que menos ha jugado en su lado contrario', findMin: (b) => b.pj >= 3 ? Math.min(b.posRev, b.posDriv) / b.pj : null, format: (v) => `${(v * 100).toFixed(1)}% en lado contrario` },
-                { id:'best_mate', name:'Compañero Perfecto', emoji:'🤝', desc:'Mayor % de victoria ponderado con compañeros', findMax: (b) => { 
-                    let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; 
-                    mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); 
-                    return sumP > 0 ? (sumWRxP / sumP) * 100 : null; 
-                }, format: (v) => `${v.toFixed(1)}% ponderado` },
+                { id:'best_mate', name:'Compañero Perfecto', emoji:'🤝', desc:'Mayor % de victoria ponderado con compañeros', findMax: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); return sumP > 0 ? (sumWRxP / sumP) * 100 : null; }, format: (v) => `${v.toFixed(1)}% ponderado` },
                 { id:'streak_w', name:'Racha Dorada', emoji:'🔥', desc:'Racha más larga de victorias', findMax: (b) => b.maxW >= 3 ? b.maxW : null, format: (v) => `${v} partidos seguidos` },
                 { id:'streak_l', name:'Mala Racha', emoji:'💀', desc:'Racha más larga de derrotas', findMax: (b) => b.maxL >= 3 ? b.maxL : null, format: (v) => `${v} partidos seguidos` },
                 { id:'s3_reach', name:'Guerrero', emoji:'⚔️', desc:'Jugador que más ha llegado a 3er set', findMax: (b) => b.s3reach, format: (v) => `${v} veces` },
@@ -664,23 +874,19 @@
                 { id:'verdugo', name:'El Verdugo', emoji:'🪓', desc:'El jugador que es el Némesis de más personas distintas', findMax: (b, name) => (verdugoCount[name]||0) > 0 ? verdugoCount[name] : null, format: (v) => `Es el némesis de ${v} jugadores` },
             ];
 
-            globalBadges.forEach(badge => { 
-                badge.winners = []; badge.winnerValues = {}; let bestVal = badge.findMax ? -Infinity : Infinity; 
-                for(let j in bs) { 
-                    if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue; 
-                    let val = badge.findMax ? badge.findMax(bs[j], j) : badge.findMin(bs[j], j); 
-                    if(val === null || val === undefined) continue; 
-                    
-                    // TRUCO: Si es el Talismán, guardamos "Victorias/Total" para mostrarlo en el detalle
+            globalBadges.forEach(badge => {
+                badge.winners = []; badge.winnerValues = {}; let bestVal = badge.findMax ? -Infinity : Infinity;
+                for(let j in bs) {
+                    if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue;
+                    let val = badge.findMax ? badge.findMax(bs[j], j) : badge.findMin(bs[j], j);
+                    if(val === null || val === undefined) continue;
                     let displayVal = (badge.id === 'talisman_bolas' && val > 0) ? `${val}/${bs[j].bolasPj}` : val;
-
-                    if(badge.findMax && val > bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; } 
-                    else if(badge.findMax && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = displayVal; } 
-                    if(badge.findMin && val < bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; } 
+                    if(badge.findMax && val > bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; }
+                    else if(badge.findMax && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = displayVal; }
+                    if(badge.findMin && val < bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; }
                     else if(badge.findMin && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = displayVal; }
-                    // Prueba
-                    globalBadgeStats = bs; // Guardamos estadísticas globales para el Radar
-                } 
+                    globalBadgeStats = bs;
+                }
             });
         }
 
@@ -689,209 +895,101 @@
         function renderTramoButtons(numTramos) { let container = document.getElementById('tramos-buttons'); container.innerHTML = ""; for(let t = 1; t <= numTramos; t++) { container.innerHTML += `<button onclick="switchTramo(${t})" id="btn-tramo-${t}" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">${tramosData[t].label.split(" (")[0]}</button>`; } container.innerHTML += `<button onclick="switchTramo('total')" id="btn-tramo-total" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">🏆 Total</button>`; }
         function switchTramo(tramoId) { document.querySelectorAll('.tramo-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400'); }); let activeBtn = document.getElementById('btn-tramo-' + tramoId); if(activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); } document.getElementById('tramo-subtitle').innerText = tramosData[tramoId].label; let data = tramosData[tramoId].data; let isFinished = tramosData[tramoId].isFinished; let tbody = document.getElementById('tramos-tbody'); tbody.innerHTML = ""; data.forEach((r, idx) => { let m = idx===0?"👑 ":""; let tr = document.createElement("tr"); tr.className = "hover:bg-slate-750/30 border-b border-slate-800"; let pColor = r.pts >= 7 ? 'text-emerald-400' : (r.pts >= 3 ? 'text-amber-400' : 'text-slate-400'); let ptsDisplay = isFinished ? `<span class="${pColor}">${r.pts} pts</span>` : `<span class="text-slate-500 text-xs">${r.pts} pts*</span>`; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.pj}</td><td class="p-3 text-center font-mono text-slate-300">${r.puntuacion.toFixed(1)}%</td><td class="p-3 text-right font-mono font-bold">${ptsDisplay}</td>`; tbody.appendChild(tr); }); }
 
-        function populateSelectors(jugadores) { let selIds = ['cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2', 'mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; selIds.forEach(id => { let el = document.getElementById(id); let val = el.value; let html = (id === 'playerSelector') ? '<option value="">Selecciona...</option>' : '<option value="">Jugador</option>'; jugadores.forEach(j => html += `<option value="${j}">${j}</option>`); el.innerHTML = html; if(jugadores.includes(val)) el.value = val; }); updateMMSelectors(0); }
+        function populateSelectors(jugadores) { let selIds = ['cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2', 'mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; selIds.forEach(id => { let el = document.getElementById(id); let val = el.value; let html = '<option value="">Jugador</option>'; jugadores.forEach(j => html += `<option value="${j}">${j}</option>`); el.innerHTML = html; if(jugadores.includes(val)) el.value = val; }); updateMMSelectors(0); }
         function calculateDeudor(stats, pagos, bolas) { let aportes = {}; let totalMatches = 0; for(let j in stats) { if(stats[j].partidos >= 3 || MANDATORY_PLAYERS.includes(j)) { aportes[j] = { pagos: 0, pj: stats[j].partidos, bolas: 0 }; totalMatches += stats[j].partidos; } } for(let p in pagos) { if(aportes[p]) aportes[p].pagos = pagos[p]; } for(let b in bolas) { if(aportes[b]) aportes[b].bolas = bolas[b]; } let totalPayments = Object.values(pagos).reduce((a, b) => a + b, 0); let maxDebt = -Infinity, deudor = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedPayments = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalPayments : 0; let debt = expectedPayments - aportes[j].pagos; if(debt > maxDebt) { maxDebt = debt; deudor = j; } } document.getElementById('deudor-insight').innerText = `Las matemáticas no mienten. Teniendo en cuenta partidos jugados y pagos realizados, el próximo partido debe pagarlo: 💸 ${deudor}.`; let totalBolas = Object.values(bolas).reduce((a, b) => a + b, 0); let maxDebtBolas = -Infinity, deudorBolas = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedBolas = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalBolas : 0; let debtB = expectedBolas - aportes[j].bolas; if(debtB > maxDebtBolas) { maxDebtBolas = debtB; deudorBolas = j; } } document.getElementById('bolas-insight').innerText = `Teniendo en cuenta partidos jugados y bolas aportadas, al próximo le toca llevar bolas: 🎾 ${deudorBolas}.`; }
 
         function updateMMSelectors(changedId) { let ids = ['mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; let selectedValues = {}; ids.forEach(id => { selectedValues[id] = document.getElementById(id).value; }); ids.forEach(id => { let el = document.getElementById(id); let currentVal = selectedValues[id]; let html = '<option value="">Jugador</option>'; jugadoresGlobales.forEach(j => { let isSelectedElsewhere = ids.some(otherId => otherId !== id && selectedValues[otherId] === j); let disabledAttr = isSelectedElsewhere ? 'disabled class="text-slate-600"' : ''; let selectedAttr = j === currentVal ? 'selected' : ''; html += `<option value="${j}" ${disabledAttr} ${selectedAttr}>${j}</option>`; }); el.innerHTML = html; el.value = currentVal; }); }
         function resetMMSelectors() { ['mm-p1', 'mm-p2', 'mm-p3', 'mm-p4'].forEach(id => document.getElementById(id).value = ""); updateMMSelectors(0); document.getElementById('mm-result').classList.add('hidden'); }
 
-        function createTeams(mode) { 
-            let p1 = document.getElementById('mm-p1').value, p2 = document.getElementById('mm-p2').value, p3 = document.getElementById('mm-p3').value, p4 = document.getElementById('mm-p4').value; 
-            if(!p1 || !p2 || !p3 || !p4 || new Set([p1,p2,p3,p4]).size < 4) { alert("Selecciona 4 jugadores distintos."); return; } 
-            let resultDiv = document.getElementById('mm-result'); resultDiv.classList.remove('hidden'); 
-            if (mode === 'random') { 
-                let arr = [p1, p2, p3, p4]; for (let i = arr.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } 
-                renderTeams([[arr[0], arr[1], arr[2], arr[3]]], "🎲 Aleatorio"); 
-            } else if (mode === 'balanced') { 
-                let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); 
-                let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ]; 
-                let bestCombo = null; let minDiff = Infinity; 
-                combos.forEach(c => { let avg1 = ((stats[c.t1[0]]||0) + (stats[c.t1[1]]||0)) / 2; let avg2 = ((stats[c.t2[0]]||0) + (stats[c.t2[1]]||0)) / 2; let diff = Math.abs(avg1 - avg2); if(diff < minDiff) { minDiff = diff; bestCombo = c; } }); 
-                renderTeams([[bestCombo.t1[0], bestCombo.t1[1], bestCombo.t2[0], bestCombo.t2[1]]], "⚖️ Equilibrado"); 
-            } else if (mode === 'least' || mode === 'most') { 
-                let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ]; 
-                
-                // Calculamos los enfrentamientos reales de las parejas en el filtro actual
+        function createTeams(mode) {
+            let p1 = document.getElementById('mm-p1').value, p2 = document.getElementById('mm-p2').value, p3 = document.getElementById('mm-p3').value, p4 = document.getElementById('mm-p4').value;
+            if(!p1 || !p2 || !p3 || !p4 || new Set([p1,p2,p3,p4]).size < 4) { alert("Selecciona 4 jugadores distintos."); return; }
+            let resultDiv = document.getElementById('mm-result'); resultDiv.classList.remove('hidden');
+            if (mode === 'random') { let arr = [p1, p2, p3, p4]; for (let i = arr.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } renderTeams([[arr[0], arr[1], arr[2], arr[3]]], "🎲 Aleatorio"); }
+            else if (mode === 'balanced') { let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ]; let bestCombo = null; let minDiff = Infinity; combos.forEach(c => { let avg1 = ((stats[c.t1[0]]||0) + (stats[c.t1[1]]||0)) / 2; let avg2 = ((stats[c.t2[0]]||0) + (stats[c.t2[1]]||0)) / 2; let diff = Math.abs(avg1 - avg2); if(diff < minDiff) { minDiff = diff; bestCombo = c; } }); renderTeams([[bestCombo.t1[0], bestCombo.t1[1], bestCombo.t2[0], bestCombo.t2[1]]], "⚖️ Equilibrado"); }
+            else if (mode === 'least' || mode === 'most') {
+                let combos = [ {t1:[p1,p2], t2:[p3,p4]}, {t1:[p1,p3], t2:[p2,p4]}, {t1:[p1,p4], t2:[p2,p3]} ];
                 let pairFaceOffs = {};
-                filteredDataGlobal.forEach(row => {
-                    let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
-                    let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
-                    let duo1 = [j1A, j1B].sort().join(" & "), duo2 = [j2A, j2B].sort().join(" & ");
-                    if(!pairFaceOffs[duo1]) pairFaceOffs[duo1] = {};
-                    pairFaceOffs[duo1][duo2] = (pairFaceOffs[duo1][duo2] || 0) + 1;
-                });
-
-                let getPairFO = (arr1, arr2) => { 
-                    let k1 = arr1.slice().sort().join(" & "), k2 = arr2.slice().sort().join(" & "); 
-                    let count1 = (pairFaceOffs[k1] && pairFaceOffs[k1][k2]) || 0;
-                    let count2 = (pairFaceOffs[k2] && pairFaceOffs[k2][k1]) || 0;
-                    return count1 + count2; 
-                };
-
+                filteredDataGlobal.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let duo1 = [j1A, j1B].sort().join(" & "), duo2 = [j2A, j2B].sort().join(" & "); if(!pairFaceOffs[duo1]) pairFaceOffs[duo1] = {}; pairFaceOffs[duo1][duo2] = (pairFaceOffs[duo1][duo2] || 0) + 1; });
+                let getPairFO = (arr1, arr2) => { let k1 = arr1.slice().sort().join(" & "), k2 = arr2.slice().sort().join(" & "); let count1 = (pairFaceOffs[k1] && pairFaceOffs[k1][k2]) || 0; let count2 = (pairFaceOffs[k2] && pairFaceOffs[k2][k1]) || 0; return count1 + count2; };
                 let scores = combos.map(c => getPairFO(c.t1, c.t2));
                 let targetScore, bestCombos, title;
-
-                if (mode === 'least') {
-                    targetScore = Math.min(...scores);
-                    bestCombos = combos.filter((c, i) => scores[i] === targetScore);
-                    title = `🧊 Menos Visto (${targetScore} enfrentamientos)`;
-                } else { // 'most'
-                    targetScore = Math.max(...scores);
-                    bestCombos = combos.filter((c, i) => scores[i] === targetScore);
-                    title = `🔥 Más Visto (${targetScore} enfrentamientos)`;
-                }
-
-                let options = bestCombos.map(c => [c.t1[0], c.t1[1], c.t2[0], c.t2[1]]); 
-                renderTeams(options, title); 
-            } 
+                if (mode === 'least') { targetScore = Math.min(...scores); bestCombos = combos.filter((c, i) => scores[i] === targetScore); title = `🧊 Menos Visto (${targetScore} enfrentamientos)`; }
+                else { targetScore = Math.max(...scores); bestCombos = combos.filter((c, i) => scores[i] === targetScore); title = `🔥 Más Visto (${targetScore} enfrentamientos)`; }
+                let options = bestCombos.map(c => [c.t1[0], c.t1[1], c.t2[0], c.t2[1]]);
+                renderTeams(options, title);
+            }
         }
         function renderTeams(options, title) { let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); let html = `<h4 class="text-lg font-bold mb-3 text-purple-300">${title}</h4>`; if (options.length > 1) { html += `<p class="text-xs text-cyan-400 mb-3 font-bold">⚡ ${options.length} opciones empatadas — elige la que prefieras:</p>`; } options.forEach((opt, idx) => { let [n1, n2, n3, n4] = opt; let avg1 = (((stats[n1]||0) + (stats[n2]||0)) / 2).toFixed(1); let avg2 = (((stats[n3]||0) + (stats[n4]||0)) / 2).toFixed(1); html += `<div class="grid grid-cols-2 gap-4 ${options.length > 1 ? 'mb-3 p-3 rounded-xl border border-slate-700' : ''}">`; if (options.length > 1) html += `<div class="col-span-2 text-xs text-slate-500 font-bold mb-1">Opción ${idx + 1}</div>`; html += `<div class="bg-emerald-900/20 p-3 rounded-lg border border-emerald-800/50"><div class="text-sm text-emerald-400 font-bold">EQUIPO 1</div><div class="text-xl font-black text-white">${n1} & ${n2}</div><div class="text-xs text-slate-400">Media: ${avg1}%</div></div>`; html += `<div class="bg-red-900/20 p-3 rounded-lg border border-red-800/50"><div class="text-sm text-red-400 font-bold">EQUIPO 2</div><div class="text-xl font-black text-white">${n3} & ${n4}</div><div class="text-xs text-slate-400">Media: ${avg2}%</div></div>`; html += `</div>`; }); document.getElementById('mm-result').innerHTML = html; }
 
-        function renderPlayerProfile() { 
-            let player = selectedPlayerName; let container = document.getElementById('player-stats-container'); document.getElementById('badge-detail').classList.add('hidden'); 
-            if(!player) { container.classList.add('hidden'); return; } 
-            container.classList.remove('hidden'); 
-            let htmlBadges = ""; globalBadges.forEach(b => { if(b.winners.includes(player)) { htmlBadges += `<div onclick="showBadgeDetail('${b.id}')" class="bg-slate-800 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-600 cursor-pointer hover:border-emerald-500 transition-colors">${b.emoji} ${b.name}</div>`; } }); 
-            document.getElementById('profile-badges').innerHTML = htmlBadges ? `<h4 class="w-full text-xs text-slate-500 uppercase font-bold mb-1">Insignias (Clic para detalles)</h4>` + htmlBadges : ""; 
-            
-            let vT=0, pT=0, lT=0, rJ=0, rV=0, rD=0, dJ=0, dV=0, dD=0, sociosStats={}, nemesisCount={}, posReves=0, posDrive=0; 
-            let opponentsCount = {}, opponentPairsCount = {}; 
-            filteredDataGlobal.forEach(row => { 
-                if(String(row.tipo || "").toLowerCase() === "externo") return; 
-                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(), ganadores = String(row['ganadores'] || ""), equipo=0, posicion="", soc=""; 
-                if(j1A===player){equipo=1;posicion="Revés";soc=j1B;} else if(j1B===player){equipo=1;posicion="Drive";soc=j1A;} else if(j2A===player){equipo=2;posicion="Revés";soc=j2B;} else if(j2B===player){equipo=2;posicion="Drive";soc=j2A;} 
-                if(equipo===0) return; 
-                pT++; 
-                let gano = ganadores.includes(player), pierde = !gano && !String(ganadores).toLowerCase().includes("empate"); 
-                if(posicion==="Revés"){rJ++;if(gano)rV++;else if(pierde)rD++;} 
-                if(posicion==="Drive"){dJ++;if(gano)dV++;else if(pierde)dD++;} 
-                if(soc) { if(!sociosStats[soc]) sociosStats[soc]={w:0,l:0,p:0}; sociosStats[soc].p+=1; if(gano)sociosStats[soc].w+=1; else if(pierde)sociosStats[soc].l+=1; } 
-                let riv1 = equipo === 1 ? j2A : j1A, riv2 = equipo === 1 ? j2B : j1B; 
-                let isEligibleRival = (r) => r && r !== "Playtomic" && (globalJugadoresStats[r] && (globalJugadoresStats[r].partidos >= 3 || MANDATORY_PLAYERS.includes(r))); 
-                if(isEligibleRival(riv1)) opponentsCount[riv1] = (opponentsCount[riv1] || 0) + 1; if(isEligibleRival(riv2)) opponentsCount[riv2] = (opponentsCount[riv2] || 0) + 1; 
-                if(isEligibleRival(riv1) && isEligibleRival(riv2)) { let pairKey = [riv1, riv2].sort().join(" & "); opponentPairsCount[pairKey] = (opponentPairsCount[pairKey] || 0) + 1; } 
-                if(pierde) { lT++; [riv1, riv2].forEach(r=>{if(r)nemesisCount[r]=(nemesisCount[r]||0)+1;}); } else if(gano) vT++; 
-                if(posicion==="Revés") posReves++; else if(posicion==="Drive") posDrive++; 
-            }); 
-            let posFavText = "Ambas", posFavDetail = `${posDrive}/${pT} en cada lado`; if(posReves > posDrive) { posFavText = "Revés"; posFavDetail = `${posReves}/${pT} en Revés`; } else if(posDrive > posReves) { posFavText = "Drive"; posFavDetail = `${posDrive}/${pT} en Drive`; } 
-            document.getElementById('prof-posicion').innerText = posFavText; document.getElementById('prof-posicion-detail').innerText = posFavDetail; 
-            let validSocios = []; for(let s in sociosStats) { if(sociosStats[s].p >= 2) { let wls = sociosStats[s].w + sociosStats[s].l; validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); } } 
-            validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p); if(validSocios.length === 0) { for(let s in sociosStats) { let wls = sociosStats[s].w + sociosStats[s].l; validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); } validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p); } 
-            let maxNemesis = 0; for(let n in nemesisCount) if(nemesisCount[n] > maxNemesis) maxNemesis = nemesisCount[n]; let nemeses = []; for(let n in nemesisCount) if(nemesisCount[n] === maxNemesis) nemeses.push(n); let nemesisText = nemeses.length > 0 ? `${nemeses.join(", ")} (${maxNemesis} D)` : "Nadie"; 
-            
+        function renderPlayerProfile() {
+            let player = selectedPlayerName; let container = document.getElementById('player-stats-container'); document.getElementById('badge-detail').classList.add('hidden');
+            if(!player) { container.classList.add('hidden'); return; }
+            container.classList.remove('hidden');
+            let htmlBadges = "";
+            globalBadges.forEach(b => { if(b.winners.includes(player)) { htmlBadges += `<div onclick="showBadgeDetail('${b.id}')" class="bg-slate-900/60 border border-slate-700 hover:border-emerald-500 p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105 shadow-sm hover:shadow-emerald-500/20 animate-fade-in"><span class="text-4xl">${b.emoji}</span><span class="text-xs font-bold text-slate-200 text-center leading-tight uppercase tracking-wider">${b.name}</span></div>`; } });
+            document.getElementById('profile-badges').innerHTML = htmlBadges || `<div class="col-span-full text-center text-slate-500 py-8">Aún no ha desbloqueado insignias</div>`;
+            let vT=0, pT=0, lT=0, rJ=0, rV=0, rD=0, dJ=0, dV=0, dD=0, sociosStats={}, nemesisCount={}, posReves=0, posDrive=0;
+            let opponentsCount = {}, opponentPairsCount = {};
+            filteredDataGlobal.forEach(row => {
+                if(String(row.tipo || "").toLowerCase() === "externo") return;
+                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(), ganadores = String(row['ganadores'] || ""), equipo=0, posicion="", soc="";
+                if(j1A===player){equipo=1;posicion="Revés";soc=j1B;} else if(j1B===player){equipo=1;posicion="Drive";soc=j1A;} else if(j2A===player){equipo=2;posicion="Revés";soc=j2B;} else if(j2B===player){equipo=2;posicion="Drive";soc=j2A;}
+                if(equipo===0) return;
+                pT++;
+                let gano = ganadores.includes(player), pierde = !gano && !String(ganadores).toLowerCase().includes("empate");
+                if(posicion==="Revés"){rJ++;if(gano)rV++;else if(pierde)rD++;} if(posicion==="Drive"){dJ++;if(gano)dV++;else if(pierde)dD++;}
+                if(soc) { if(!sociosStats[soc]) sociosStats[soc]={w:0,l:0,p:0}; sociosStats[soc].p+=1; if(gano)sociosStats[soc].w+=1; else if(pierde)sociosStats[soc].l+=1; }
+                let riv1 = equipo === 1 ? j2A : j1A, riv2 = equipo === 1 ? j2B : j1B;
+                let isEligibleRival = (r) => r && r !== "Playtomic" && (globalJugadoresStats[r] && (globalJugadoresStats[r].partidos >= 3 || MANDATORY_PLAYERS.includes(r)));
+                if(isEligibleRival(riv1)) opponentsCount[riv1] = (opponentsCount[riv1] || 0) + 1; if(isEligibleRival(riv2)) opponentsCount[riv2] = (opponentsCount[riv2] || 0) + 1;
+                if(isEligibleRival(riv1) && isEligibleRival(riv2)) { let pairKey = [riv1, riv2].sort().join(" & "); opponentPairsCount[pairKey] = (opponentPairsCount[pairKey] || 0) + 1; }
+                if(pierde) { lT++; [riv1, riv2].forEach(r=>{if(r)nemesisCount[r]=(nemesisCount[r]||0)+1;}); } else if(gano) vT++;
+                if(posicion==="Revés") posReves++; else if(posicion==="Drive") posDrive++;
+            });
+            let posFavText = "Ambas", posFavDetail = `${posDrive}/${pT} en cada lado`; if(posReves > posDrive) { posFavText = "Revés"; posFavDetail = `${posReves}/${pT} en Revés`; } else if(posDrive > posReves) { posFavText = "Drive"; posFavDetail = `${posDrive}/${pT} en Drive`; }
+            document.getElementById('prof-posicion').innerText = posFavText; document.getElementById('prof-posicion-detail').innerText = posFavDetail;
+            let validSocios = []; for(let s in sociosStats) { if(sociosStats[s].p >= 2) { let wls = sociosStats[s].w + sociosStats[s].l; validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); } }
+            validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p); if(validSocios.length === 0) { for(let s in sociosStats) { let wls = sociosStats[s].w + sociosStats[s].l; validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); } validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p); }
+            let maxNemesis = 0; for(let n in nemesisCount) if(nemesisCount[n] > maxNemesis) maxNemesis = nemesisCount[n]; let nemeses = []; for(let n in nemesisCount) if(nemesisCount[n] === maxNemesis) nemeses.push(n); let nemesisText = nemeses.length > 0 ? `${nemeses.join(", ")} (${maxNemesis} D)` : "Nadie";
             let winRateCalc = (vT + lT) > 0 ? Math.round((vT / (vT + lT)) * 100) : 0;
             let pIndex = globalRankingArray.findIndex(p => p.nombre === player) + 1;
             document.getElementById('prof-nombre').innerText = `#${String(pIndex).padStart(3, '0')} - ${player.toUpperCase()}`;
             document.getElementById('prof-nombre-card').innerText = player;
+            let imgSrc = PLAYER_IMAGES[player]; let imgEl = document.getElementById('prof-foto'); let placeholderEl = document.getElementById('prof-foto-placeholder');
+            if(imgSrc) { imgEl.src = imgSrc; imgEl.classList.remove('hidden'); placeholderEl.classList.add('hidden'); } else { imgEl.classList.add('hidden'); placeholderEl.classList.remove('hidden'); }
             document.getElementById('prof-winrate-main').innerText = `${winRateCalc}%`;
             document.getElementById('prof-victorias-main').innerText = vT;
             document.getElementById('prof-partidosJug-main').innerText = pT;
-
-            document.getElementById('prof-socio').innerText = validSocios.length > 0 ? validSocios[0].name : "-"; document.getElementById('prof-socio-wr').innerText = validSocios.length > 0 ? `${(validSocios[0].wr*100).toFixed(0)}% efectividad (${validSocios[0].w}V / ${validSocios[0].p} PJ)` : "-"; document.getElementById('prof-nemesis').innerText = nemesisText; 
-            let mostMate = Object.entries(sociosStats).sort((a,b) => b[1].p - a[1].p)[0]; 
-            document.getElementById('prof-most-mate').innerText = mostMate ? `${mostMate[0]} (${mostMate[1].p} veces)` : "-"; 
-            renderPositionCharts(rV, rD, rJ-rV-rD, dV, dD, dJ-dV-dD); renderPlayerMonthlyChart(player); renderPlayerMatchChart(player);            renderRadarChart(player); 
+            document.getElementById('prof-socio').innerText = validSocios.length > 0 ? validSocios[0].name : "-"; document.getElementById('prof-socio-wr').innerText = validSocios.length > 0 ? `${(validSocios[0].wr*100).toFixed(0)}% efectividad (${validSocios[0].w}V / ${validSocios[0].p} PJ)` : "-"; document.getElementById('prof-nemesis').innerText = nemesisText;
+            let mostMate = Object.entries(sociosStats).sort((a,b) => b[1].p - a[1].p)[0];
+            document.getElementById('prof-most-mate').innerText = mostMate ? `${mostMate[0]} (${mostMate[1].p} veces)` : "-";
+            renderPositionCharts(rV, rD, rJ-rV-rD, dV, dD, dJ-dV-dD); renderPlayerMonthlyChart(player); renderPlayerMatchChart(player); renderRadarChart(player);
         }
 
         let chartRadarInstance = null;
         function renderRadarChart(player) {
             if(chartRadarInstance) chartRadarInstance.destroy();
-            let pStats = globalJugadoresStats[player];
-            let bStats = globalBadgeStats ? globalBadgeStats[player] : null;
+            let pStats = globalJugadoresStats[player]; let bStats = globalBadgeStats ? globalBadgeStats[player] : null;
             if(!pStats || !bStats) return;
-
-            // Cálculos del jugador
-            let decP = pStats.victorias + pStats.derrotas;
-            let pWR = decP > 0 ? (pStats.victorias / decP)*100 : 0;
-            let totalSets = pStats.sf + pStats.sc;
-            let pSetWR = totalSets > 0 ? (pStats.sf / totalSets)*100 : 0;
+            let decP = pStats.victorias + pStats.derrotas; let pWR = decP > 0 ? (pStats.victorias / decP)*100 : 0;
+            let totalSets = pStats.sf + pStats.sc; let pSetWR = totalSets > 0 ? (pStats.sf / totalSets)*100 : 0;
             let pTBR = bStats.tb > 0 ? ((bStats.tbWin||0) / bStats.tb)*100 : 0;
             let p3SR = bStats.s3reach > 0 ? (bStats.s3win / bStats.s3reach)*100 : 0;
             let pExp = bStats.pj > 0 ? (bStats.matchesWonIn2 / bStats.pj)*100 : 0;
-
-            // Cálculos de la media del grupo
             let gWR=0, gSetWR=0, gTBR=0, g3SR=0, gExp=0, count=0;
-            for(let j in globalJugadoresStats) {
-                let gs = globalJugadoresStats[j]; let gb = globalBadgeStats ? globalBadgeStats[j] : null;
-                if((gs.partidos >= 3 || MANDATORY_PLAYERS.includes(j)) && gb) {
-                    let gd = gs.victorias+gs.derrotas; 
-                    if(gd>0) gWR += (gs.victorias/gd)*100;
-                    let tgs = gs.sf+gs.sc; 
-                    if(tgs>0) gSetWR += (gs.sf/tgs)*100;
-                    if(gb.tb>0) gTBR += ((gb.tbWin||0)/gb.tb)*100;
-                    if(gb.s3reach>0) g3SR += (gb.s3win/gb.s3reach)*100;
-                    if(gb.pj>0) gExp += (gb.matchesWonIn2/gb.pj)*100;
-                    count++;
-                }
-            }
+            for(let j in globalJugadoresStats) { let gs = globalJugadoresStats[j]; let gb = globalBadgeStats ? globalBadgeStats[j] : null; if((gs.partidos >= 3 || MANDATORY_PLAYERS.includes(j)) && gb) { let gd = gs.victorias+gs.derrotas; if(gd>0) gWR += (gs.victorias/gd)*100; let tgs = gs.sf+gs.sc; if(tgs>0) gSetWR += (gs.sf/tgs)*100; if(gb.tb>0) gTBR += ((gb.tbWin||0)/gb.tb)*100; if(gb.s3reach>0) g3SR += (gb.s3win/gb.s3reach)*100; if(gb.pj>0) gExp += (gb.matchesWonIn2/gb.pj)*100; count++; } }
             if(count>0){ gWR/=count; gSetWR/=count; gTBR/=count; g3SR/=count; gExp/=count; }
-
-            // Diferencia respecto a la media (para escalar el gráfico de -50 a +50)
             let labels = ['Win Rate', 'Sets', 'Tie Breaks', '3er Set', 'Exprés'];
-            let diffData = [
-                pWR - gWR, 
-                pSetWR - gSetWR, 
-                pTBR - gTBR, 
-                p3SR - g3SR, 
-                pExp - gExp
-            ];
-
-            chartRadarInstance = new Chart(document.getElementById('chartRadar'), {
-                type: 'radar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: player,
-                        data: diffData,
-                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { 
-                        r: { 
-                            beginAtZero: false,
-                            min: -40,
-                            max: 40,
-                            grid: { color: '#334155' }, 
-                            angleLines: { color: '#334155' }, 
-                            pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }, 
-                            ticks: { 
-                                display: true,
-                                color: '#64748b',
-                                backdropColor: 'transparent',
-                                stepSize: 20
-                            } 
-                        } 
-                    },
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let val = context.raw;
-                                    let sign = val > 0 ? '+' : '';
-                                    return `${context.dataset.label}: ${sign}${val.toFixed(1)}% vs Media`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+            let diffData = [pWR - gWR, pSetWR - gSetWR, pTBR - gTBR, p3SR - g3SR, pExp - gExp];
+            chartRadarInstance = new Chart(document.getElementById('chartRadar'), { type: 'radar', data: { labels: labels, datasets: [{ label: player, data: diffData, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 1)', pointBackgroundColor: 'rgba(16, 185, 129, 1)', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: false, min: -40, max: 40, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }, ticks: { display: true, color: '#64748b', backdropColor: 'transparent', stepSize: 20 } } }, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: function(context) { let val = context.raw; let sign = val > 0 ? '+' : ''; return `${context.dataset.label}: ${sign}${val.toFixed(1)}% vs Media`; } } } } } });
         }
 
         function renderPlayerMonthlyChart(player) { if(chartMonthlyInstance) chartMonthlyInstance.destroy(); let monthlyData = {}; rawDataGlobal.forEach(row => { if(String(row.tipo || "").toLowerCase() === "externo") return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let inMatch = [j1A, j1B, j2A, j2B].includes(player); if(!inMatch) return; let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; if(!monthlyData[monthKey]) monthlyData[monthKey] = {pj:0, v:0, e:0}; monthlyData[monthKey].pj += 1; if(isDraw) monthlyData[monthKey].e += 1; else if(ganadores.includes(player)) monthlyData[monthKey].v += 1; }); let labels = [], dataPoints = []; Object.keys(monthlyData).sort().forEach(m => { let s = monthlyData[m]; let pts = (s.v * 3) + s.e, maxPts = s.pj * 3; let punt = maxPts > 0 ? (pts/maxPts)*100 : 0; labels.push(new Date(m + "-02").toLocaleDateString('es-ES', { month: 'short', year:'2-digit' })); dataPoints.push(punt.toFixed(1)); }); chartMonthlyInstance = new Chart(document.getElementById('chartMonthlyEvolution'), { type: 'line', data: { labels: labels, datasets: [{ label: '% Puntuación', data: dataPoints, borderColor: PLAYER_COLORS[player] || '#34d399', backgroundColor: PLAYER_COLORS[player] ? PLAYER_COLORS[player] + '33' : 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: PLAYER_COLORS[player] || '#34d399' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: '#334155' }, ticks: { color:'#94a3b8' } } } } }); }
-
         function renderPlayerMatchChart(player) { if(chartMatchInstance) chartMatchInstance.destroy(); let totalPoints = 0, matchCount = 0; let labels = [], dataPoints = []; let playerMatches = filteredDataGlobal.filter(row => { if(String(row.tipo || "").toLowerCase() === "externo") return false; let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); return [j1A, j1B, j2A, j2B].includes(player); }).sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); playerMatches.forEach(row => { matchCount++; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let ganadores = String(row['ganadores'] || ""); if(isDraw) totalPoints += 1; else if(ganadores.includes(player)) totalPoints += 3; let maxPts = matchCount * 3; let punt = maxPts > 0 ? (totalPoints / maxPts) * 100 : 0; labels.push(new Date(parseCSVDate(row.fecha)).toLocaleDateString('es-ES', {day:'2-digit', month:'short'})); dataPoints.push(parseFloat(punt.toFixed(1))); }); chartMatchInstance = new Chart(document.getElementById('chartMatchEvolution'), { type: 'line', data: { labels: labels, datasets: [{ label: '% Puntuación Acumulada', data: dataPoints, borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.1, pointRadius: 4, pointBackgroundColor: '#34d399' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', autoSkip: true, maxTicksLimit: 15 } } } } }); }
 
         function toggleTagFilter(tag) { if (activeTagFilters.includes(tag)) activeTagFilters = activeTagFilters.filter(t => t !== tag); else activeTagFilters.push(tag); document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active')); activeTagFilters.forEach(t => { let btn = document.getElementById('tag-' + t); if(btn) btn.classList.add('active'); }); filterMatches(); }
-
         function filterMatches() { const q = (document.getElementById("searchInput").value || "").toLowerCase(); const words = q.split(' ').filter(w => w.length > 0); const PLAYER_FIELDS = ['p1 - jugador a', 'p1 - jugador b', 'p2 - jugador a', 'p2 - jugador b']; const META_FIELDS = ['fecha', 'pista']; let result = filteredDataGlobal.filter(row => { if (words.length > 0) { let allMatched = words.every(w => { let inPlayerField = PLAYER_FIELDS.some(f => String(row[f] || "").toLowerCase().includes(w)); if (inPlayerField) return true; let inMetaField = META_FIELDS.some(f => String(row[f] || "").toLowerCase().includes(w)); if (inMetaField) return true; if (w.includes("-")) { let parts = w.split("-"); if(parts.length === 2) { let revQ = parts[1] + "-" + parts[0]; let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=`${row['set 3 - p1']||0}-${row['set 3 - p2']||0}`; if(s1===w||s2===w||s3===w||s1===revQ||s2===revQ||s3===revQ) return true; } } return false; }); if (!allMatched) return false; } if (activeTagFilters.length > 0) { for (let tag of activeTagFilters) { let s3p1 = parseInt(row['set 3 - p1'] || 0), s3p2 = parseInt(row['set 3 - p2'] || 0); let has3Set = s3p1 > 0 || s3p2 > 0; let s1 = `${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`; let s2 = `${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`; let s3 = `${s3p1}-${s3p2}`; let isTB = [s1,s2,s3].some(s => s==='7-6' || s==='6-7'); let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*"; if (tag === '3set' && !has3Set) return false; if (tag === '2set' && has3Set) return false; if (tag === 'tb' && !isTB) return false; if (tag === 'empate' && !isDraw) return false; if (tag === 'bolas' && !isB) return false; } } return true; }); displayMatches(result); }
-
         function filterRecorded() { const btn=document.getElementById('btn-videoteca'); const isF=btn.classList.contains('bg-purple-500'); if(isF){displayMatches(filteredDataGlobal);btn.classList.remove('bg-purple-500','text-white');btn.classList.add('bg-purple-900/30','text-purple-400');document.getElementById('searchInput').value='';}else{displayMatches(filteredDataGlobal.filter(row=>String(row['grabado']||"").toLowerCase()==="true"));btn.classList.add('bg-purple-500','text-white');btn.classList.remove('bg-purple-900/30','text-purple-400');}}
 
         function renderResultadosHabituales(rows) { let setsData = {}; rows.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let s1p1 = parseInt(row['set 1 - p1']||0), s1p2 = parseInt(row['set 1 - p2']||0), s2p1 = parseInt(row['set 2 - p1']||0), s2p2 = parseInt(row['set 2 - p2']||0), s3p1 = parseInt(row['set 3 - p1']||0), s3p2 = parseInt(row['set 3 - p2']||0); [[row['p1 - jugador a'], s1p1, s1p2, s2p1, s2p2, s3p1, s3p2], [row['p1 - jugador b'], s1p1, s1p2, s2p1, s2p2, s3p1, s3p2], [row['p2 - jugador a'], s1p2, s1p1, s2p2, s2p1, s3p2, s3p1], [row['p2 - jugador b'], s1p2, s1p1, s2p2, s2p1, s3p2, s3p1]].forEach(p => { let name = String(p[0]||"").trim(); if(!name || name==="Playtomic") return; if(!setsData[name]) setsData[name] = {s1:[], s2:[], s3:[]}; setsData[name].s1.push(`${p[1]}-${p[2]}`); setsData[name].s2.push(`${p[3]}-${p[4]}`); if(p[5]>0||p[6]>0) setsData[name].s3.push(`${p[5]}-${p[6]}`); }); }); let tbody = document.getElementById("habituales-tbody"); tbody.innerHTML = ""; Object.keys(setsData).sort().forEach(j => { let d = setsData[j]; if(d.s1.length < 3) return; let tr = document.createElement("tr"); tr.className = "hover:bg-slate-750/30 border-b border-slate-800"; tr.innerHTML = `<td class="p-4 font-bold text-slate-200">${j}</td><td class="p-4 text-center font-mono">${formatScoreMode(getModes(d.s1))}</td><td class="p-4 text-center font-mono">${formatScoreMode(getModes(d.s2))}</td><td class="p-4 text-center font-mono">${d.s3.length > 0 ? formatScoreMode(getModes(d.s3)) : "-"}</td>`; tbody.appendChild(tr); }); }
@@ -901,7 +999,7 @@
         function calcHabPareja() { let p1 = document.getElementById('hab-p1').value, p2 = document.getElementById('hab-p2').value; if(!p1 || !p2) return; let s1Scores=[], s2Scores=[], s3Scores=[]; filteredDataGlobal.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let j1A = String(row['p1 - jugador a']||"").trim(), j1B = String(row['p1 - jugador b']||"").trim(), j2A = String(row['p2 - jugador a']||"").trim(), j2B = String(row['p2 - jugador b']||"").trim(); let isTeam1P1 = (j1A===p1 && j1B===p2) || (j1A===p2 && j1B===p1); let isTeam1P2 = (j2A===p1 && j2B===p2) || (j2A===p2 && j2B===p1); if (isTeam1P1) { s1Scores.push(`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`); s2Scores.push(`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`); if(parseInt(row['set 3 - p1']||0)>0 || parseInt(row['set 3 - p2']||0)>0) s3Scores.push(`${row['set 3 - p1']||0}-${row['set 3 - p2']||0}`); } else if (isTeam1P2) { s1Scores.push(`${row['set 1 - p2']||0}-${row['set 1 - p1']||0}`); s2Scores.push(`${row['set 2 - p2']||0}-${row['set 2 - p1']||0}`); if(parseInt(row['set 3 - p1']||0)>0 || parseInt(row['set 3 - p2']||0)>0) s3Scores.push(`${row['set 3 - p2']||0}-${row['set 3 - p1']||0}`); } }); let resultDiv = document.getElementById('hab-pareja-result'); resultDiv.classList.remove('hidden'); if (s1Scores.length === 0) { resultDiv.innerHTML = `<span class="text-slate-500 text-sm font-sans">No han jugado juntos</span>`; } else { resultDiv.innerHTML = `<div class="text-sm text-slate-400 mb-2 font-sans">${s1Scores.length} partidos juntos</div><div class="grid grid-cols-3 gap-4 text-center text-lg"><div><div class="text-xs text-slate-500 mb-1 font-sans">SET 1</div><div>${formatScoreMode(getModes(s1Scores))}</div></div><div><div class="text-xs text-slate-500 mb-1 font-sans">SET 2</div><div>${formatScoreMode(getModes(s2Scores))}</div></div><div><div class="text-xs text-slate-500 mb-1 font-sans">SET 3</div><div>${s3Scores.length > 0 ? formatScoreMode(getModes(s3Scores)) : '-'}</div></div></div>`; } }
         function renderPositionCharts(rv, rd, re, dv, dd, de) { if(chartRevesInstance) chartRevesInstance.destroy(); if(chartDriveInstance) chartDriveInstance.destroy(); const O = { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } }, datalabels: { display: false } } }; chartRevesInstance = new Chart(document.getElementById('chartReves'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [rv,rd,re], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O }); chartDriveInstance = new Chart(document.getElementById('chartDrive'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [dv,dd,de], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O }); }
         function renderRankingTable(ranking) { const tbody = document.getElementById("ranking-tbody"); tbody.innerHTML = ""; ranking.forEach((r, idx) => { let m = idx===0?"👑 ":""; const tr = document.createElement("tr"); let rowClass = "hover:bg-slate-750/30 border-b border-slate-800"; if (idx === 0 && r.streakType === 'fire') rowClass += " leader-fire"; else if (idx === 0 && r.streakType === 'ice') rowClass += " leader-ice"; else if (idx === 0) rowClass += " leader"; else if (r.streakType === 'fire') rowClass += " streak-fire"; else if (r.streakType === 'ice') rowClass += " streak-ice"; tr.className = rowClass; let dc = r.difSets>0?'text-emerald-400':(r.difSets<0?'text-red-400':'text-slate-400'); let dp = r.difSets>0?'+':''; let streakHtml = r.streak ? `<span class="mr-1">${r.streak}</span>` : ""; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${streakHtml}${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.partidos}</td><td class="p-3 text-center text-emerald-400 font-bold">${r.victorias}</td><td class="p-3 text-center text-red-400">${r.derrotas}</td><td class="p-3 text-center text-amber-400">${r.empates}</td><td class="p-3 text-center font-bold ${dc}">${dp}${r.difSets}</td><td class="p-3 text-center font-mono text-slate-300">${r.winRateVic}%</td><td class="p-3 text-right font-mono font-bold text-white bg-slate-900/50 rounded-l-lg">${r.puntuacion}%</td>`; tbody.appendChild(tr); }); }
-        
+
         function displayMatches(matches) { const tbody = document.querySelector("#matchesTable tbody"); tbody.innerHTML = ""; matches.forEach((row, idx) => { let isE = String(row.tipo||"").toLowerCase()==="externo", isG = String(row['grabado']||"").toLowerCase()==="true"; let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*"; let bE = isE?`<span class="ml-2 px-1.5 py-0.5 bg-red-950 text-red-400 text-[9px] rounded border border-red-900 font-black">EXT</span>`:""; let bG = isG?`<span class="ml-2 px-1.5 py-0.5 bg-purple-950 text-purple-400 text-[9px] rounded border border-purple-900 font-black">🎬</span>`:""; let bB = isB?`<span class="ml-2 px-1.5 py-0.5 bg-emerald-950 text-emerald-400 text-[9px] rounded border border-emerald-900 font-black">🎾</span>`:""; let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=row['set 3 - p1']?`,${row['set 3 - p1']}-${row['set 3 - p2']}`:""; const tr = document.createElement("tr"); tr.className = `border-b border-slate-800 transition ${isE?'bg-red-950/5 opacity-60':'hover:bg-slate-750/20'}`; tr.innerHTML = `<td class="p-4 text-xs font-mono text-slate-500">${idx+1}</td><td class="p-4 text-xs font-mono text-slate-400 whitespace-nowrap">${row['fecha']||'-'} ${bE} ${bG} ${bB}</td><td class="p-4 font-semibold text-slate-200">${row['pista']||'-'}</td><td class="p-4 text-xs text-slate-300">${row['p1 - jugador a']||'?'}/${row['p1 - jugador b']||'?'}</td><td class="p-4 text-xs text-slate-300">${row['p2 - jugador a']||'?'}/${row['p2 - jugador b']||'?'}</td><td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td><td class="p-4 font-bold text-emerald-400">${row['ganadores']||'-'}</td>`; tbody.appendChild(tr); }); }
 
         let resultChartInstance = null;
@@ -909,146 +1007,62 @@
             let selectedResult = document.getElementById('result-selector').value;
             let placeholder = document.getElementById('result-placeholder');
             if(resultChartInstance) resultChartInstance.destroy();
-            
-            if(!selectedResult) {
-                placeholder.classList.remove('hidden');
-                return;
-            }
+            if(!selectedResult) { placeholder.classList.remove('hidden'); return; }
             placeholder.classList.add('hidden');
-
-            let playerCounts = {};
-            jugadoresGlobales.forEach(p => playerCounts[p] = 0);
-
+            let playerCounts = {}; jugadoresGlobales.forEach(p => playerCounts[p] = 0);
             filteredDataGlobal.forEach(row => {
                 let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
                 let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
-                let s1p1 = parseInt(row['set 1 - p1']||0), s1p2 = parseInt(row['set 1 - p2']||0);
-                let s2p1 = parseInt(row['set 2 - p1']||0), s2p2 = parseInt(row['set 2 - p2']||0);
-                let s3p1 = parseInt(row['set 3 - p1']||0), s3p2 = parseInt(row['set 3 - p2']||0);
-                
-                // Set 1
-                let s1_T1 = `${s1p1}-${s1p2}`, s1_T2 = `${s1p2}-${s1p1}`; 
+                let s1p1 = parseInt(row['set 1 - p1']||0), s1p2 = parseInt(row['set 1 - p2']||0), s2p1 = parseInt(row['set 2 - p1']||0), s2p2 = parseInt(row['set 2 - p2']||0), s3p1 = parseInt(row['set 3 - p1']||0), s3p2 = parseInt(row['set 3 - p2']||0);
+                let s1_T1 = `${s1p1}-${s1p2}`, s1_T2 = `${s1p2}-${s1p1}`;
                 [j1A, j1B].forEach(j => { if(j&&j!=="Playtomic" && s1_T1 === selectedResult) playerCounts[j]++; });
                 [j2A, j2B].forEach(j => { if(j&&j!=="Playtomic" && s1_T2 === selectedResult) playerCounts[j]++; });
-
-                // Set 2
                 let s2_T1 = `${s2p1}-${s2p2}`, s2_T2 = `${s2p2}-${s2p1}`;
                 [j1A, j1B].forEach(j => { if(j&&j!=="Playtomic" && s2_T1 === selectedResult) playerCounts[j]++; });
                 [j2A, j2B].forEach(j => { if(j&&j!=="Playtomic" && s2_T2 === selectedResult) playerCounts[j]++; });
-
-                // Set 3
-                if(s3p1 > 0 || s3p2 > 0) {
-                    let s3_T1 = `${s3p1}-${s3p2}`, s3_T2 = `${s3p2}-${s3p1}`;
-                    [j1A, j1B].forEach(j => { if(j&&j!=="Playtomic" && s3_T1 === selectedResult) playerCounts[j]++; });
-                    [j2A, j2B].forEach(j => { if(j&&j!=="Playtomic" && s3_T2 === selectedResult) playerCounts[j]++; });
-                }
+                if(s3p1 > 0 || s3p2 > 0) { let s3_T1 = `${s3p1}-${s3p2}`, s3_T2 = `${s3p2}-${s3p1}`; [j1A, j1B].forEach(j => { if(j&&j!=="Playtomic" && s3_T1 === selectedResult) playerCounts[j]++; }); [j2A, j2B].forEach(j => { if(j&&j!=="Playtomic" && s3_T2 === selectedResult) playerCounts[j]++; }); }
             });
-
-            // Preparar datos para Chart.js
             let labels = []; let data = []; let colors = [];
-            // FILTRADO Y ORDEN CORREGIDO
             let sortedPlayers = Object.entries(playerCounts).filter(([p, c]) => globalJugadoresStats[p] && (globalJugadoresStats[p].partidos >= 3 || MANDATORY_PLAYERS.includes(p))).sort((a, b) => b[1] - a[1]);
-            
-            sortedPlayers.forEach(([p, c]) => {
-                labels.push(p);
-                data.push(c);
-                colors.push(PLAYER_COLORS[p] || '#94a3b8');
-            });
-
-            resultChartInstance = new Chart(document.getElementById('resultChart'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: `Veces con resultado ${selectedResult}`,
-                        data: data,
-                        backgroundColor: colors.map(c => c + 'B3'),
-                        borderColor: colors,
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false }, 
-                        datalabels: { 
-                            anchor: 'end', align: 'start', color: '#fff', font: { weight: 'bold', size: 12 }, 
-                            formatter: (value) => value > 0 ? value : '', textStrokeColor: '#000', textStrokeWidth: 2 
-                        } 
-                    },
-                    scales: { 
-                        y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8', stepSize: 1 } }, 
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } } 
-                    }
-                }
-            });
-        }    
+            sortedPlayers.forEach(([p, c]) => { labels.push(p); data.push(c); colors.push(PLAYER_COLORS[p] || '#94a3b8'); });
+            resultChartInstance = new Chart(document.getElementById('resultChart'), { type: 'bar', data: { labels: labels, datasets: [{ label: `Veces con resultado ${selectedResult}`, data: data, backgroundColor: colors.map(c => c + 'B3'), borderColor: colors, borderWidth: 2, borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'start', color: '#fff', font: { weight: 'bold', size: 12 }, formatter: (value) => value > 0 ? value : '', textStrokeColor: '#000', textStrokeWidth: 2 } }, scales: { y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#94a3b8', stepSize: 1 } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } } });
+        }
 
         function renderHeatmap() {
             let players = jugadoresGlobales.filter(p => globalJugadoresStats[p] && (globalJugadoresStats[p].partidos >= 3 || MANDATORY_PLAYERS.includes(p)));
-            let table = document.getElementById('heatmap-table');
-            if(!table) return;
-
-            let matrixData = {}; // matrixData[P1][P2] = { wins: 0, draws: 0, total: 0 }
-            
+            let table = document.getElementById('heatmap-table'); if(!table) return;
+            let matrixData = {};
             filteredDataGlobal.forEach(row => {
                 let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
                 let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
                 let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim();
                 let j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
-                let winT1 = String(row['ganadores'] || "").includes(j1A) && String(row['ganadores'] || "").includes(j1B); 
+                let winT1 = String(row['ganadores'] || "").includes(j1A) && String(row['ganadores'] || "").includes(j1B);
                 let winT2 = String(row['ganadores'] || "").includes(j2A) && String(row['ganadores'] || "").includes(j2B);
-                
                 let team1 = [j1A, j1B].filter(p => p && p !== "Playtomic");
                 let team2 = [j2A, j2B].filter(p => p && p !== "Playtomic");
-
-                team1.forEach(p1 => team2.forEach(p2 => {
-                    if(!matrixData[p1]) matrixData[p1] = {};
-                    if(!matrixData[p1][p2]) matrixData[p1][p2] = { wins: 0, draws: 0, total: 0 };
-                    matrixData[p1][p2].total++;
-                    if (isDraw) matrixData[p1][p2].draws++;
-                    else if (winT1) matrixData[p1][p2].wins++;
-                }));
-                
-                team2.forEach(p1 => team1.forEach(p2 => {
-                    if(!matrixData[p1]) matrixData[p1] = {};
-                    if(!matrixData[p1][p2]) matrixData[p1][p2] = { wins: 0, draws: 0, total: 0 };
-                    matrixData[p1][p2].total++;
-                    if (isDraw) matrixData[p1][p2].draws++;
-                    else if (winT2) matrixData[p1][p2].wins++;
-                }));
+                team1.forEach(p1 => team2.forEach(p2 => { if(!matrixData[p1]) matrixData[p1] = {}; if(!matrixData[p1][p2]) matrixData[p1][p2] = { wins: 0, draws: 0, total: 0 }; matrixData[p1][p2].total++; if (isDraw) matrixData[p1][p2].draws++; else if (winT1) matrixData[p1][p2].wins++; }));
+                team2.forEach(p1 => team1.forEach(p2 => { if(!matrixData[p1]) matrixData[p1] = {}; if(!matrixData[p1][p2]) matrixData[p1][p2] = { wins: 0, draws: 0, total: 0 }; matrixData[p1][p2].total++; if (isDraw) matrixData[p1][p2].draws++; else if (winT2) matrixData[p1][p2].wins++; }));
             });
-
             let html = '<thead><tr><th class="p-2"></th>';
             players.forEach(p => html += `<th class="p-2 md:p-3 text-[10px] md:text-xs font-bold text-slate-400 whitespace-nowrap" style="writing-mode: vertical-lr; transform: rotate(180deg); min-width: 50px; height: 80px;">${p}</th>`);
             html += '</tr></thead><tbody>';
-            
             players.forEach(rowP => {
                 html += `<tr><td class="p-2 md:p-3 font-bold text-slate-200 text-right pr-2 md:pr-4 whitespace-nowrap text-xs md:text-sm">${rowP}</td>`;
                 players.forEach(colP => {
-                    if(rowP === colP) { 
-                        html += `<td class="p-1 md:p-2"><div class="bg-slate-900 rounded-lg p-2 md:p-3 text-slate-700 text-xs text-center">-</div></td>`; 
-                        return; 
-                    }
-                    
+                    if(rowP === colP) { html += `<td class="p-1 md:p-2"><div class="bg-slate-900 rounded-lg p-2 md:p-3 text-slate-700 text-xs text-center">-</div></td>`; return; }
                     let data = (matrixData[rowP] && matrixData[rowP][colP]) ? matrixData[rowP][colP] : null;
-                    // CALCULO SIN EMPATES: Solo cuenta victorias y derrotas
                     let decisiveMatches = data ? (data.total - data.draws) : 0;
                     let wr = decisiveMatches > 0 ? (data.wins / decisiveMatches) * 100 : -1;
-                    
-                    // Si se han enfrentado pero todo fueron empates
                     let text = decisiveMatches > 0 ? `${wr.toFixed(0)}%` : (data && data.total > 0 ? `<span class="text-amber-400 text-[9px]">E</span>` : '-');
-                    
                     let bgColor, textColor;
-                    if (wr === -1) { bgColor = 'bg-slate-900'; textColor = 'text-slate-700'; } // No se han enfrentado
+                    if (wr === -1) { bgColor = 'bg-slate-900'; textColor = 'text-slate-700'; }
                     else if (wr >= 80) { bgColor = 'bg-emerald-800/70'; textColor = 'text-emerald-200'; }
                     else if (wr >= 60) { bgColor = 'bg-emerald-900/40'; textColor = 'text-emerald-300'; }
                     else if (wr >= 40) { bgColor = 'bg-slate-800'; textColor = 'text-slate-300'; }
                     else if (wr >= 20) { bgColor = 'bg-red-900/40'; textColor = 'text-red-300'; }
                     else if (wr >= 0) { bgColor = 'bg-red-800/70'; textColor = 'text-red-200'; }
-                    else { bgColor = 'bg-amber-900/40'; textColor = 'text-amber-400'; } // Caso de solo empates (E)
-
+                    else { bgColor = 'bg-amber-900/40'; textColor = 'text-amber-400'; }
                     html += `<td class="p-1 md:p-2"><div class="${bgColor} ${textColor} rounded-lg p-2 md:p-3 font-mono font-bold text-xs md:text-sm text-center shadow-sm">${text}</div></td>`;
                 });
                 html += '</tr>';
@@ -1058,7 +1072,7 @@
         }
 
         let chart1, chart2, chart3;
-        function renderCharts(ranking, pagos, bolas) { 
+        function renderCharts(ranking, pagos, bolas) {
             if(chart1)chart1.destroy(); if(chart2)chart2.destroy(); if(chart3)chart3.destroy();
             const ctx1 = document.getElementById('rankingChart').getContext('2d');
             const fireGrad = ctx1.createLinearGradient(0, 0, 600, 0); fireGrad.addColorStop(0, '#8b0000'); fireGrad.addColorStop(0.3, '#dc2626'); fireGrad.addColorStop(0.6, '#f97316'); fireGrad.addColorStop(1, '#facc15');
@@ -1068,9 +1082,9 @@
             let bgColors = ranking.map((r, idx) => { if (idx === 0 && r.streakType === 'fire') return leaderFireGrad; if (idx === 0 && r.streakType === 'ice') return leaderIceGrad; if (r.streakType === 'fire') return fireGrad; if (r.streakType === 'ice') return iceGrad; return PLAYER_COLORS[r.nombre] || '#94a3b8'; });
             let textStrokeColors = ranking.map((r, idx) => { if(idx===0 && r.streakType) return '#000'; if(r.streakType === 'fire') return '#facc15'; if(r.streakType === 'ice') return '#fff'; return '#fff'; });
             let labelsWithStreaks = ranking.map(r => r.nombre + (r.streak ? " " + r.streak : ""));
-            chart1 = new Chart(ctx1, { type:'bar', data:{labels:labelsWithStreaks,datasets:[{label:'% Puntuación',data:ranking.map(r=>r.puntuacion),backgroundColor:bgColors,borderRadius:6,borderSkipped:false}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'start',color:'#000',font:{weight:'bold',size:12},formatter:(value)=>value+'%',textStrokeColor: textStrokeColors,textStrokeWidth:2}},scales:{x:{grid:{color:'#334155'},ticks:{color:'#94a3b8'},max:100},y:{ticks:{color:'#94a3b8',font:{size:13}}}}}}); 
-            chart2 = new Chart(document.getElementById('pagosChart'), { type:'doughnut', data:{labels:Object.keys(pagos),datasets:[{data:Object.values(pagos),backgroundColor:['#fbbf24','#38bdf8','#34d399','#a78bfa','#f43f5e','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}}); 
-            chart3 = new Chart(document.getElementById('bolasChart'), { type:'doughnut', data:{labels:Object.keys(bolas),datasets:[{data:Object.values(bolas),backgroundColor:['#34d399','#f43f5e','#fbbf24','#38bdf8','#a78bfa','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}}); 
+            chart1 = new Chart(ctx1, { type:'bar', data:{labels:labelsWithStreaks,datasets:[{label:'% Puntuación',data:ranking.map(r=>r.puntuacion),backgroundColor:bgColors,borderRadius:6,borderSkipped:false}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'start',color:'#000',font:{weight:'bold',size:12},formatter:(value)=>value+'%',textStrokeColor: textStrokeColors,textStrokeWidth:2}},scales:{x:{grid:{color:'#334155'},ticks:{color:'#94a3b8'},max:100},y:{ticks:{color:'#94a3b8',font:{size:13}}}}}});
+            chart2 = new Chart(document.getElementById('pagosChart'), { type:'doughnut', data:{labels:Object.keys(pagos),datasets:[{data:Object.values(pagos),backgroundColor:['#fbbf24','#38bdf8','#34d399','#a78bfa','#f43f5e','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
+            chart3 = new Chart(document.getElementById('bolasChart'), { type:'doughnut', data:{labels:Object.keys(bolas),datasets:[{data:Object.values(bolas),backgroundColor:['#34d399','#f43f5e','#fbbf24','#38bdf8','#a78bfa','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
         }
     </script>
 </body>
