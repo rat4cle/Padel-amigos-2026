@@ -15,6 +15,18 @@
         .leader-fire td { background: linear-gradient(90deg, rgba(255, 140, 0, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(255, 69, 0, 0.3); }
         .leader-ice td { background: linear-gradient(90deg, rgba(0, 191, 255, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(0, 0, 139, 0.3); }
         .tag-btn.active { background-color: #059669 !important; color: white !important; }
+        /* Oculta la barra de scroll nativa para que quede limpio */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Animación suave al cambiar de expediente */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -110,42 +122,105 @@
 
             </div>
         </section>
-        <section id="tab-ficha" class="tab-content hidden space-y-6">
-                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                        <h2 class="text-2xl font-bold text-white flex items-center gap-2">👤 Ficha Técnica del Jugador</h2>
-                        <select id="playerSelector" onchange="renderPlayerProfile()" class="bg-slate-900 border border-emerald-500 text-emerald-400 text-sm font-bold rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer min-w-[200px]"><option value="">Selecciona un jugador...</option></select>
+        <section id="tab-ficha" class="tab-content hidden space-y-0">
+            <div class="mb-6 pl-2 sm:pl-4">
+                <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-3 tracking-wide">
+                    <span class="text-3xl sm:text-4xl">🗂️</span> Archivo de Jugadores
+                </h1>
+                <p class="text-slate-400 mt-1 font-medium text-xs sm:text-sm">Haz clic en las pestañas para extraer el expediente confidencial.</p>
+            </div>
+
+            <!-- PESTAÑAS DE CARPETAS (Los nombres de jugadores) -->
+            <div id="player-folder-tabs" class="flex items-end pl-2 sm:pl-6 overflow-visible w-full overflow-x-auto hide-scrollbar">
+            </div>
+
+            <!-- CONTENEDOR DEL EXPEDIENTE (El contenido) -->
+            <div class="bg-slate-800 border border-slate-600 rounded-b-2xl rounded-tr-2xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] p-6 sm:p-10 relative z-50 -mt-[1px] min-h-[400px] transition-all duration-300">
+                
+                <div id="player-stats-container" class="hidden animate-fade-in">
+                    
+                    <!-- PESTAÑAS INTERNAS (Resumen, Evolución, Radar) -->
+                    <div class="flex gap-2 mb-6 border-b border-slate-700 pb-3">
+                        <button onclick="switchProfileTab('resumen')" id="profile-btn-resumen" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-500 text-slate-950">📊 Resumen</button>
+                        <button onclick="switchProfileTab('evolucion')" id="profile-btn-evolucion" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">📈 Evolución</button>
+                        <button onclick="switchProfileTab('radar')" id="profile-btn-radar" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🕸️ Radar</button>
                     </div>
-                    <div id="player-stats-container" class="hidden space-y-6">
-                        <div>
-                            <div id="profile-badges" class="flex flex-wrap gap-2"></div>
-                            <div id="badge-detail" class="hidden mt-3 bg-slate-900 p-4 rounded-xl border border-amber-900/30 transition-all duration-300"></div>
+
+                    <!-- PESTAÑA INTERNA 1: RESUMEN (Diseño Expediente) -->
+                    <div id="profile-tab-resumen" class="profile-tab-content">
+                        <div class="border-b border-slate-700 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <h2 class="text-xl sm:text-2xl font-black text-white tracking-widest uppercase">
+                                EXPEDIENTE: <span id="prof-nombre" class="text-emerald-400">#001 - JUGADOR</span>
+                            </h2>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 uppercase font-bold block mb-1">Posición Favorita</span><span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span><span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span></div>
-                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-slate-400 uppercase font-bold block mb-1">Victorias / Partidos</span><span id="prof-victorias" class="text-2xl font-black text-emerald-400">0</span><span id="prof-partidosJug" class="text-lg font-bold text-slate-500">/0</span><span id="prof-winrate" class="text-xs text-slate-500 font-bold block mt-1">0% WR</span></div>
-                            <div class="bg-gradient-to-br from-slate-900/50 to-amber-900/20 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-amber-500 uppercase font-bold block mb-1">Socio de Oro</span><span id="prof-socio" class="text-lg font-black text-amber-400 block truncate">-</span><span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold">-</span></div>
-                            <div class="bg-gradient-to-br from-slate-900/50 to-red-900/30 p-4 rounded-xl border border-slate-700 text-center"><span class="text-xs text-red-400 uppercase font-bold block mb-1">⚠️ El Némesis</span><span id="prof-nemesis" class="text-lg font-black text-red-400 block truncate">-</span></div>
-                        </div>
-                        
-                        <!-- Al tener su propia pestaña, esto ya no necesita estar oculto ni tener el botón de ampliar -->
-                        <div id="profile-expanded" class="pt-4 border-t border-slate-700 space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Más veces compañero</span><span id="prof-most-mate" class="text-sm font-bold text-sky-400 block">-</span></div>
-                                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Menos veces rival</span><span id="prof-least-rival" class="text-sm font-bold text-orange-400 block">-</span></div>
-                                <div class="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-center"><span class="text-xs text-slate-400 block mb-1">Pareja rival menos vista</span><span id="prof-least-rival-pair" class="text-sm font-bold text-pink-400 block truncate">-</span></div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Columna Izquierda: Avatar y Win Rate -->
+                            <div class="bg-slate-900/60 rounded-xl border border-slate-700 p-6 flex flex-col items-center justify-center shadow-inner">
+                                <div class="w-28 h-28 sm:w-32 sm:h-32 bg-slate-800 rounded-full border-4 border-slate-600 mb-4 flex items-center justify-center overflow-hidden relative shadow-lg">
+                                    <span class="text-6xl opacity-20 transform translate-y-2">👤</span>
+                                </div>
+                                <h3 id="prof-nombre-card" class="text-2xl font-black text-slate-200 tracking-wide">-</h3>
+                                <div class="text-5xl font-black text-white mt-4"><span id="prof-winrate-main">0%</span></div>
+                                <div class="text-xs text-slate-500 font-bold mt-1">(<span id="prof-victorias-main">0</span>V / <span id="prof-partidosJug-main">0</span>PJ)</div>
+                                <div id="profile-badges" class="flex flex-wrap gap-2 mt-4 justify-center"></div>
                             </div>
-                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">📈 Evolución Mensual (Global)</h4><div class="relative h-64"><canvas id="chartMonthlyEvolution"></canvas></div></div>
-                            <div class="bg-slate-900/50 p-4 rounded-xl border border-emerald-900/30 bg-gradient-to-br from-slate-900/50 to-emerald-900/10"><h4 class="text-md font-bold mb-4 text-emerald-300 uppercase tracking-wider">📊 Evolución en Rango (Partido a Partido)</h4><div class="relative h-64"><canvas id="chartMatchEvolution"></canvas></div></div>
-                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                                <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">🕸️ Perfil Radar (vs Media Grupo)</h4>
-                                <div class="relative h-72"><canvas id="chartRadar"></canvas></div>
+
+                            <!-- Columna Derecha: Stats y Gráficos -->
+                            <div class="lg:col-span-2 grid grid-cols-2 gap-4">
+                                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center">
+                                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Posición Favorita</span>
+                                    <span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span>
+                                    <span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span>
+                                </div>
+                                <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center">
+                                     <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Compañero Frecuente</span>
+                                     <span id="prof-most-mate" class="text-sm font-bold text-sky-400 block mt-2">-</span>
+                                </div>
+                                <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-amber-900/20 p-4 rounded-xl border border-amber-900/30 flex flex-col justify-center">
+                                    <span class="text-[10px] text-amber-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">🏆 Socio de Oro</span>
+                                    <span id="prof-socio" class="text-xl font-black text-amber-400">-</span>
+                                    <span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold mt-1">-</span>
+                                </div>
+                                <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-red-900/20 p-4 rounded-xl border border-red-900/30 flex flex-col justify-center">
+                                    <span class="text-[10px] text-red-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">⚠️ El Némesis</span>
+                                    <span id="prof-nemesis" class="text-xl font-black text-red-400">-</span>
+                                </div>
+                                <div class="col-span-2 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                                    <h4 class="text-md font-bold mb-2 text-slate-300 uppercase tracking-wider text-center">🎾 Rendimiento por Posición</h4>
+                                    <div class="grid grid-cols-2 gap-8 mt-2">
+                                        <div class="flex flex-col items-center"><h5 class="text-sm font-black text-emerald-400 mb-1">REVÉS</h5><div class="w-28 h-28 relative"><canvas id="chartReves"></canvas></div></div>
+                                        <div class="flex flex-col items-center"><h5 class="text-sm font-black text-sky-400 mb-1">DRIVE</h5><div class="w-28 h-28 relative"><canvas id="chartDrive"></canvas></div></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider border-b border-slate-800 pb-2">🎾 Rendimiento por Posición</h4><div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mt-4"><div class="flex flex-col items-center"><h5 class="text-lg font-black text-emerald-400 mb-2">REVÉS</h5><div class="w-40 h-40 relative"><canvas id="chartReves"></canvas></div></div><div class="flex flex-col items-center"><h5 class="text-lg font-black text-sky-400 mb-2">DRIVE</h5><div class="w-40 h-40 relative"><canvas id="chartDrive"></canvas></div></div></div></div>
+                        <div id="badge-detail" class="hidden mt-6 bg-slate-900 p-4 rounded-xl border border-amber-900/30 transition-all duration-300"></div>
                     </div>
+
+                    <!-- PESTAÑA INTERNA 2: EVOLUCIÓN -->
+                    <div id="profile-tab-evolucion" class="profile-tab-content hidden space-y-6">
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                            <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">📈 Evolución Mensual (Global)</h4>
+                            <div class="relative h-64"><canvas id="chartMonthlyEvolution"></canvas></div>
+                        </div>
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-emerald-900/30 bg-gradient-to-br from-slate-900/50 to-emerald-900/10">
+                            <h4 class="text-md font-bold mb-4 text-emerald-300 uppercase tracking-wider">📊 Evolución en Rango (Partido a Partido)</h4>
+                            <div class="relative h-64"><canvas id="chartMatchEvolution"></canvas></div>
+                        </div>
+                    </div>
+
+                    <!-- PESTAÑA INTERNA 3: RADAR -->
+                    <div id="profile-tab-radar" class="profile-tab-content hidden space-y-6">
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                            <h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">🕸️ Perfil Radar (vs Media Grupo)</h4>
+                            <div class="relative h-72"><canvas id="chartRadar"></canvas></div>
+                        </div>
+                    </div>
+
                 </div>
-            </section>
+            </div>
+        </section>
         <section id="tab-parejas" class="tab-content hidden space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">🏆 Top 3 Mejores</h3><div id="top-parejas-body" class="space-y-3"></div></div>
@@ -212,23 +287,67 @@
         const TRAMO1_END_DATE = new Date('2026-05-16T23:59:59').getTime();
         const PLAYER_COLORS = { 'Vijay': '#22c55e', 'Pablo': '#ef4444', 'Jordi': '#3b82f6', 'David': '#22d3ee', 'Garrido': '#a78bfa', 'Jesus': '#ec4899', 'Josemi': '#f97316', 'Lucas': '#fbbf24' };
         let rawDataGlobal = []; let filteredDataGlobal = []; let jugadoresGlobales = [];
+        let selectedPlayerName = "";
         let chartRevesInstance = null; let chartDriveInstance = null; let chartMonthlyInstance = null; let chartMatchInstance = null; let globalBadgeStats = {};
         let tramosData = {}; let globalRankingArray = []; let activeTagFilters = []; let globalJugadoresStats = {};
         let globalFaceOffs = {}; let globalPairFaceOffs = {}; let globalBadges = [];
 
         function getModes(arr) { if(arr.length === 0) return "-"; let freq = {}; arr.forEach(e => { freq[e] = (freq[e] || 0) + 1; }); let max = 0; for(let e in freq) { if(freq[e] > max) max = freq[e]; } let modes = []; for(let e in freq) { if(freq[e] === max) modes.push(e); } return modes.join(", "); }
         function formatScoreMode(modeStr) { if (!modeStr || modeStr === "-") return "-"; return modeStr.split(", ").map(score => { let parts = score.split("-"); if (parts.length === 2) { let p1 = parseInt(parts[0]), p2 = parseInt(parts[1]); if (p1 > p2) return '<span class="text-emerald-400 font-bold">'+score+'</span>'; if (p1 < p2) return '<span class="text-red-400 font-bold">'+score+'</span>'; return '<span class="text-amber-400 font-bold">'+score+'</span>'; } return score; }).join("<span class='text-slate-500'>, </span>"); }
-        function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.getElementById('tab-' + tabId).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400', 'hover:text-white'); }); document.getElementById('btn-' + tabId).classList.remove('text-slate-400', 'hover:text-white'); document.getElementById('btn-' + tabId).classList.add('bg-emerald-500', 'text-slate-950'); }
+        function switchTab(tabId) { document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden')); document.getElementById('tab-' + tabId).classList.remove('hidden'); document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400', 'hover:text-white'); }); document.getElementById('btn-' + tabId).classList.remove('text-slate-400', 'hover:text-white'); document.getElementById('btn-' + tabId).classList.add('bg-emerald-500', 'text-slate-950'); }        function renderPlayerFolderTabs() {
+            const tabsContainer = document.getElementById('player-folder-tabs');
+            if(!tabsContainer) return;
+            let html = '';
+            
+            globalRankingArray.forEach((r, index) => {
+                const isActive = r.nombre === selectedPlayerName;
+                const zIndex = isActive ? 50 : (30 - index);
+                const pIndex = String(index + 1).padStart(3, '0');
+
+                // Clases base para el efecto carpeta
+                let tabClasses = "relative px-4 sm:px-6 py-2.5 rounded-t-xl cursor-pointer select-none transition-all duration-300 -mr-4 border-t border-l border-r border-b-0 flex items-center justify-center font-bold tracking-wider text-[11px] sm:text-sm ";
+
+                if (isActive) {
+                    // Carpeta Activa: Se une al fondo y resalta
+                    tabClasses += "bg-slate-800 border-slate-600 text-emerald-400 pb-4 top-[1px] shadow-[0_-5px_15px_rgba(0,0,0,0.25)]";
+                } else {
+                    // Carpeta Inactiva: Efecto oscurecido, sube al hover
+                    tabClasses += "bg-slate-900 border-slate-700 text-slate-500 hover:bg-slate-800/80 hover:-translate-y-1 hover:text-slate-300 pb-3 shadow-inner";
+                }
+
+                html += `<div onclick="selectPlayer('${r.nombre}')" class="${tabClasses}" style="z-index: ${zIndex}; min-width: 90px;">${pIndex} ${r.nombre}</div>`;
+            });
+
+            tabsContainer.innerHTML = html;
+        }
         function parseCSVDate(dateStr) { if(!dateStr) return 0; dateStr = String(dateStr).trim().split(" ")[0]; let parts; if (dateStr.includes('-')) parts = dateStr.split('-'); else if (dateStr.includes('/')) parts = dateStr.split('/'); else return isNaN(new Date(dateStr).getTime()) ? 0 : new Date(dateStr).getTime(); if (parts && parts.length === 3) { let p0 = parseInt(parts[0], 10), p1 = parseInt(parts[1], 10) - 1, p2 = parseInt(parts[2], 10); if (parts[2].length === 4) return new Date(p2, p1, p0).getTime(); else return new Date(p0, p1, p2).getTime(); } return 0; }
         function setDefaultDates() { const today = new Date(); const y = today.getFullYear(); let m = '' + (today.getMonth() + 1), d = '' + today.getDate(); if (m.length < 2) m = '0' + m; if (d.length < 2) d = '0' + d; document.getElementById('dateStart').value = y+'-01-01'; document.getElementById('dateEnd').value = y+'-'+m+'-'+d; document.getElementById('rango-badge').innerText = "Este Año"; if(rawDataGlobal.length > 0) aplicarFiltrosGlobales(); }
         function clearDates() { document.getElementById('dateStart').value = ""; document.getElementById('dateEnd').value = ""; document.getElementById('rango-badge').innerText = "Histórico Completo"; if(rawDataGlobal.length > 0) aplicarFiltrosGlobales(); }
         function toggleAdvancedStats() { let el = document.getElementById('advanced-stats-container'); let icon = document.getElementById('adv-stats-icon'); el.classList.toggle('hidden'); icon.innerText = el.classList.contains('hidden') ? '+' : '-'; }
         function toggleExpandProfile() { let el = document.getElementById('profile-expanded'); el.classList.toggle('hidden'); renderPlayerProfile(); }
-        function showBadgeDetail(id) { let badge = globalBadges.find(b => b.id === id); let player = document.getElementById('playerSelector').value; if(!badge || !player) return; let val = badge.winnerValues[player]; let detailDiv = document.getElementById('badge-detail'); if(!detailDiv.classList.contains('hidden') && detailDiv.dataset.currentId === id) { detailDiv.classList.add('hidden'); return; } detailDiv.dataset.currentId = id; detailDiv.classList.remove('hidden'); let formattedVal = badge.format ? badge.format(val) : val; detailDiv.innerHTML = '<div class="flex items-center gap-2 mb-2"><span class="text-2xl">'+badge.emoji+'</span><span class="text-lg font-bold text-white">'+badge.name+'</span></div><p class="text-sm text-slate-400 mb-3">'+badge.desc+'</p><div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400">'+formattedVal+'</div>'; }
+        function showBadgeDetail(id) { let badge = globalBadges.find(b => b.id === id); let player = selectedPlayerName; if(!badge || !player) return; let val = badge.winnerValues[player]; let detailDiv = document.getElementById('badge-detail'); if(!detailDiv.classList.contains('hidden') && detailDiv.dataset.currentId === id) { detailDiv.classList.add('hidden'); return; } detailDiv.dataset.currentId = id; detailDiv.classList.remove('hidden'); let formattedVal = badge.format ? badge.format(val) : val; detailDiv.innerHTML = '<div class="flex items-center gap-2 mb-2"><span class="text-2xl">'+badge.emoji+'</span><span class="text-lg font-bold text-white">'+badge.name+'</span></div><p class="text-sm text-slate-400 mb-3">'+badge.desc+'</p><div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400">'+formattedVal+'</div>'; }
 
         window.onload = function() { Papa.parse(urlGoogleSheets, { download: true, header: true, skipEmptyLines: true, complete: function(results) { if (results && results.data && results.data.length > 0) { rawDataGlobal = results.data.map(rawRow => { let row = {}; Object.keys(rawRow).forEach(k => { if(k && rawRow[k] !== undefined && rawRow[k] !== null) { let cleanKey = String(k).replace(/[^a-zA-Z0-9\- ]/g, '').trim().toLowerCase(); row[cleanKey] = rawRow[k]; } }); return row; }).filter(r => r.fecha && String(r.fecha).trim() !== "" && String(r.fecha).trim() !== "*"); if(rawDataGlobal.length === 0) { mostrarErrorPantalla("No se han encontrado partidos válidos."); return; } document.getElementById('loading').classList.add('hidden'); document.getElementById('main-content').classList.remove('hidden'); setDefaultDates(); } else { mostrarErrorPantalla("El documento está vacío."); } }, error: function(err) { mostrarErrorPantalla("No se pudo conectar."); } }); };
         function mostrarErrorPantalla(msg) { document.getElementById('loading-text').innerText = "❌ Error"; document.getElementById('loading-text').classList.remove('animate-pulse'); document.getElementById('error-box').classList.remove('hidden'); document.getElementById('error-box').innerText = msg; }
         
+        function selectPlayer(nombre) {
+            selectedPlayerName = nombre;
+            renderPlayerFolderTabs(); // Actualiza el estilo de las carpetas
+            renderPlayerProfile();    // Pinta los datos
+        }
+        function switchProfileTab(tabId) { 
+            document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.add('hidden')); 
+            document.getElementById('profile-tab-' + tabId).classList.remove('hidden'); 
+            document.querySelectorAll('.profile-tab-btn').forEach(btn => { 
+                btn.classList.remove('bg-emerald-500', 'text-slate-950'); 
+                btn.classList.add('text-slate-400', 'hover:text-white'); 
+            }); 
+            let activeBtn = document.getElementById('profile-btn-' + tabId); 
+            if(activeBtn) { 
+                activeBtn.classList.remove('text-slate-400', 'hover:text-white'); 
+                activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); 
+            } 
+        }
         function aplicarFiltrosGlobales() { let dStart = document.getElementById('dateStart').value, dEnd = document.getElementById('dateEnd').value; let timeStart = dStart ? new Date(dStart).getTime() : 0, timeEnd = dEnd ? new Date(dEnd).getTime() + 86400000 : Infinity; if(dStart && dEnd) document.getElementById('rango-badge').innerText = "Filtrado"; filteredDataGlobal = rawDataGlobal.filter(row => { let rowTime = parseCSVDate(row.fecha); return rowTime >= timeStart && rowTime <= timeEnd; }); filteredDataGlobal.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); procesarDatosInteligentes(filteredDataGlobal); }
 
         function procesarDatosInteligentes(rows) {
@@ -265,7 +384,13 @@
             globalRankingArray.sort((a,b) => b.puntuacion - a.puntuacion || b.difSets - a.difSets);
             document.getElementById('kpi-partidos').innerText = totalPartidosInternos; document.getElementById('kpi-lider').innerText = globalRankingArray.length > 0 ? `${globalRankingArray[0].nombre} (${globalRankingArray[0].puntuacion}%)` : "-"; document.getElementById('kpi-pareja').innerText = parejaLetalText;
             calculateTramos(filteredDataGlobal); calculatePlayerOfMonth(filteredDataGlobal); calculateFaceOffs(rawDataGlobal); calculateBadges(rawDataGlobal); calculateDeudor(jugadoresStats, pagosCount, bolasCount);
-            renderRankingTable(globalRankingArray); renderResultadosHabituales(rows); renderParejasTopBottom(parejasElegibles); displayMatches(filteredDataGlobal); renderCharts(globalRankingArray, pagosCount, bolasCount); renderPlayerProfile();
+            renderRankingTable(globalRankingArray); renderResultadosHabituales(rows); renderParejasTopBottom(parejasElegibles); displayMatches(filteredDataGlobal); renderCharts(globalRankingArray, pagosCount, bolasCount);             
+            // Auto-seleccionar al líder si no hay nadie seleccionado aún
+            if (selectedPlayerName === "" && globalRankingArray.length > 0) {
+                selectedPlayerName = globalRankingArray[0].nombre;
+            }
+            renderPlayerFolderTabs(); // <--- CAMBIO AQUÍ
+            renderPlayerProfile();
             
             // CURIOSIDAD: El Frigorífico
             let lastDates = {};
@@ -564,7 +689,7 @@
         function renderTramoButtons(numTramos) { let container = document.getElementById('tramos-buttons'); container.innerHTML = ""; for(let t = 1; t <= numTramos; t++) { container.innerHTML += `<button onclick="switchTramo(${t})" id="btn-tramo-${t}" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">${tramosData[t].label.split(" (")[0]}</button>`; } container.innerHTML += `<button onclick="switchTramo('total')" id="btn-tramo-total" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">🏆 Total</button>`; }
         function switchTramo(tramoId) { document.querySelectorAll('.tramo-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400'); }); let activeBtn = document.getElementById('btn-tramo-' + tramoId); if(activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); } document.getElementById('tramo-subtitle').innerText = tramosData[tramoId].label; let data = tramosData[tramoId].data; let isFinished = tramosData[tramoId].isFinished; let tbody = document.getElementById('tramos-tbody'); tbody.innerHTML = ""; data.forEach((r, idx) => { let m = idx===0?"👑 ":""; let tr = document.createElement("tr"); tr.className = "hover:bg-slate-750/30 border-b border-slate-800"; let pColor = r.pts >= 7 ? 'text-emerald-400' : (r.pts >= 3 ? 'text-amber-400' : 'text-slate-400'); let ptsDisplay = isFinished ? `<span class="${pColor}">${r.pts} pts</span>` : `<span class="text-slate-500 text-xs">${r.pts} pts*</span>`; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.pj}</td><td class="p-3 text-center font-mono text-slate-300">${r.puntuacion.toFixed(1)}%</td><td class="p-3 text-right font-mono font-bold">${ptsDisplay}</td>`; tbody.appendChild(tr); }); }
 
-        function populateSelectors(jugadores) { let selIds = ['playerSelector', 'cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2', 'mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; selIds.forEach(id => { let el = document.getElementById(id); let val = el.value; let html = (id === 'playerSelector') ? '<option value="">Selecciona...</option>' : '<option value="">Jugador</option>'; jugadores.forEach(j => html += `<option value="${j}">${j}</option>`); el.innerHTML = html; if(jugadores.includes(val)) el.value = val; }); updateMMSelectors(0); }
+        function populateSelectors(jugadores) { let selIds = ['cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2', 'mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; selIds.forEach(id => { let el = document.getElementById(id); let val = el.value; let html = (id === 'playerSelector') ? '<option value="">Selecciona...</option>' : '<option value="">Jugador</option>'; jugadores.forEach(j => html += `<option value="${j}">${j}</option>`); el.innerHTML = html; if(jugadores.includes(val)) el.value = val; }); updateMMSelectors(0); }
         function calculateDeudor(stats, pagos, bolas) { let aportes = {}; let totalMatches = 0; for(let j in stats) { if(stats[j].partidos >= 3 || MANDATORY_PLAYERS.includes(j)) { aportes[j] = { pagos: 0, pj: stats[j].partidos, bolas: 0 }; totalMatches += stats[j].partidos; } } for(let p in pagos) { if(aportes[p]) aportes[p].pagos = pagos[p]; } for(let b in bolas) { if(aportes[b]) aportes[b].bolas = bolas[b]; } let totalPayments = Object.values(pagos).reduce((a, b) => a + b, 0); let maxDebt = -Infinity, deudor = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedPayments = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalPayments : 0; let debt = expectedPayments - aportes[j].pagos; if(debt > maxDebt) { maxDebt = debt; deudor = j; } } document.getElementById('deudor-insight').innerText = `Las matemáticas no mienten. Teniendo en cuenta partidos jugados y pagos realizados, el próximo partido debe pagarlo: 💸 ${deudor}.`; let totalBolas = Object.values(bolas).reduce((a, b) => a + b, 0); let maxDebtBolas = -Infinity, deudorBolas = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedBolas = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalBolas : 0; let debtB = expectedBolas - aportes[j].bolas; if(debtB > maxDebtBolas) { maxDebtBolas = debtB; deudorBolas = j; } } document.getElementById('bolas-insight').innerText = `Teniendo en cuenta partidos jugados y bolas aportadas, al próximo le toca llevar bolas: 🎾 ${deudorBolas}.`; }
 
         function updateMMSelectors(changedId) { let ids = ['mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; let selectedValues = {}; ids.forEach(id => { selectedValues[id] = document.getElementById(id).value; }); ids.forEach(id => { let el = document.getElementById(id); let currentVal = selectedValues[id]; let html = '<option value="">Jugador</option>'; jugadoresGlobales.forEach(j => { let isSelectedElsewhere = ids.some(otherId => otherId !== id && selectedValues[otherId] === j); let disabledAttr = isSelectedElsewhere ? 'disabled class="text-slate-600"' : ''; let selectedAttr = j === currentVal ? 'selected' : ''; html += `<option value="${j}" ${disabledAttr} ${selectedAttr}>${j}</option>`; }); el.innerHTML = html; el.value = currentVal; }); }
@@ -623,7 +748,7 @@
         function renderTeams(options, title) { let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); let html = `<h4 class="text-lg font-bold mb-3 text-purple-300">${title}</h4>`; if (options.length > 1) { html += `<p class="text-xs text-cyan-400 mb-3 font-bold">⚡ ${options.length} opciones empatadas — elige la que prefieras:</p>`; } options.forEach((opt, idx) => { let [n1, n2, n3, n4] = opt; let avg1 = (((stats[n1]||0) + (stats[n2]||0)) / 2).toFixed(1); let avg2 = (((stats[n3]||0) + (stats[n4]||0)) / 2).toFixed(1); html += `<div class="grid grid-cols-2 gap-4 ${options.length > 1 ? 'mb-3 p-3 rounded-xl border border-slate-700' : ''}">`; if (options.length > 1) html += `<div class="col-span-2 text-xs text-slate-500 font-bold mb-1">Opción ${idx + 1}</div>`; html += `<div class="bg-emerald-900/20 p-3 rounded-lg border border-emerald-800/50"><div class="text-sm text-emerald-400 font-bold">EQUIPO 1</div><div class="text-xl font-black text-white">${n1} & ${n2}</div><div class="text-xs text-slate-400">Media: ${avg1}%</div></div>`; html += `<div class="bg-red-900/20 p-3 rounded-lg border border-red-800/50"><div class="text-sm text-red-400 font-bold">EQUIPO 2</div><div class="text-xl font-black text-white">${n3} & ${n4}</div><div class="text-xs text-slate-400">Media: ${avg2}%</div></div>`; html += `</div>`; }); document.getElementById('mm-result').innerHTML = html; }
 
         function renderPlayerProfile() { 
-            let player = document.getElementById('playerSelector').value; let container = document.getElementById('player-stats-container'); document.getElementById('badge-detail').classList.add('hidden'); 
+            let player = selectedPlayerName; let container = document.getElementById('player-stats-container'); document.getElementById('badge-detail').classList.add('hidden'); 
             if(!player) { container.classList.add('hidden'); return; } 
             container.classList.remove('hidden'); 
             let htmlBadges = ""; globalBadges.forEach(b => { if(b.winners.includes(player)) { htmlBadges += `<div onclick="showBadgeDetail('${b.id}')" class="bg-slate-800 px-3 py-1.5 rounded-full text-xs font-bold border border-slate-600 cursor-pointer hover:border-emerald-500 transition-colors">${b.emoji} ${b.name}</div>`; } }); 
@@ -653,12 +778,18 @@
             let validSocios = []; for(let s in sociosStats) { if(sociosStats[s].p >= 2) { let wls = sociosStats[s].w + sociosStats[s].l; validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); } } 
             validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p); if(validSocios.length === 0) { for(let s in sociosStats) { let wls = sociosStats[s].w + sociosStats[s].l; validSocios.push({name: s, w: sociosStats[s].w, l: sociosStats[s].l, p: sociosStats[s].p, wr: wls > 0 ? sociosStats[s].w / wls : 0}); } validSocios.sort((a,b) => a.l - b.l || b.wr - a.wr || b.p - a.p); } 
             let maxNemesis = 0; for(let n in nemesisCount) if(nemesisCount[n] > maxNemesis) maxNemesis = nemesisCount[n]; let nemeses = []; for(let n in nemesisCount) if(nemesisCount[n] === maxNemesis) nemeses.push(n); let nemesisText = nemeses.length > 0 ? `${nemeses.join(", ")} (${maxNemesis} D)` : "Nadie"; 
-            document.getElementById('prof-victorias').innerText = vT; document.getElementById('prof-partidosJug').innerText = `/ ${pT}`; 
+            
             let winRateCalc = (vT + lT) > 0 ? Math.round((vT / (vT + lT)) * 100) : 0;
-            document.getElementById('prof-winrate').innerText = `${winRateCalc}% WR`; 
+            let pIndex = globalRankingArray.findIndex(p => p.nombre === player) + 1;
+            document.getElementById('prof-nombre').innerText = `#${String(pIndex).padStart(3, '0')} - ${player.toUpperCase()}`;
+            document.getElementById('prof-nombre-card').innerText = player;
+            document.getElementById('prof-winrate-main').innerText = `${winRateCalc}%`;
+            document.getElementById('prof-victorias-main').innerText = vT;
+            document.getElementById('prof-partidosJug-main').innerText = pT;
+
             document.getElementById('prof-socio').innerText = validSocios.length > 0 ? validSocios[0].name : "-"; document.getElementById('prof-socio-wr').innerText = validSocios.length > 0 ? `${(validSocios[0].wr*100).toFixed(0)}% efectividad (${validSocios[0].w}V / ${validSocios[0].p} PJ)` : "-"; document.getElementById('prof-nemesis').innerText = nemesisText; 
-            let mostMate = Object.entries(sociosStats).sort((a,b) => b[1].p - a[1].p)[0]; let leastRival = Object.entries(opponentsCount).sort((a,b) => a[1] - b[1])[0]; let leastRivalPair = Object.entries(opponentPairsCount).sort((a,b) => a[1] - b[1])[0]; 
-            document.getElementById('prof-most-mate').innerText = mostMate ? `${mostMate[0]} (${mostMate[1].p} veces)` : "-"; document.getElementById('prof-least-rival').innerText = leastRival ? `${leastRival[0]} (${leastRival[1]} veces)` : "-"; document.getElementById('prof-least-rival-pair').innerText = leastRivalPair ? `${leastRivalPair[0]} (${leastRivalPair[1]} veces)` : "-"; 
+            let mostMate = Object.entries(sociosStats).sort((a,b) => b[1].p - a[1].p)[0]; 
+            document.getElementById('prof-most-mate').innerText = mostMate ? `${mostMate[0]} (${mostMate[1].p} veces)` : "-"; 
             renderPositionCharts(rV, rD, rJ-rV-rD, dV, dD, dJ-dV-dD); renderPlayerMonthlyChart(player); renderPlayerMatchChart(player);            renderRadarChart(player); 
         }
 
