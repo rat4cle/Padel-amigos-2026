@@ -817,7 +817,7 @@
             });
             let worstDay="", worstWR=101; let dayNames=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
             for(let d in dayStats) { let wr=dayStats[d].p>0?(dayStats[d].w/dayStats[d].p)*100:0; if(wr<worstWR&&dayStats[d].p>=10){worstWR=wr;worstDay=dayNames[d];} }
-            document.getElementById('cur-dia').innerText = `📅 El ${worstDay} es el día con peor Win Rate del grupo (${worstWR.toFixed(0)}% V). ¡Cuidado con las resacas!`;
+            document.getElementById('cur-dia').innerText = `El ${worstDay} es el día con peor Win Rate del grupo (${worstWR.toFixed(0)}% V). ¡Cuidado con las resacas!`;
             renderHeatmap();
         }
 
