@@ -729,7 +729,7 @@
                     <!-- CURIOSIDADES -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🥶 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
-                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">📅 El Día Maldito</h3><p id="cur-dia" class="text-sm text-slate-400">Calculando...</p></div>
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🎾 Vida de las Bolas</h3><p id="cur-bolas-vida" class="text-sm text-slate-400">Calculando...</p></div>
                     </div>
                 </section>
 
@@ -1332,22 +1332,63 @@
                 if (!MANDATORY_PLAYERS.includes(j)) continue; // Filtra solo los 5 fijos
                 let diff=Math.floor((now-lastDates[j])/86400000); if(diff>maxDays){maxDays=diff;frozen=j;} 
             }
-            document.getElementById('cur-frio').innerText = `🥶 ${frozen} lleva ${maxDays} días sin jugar. ¡Sacadlo del congelador!`;
+            document.getElementById('cur-frio').innerText = `${frozen} lleva ${maxDays} días sin jugar. ¡Sacadlo del congelador!`;
 
-            // CURIOSIDAD: El Día Maldito
-            let dayStats = {};
+            // CURIOSIDAD: Vida de las Bolas (Lógica por persona)
+            let activeBalls = {}; // Guarda el estado del bote de cada jugador
+            let currentBallsInfo = { provider: "Nadie", openedDate: null, matchesUsed: 0 };
+
             rows.forEach(row => {
-                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return;
-                let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
-                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
-                let winT1 = String(row['ganadores'] || "").includes(j1A) && String(row['ganadores'] || "").includes(j1B);
-                let winT2 = String(row['ganadores'] || "").includes(j2A) && String(row['ganadores'] || "").includes(j2B);
-                let d = new Date(parseCSVDate(row.fecha)).getDay();
-                [j1A,j1B,j2A,j2B].forEach(j => { if(j&&j!=="Playtomic") { if(!dayStats[d])dayStats[d]={w:0,p:0}; dayStats[d].p++; if((winT1&&[j1A,j1B].includes(j))||(winT2&&[j2A,j2B].includes(j)))dayStats[d].w++; }});
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; 
+                if(isExterno) return; 
+
+                let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*";
+                
+                // Averiguamos quién trajo las bolas a la pista (o quién pagó si no hay dato específico)
+                let provider = String(row['pelotas'] || "").trim();
+                if(!provider || provider.toLowerCase() === "false" || provider === "*" || provider === "Playtomic") {
+                    provider = String(row['pago reserva'] || "").trim();
+                }
+                if(!provider || provider.toLowerCase() === "false" || provider === "*" || provider === "Playtomic") {
+                    provider = null;
+                }
+
+                let matchDate = parseCSVDate(row.fecha);
+
+                if (provider) {
+                    if (isB) {
+                        // Esta persona estrena bolas: reseteamos su contador y anotamos la fecha
+                        activeBalls[provider] = { openedDate: matchDate, matchesUsed: 1 };
+                    } else {
+                        // Esta persona trae sus bolas usadas
+                        if (!activeBalls[provider]) {
+                            // Primera vez que registramos sus bolas, pero no las estrenó en este partido
+                            activeBalls[provider] = { openedDate: null, matchesUsed: 1 };
+                        } else {
+                            // Ya teníamos registro de sus bolas, sumamos un partido de uso
+                            activeBalls[provider].matchesUsed += 1;
+                        }
+                    }
+                    // Actualizamos las bolas que están rodando en la pista actualmente
+                    currentBallsInfo = { provider: provider, openedDate: activeBalls[provider].openedDate, matchesUsed: activeBalls[provider].matchesUsed };
+                } else if (currentBallsInfo.provider && activeBalls[currentBallsInfo.provider]) {
+                    // Si no sabemos quién las trajo, asumimos que se jugaron con las mismas de la semana pasada
+                    activeBalls[currentBallsInfo.provider].matchesUsed += 1;
+                    currentBallsInfo.matchesUsed = activeBalls[currentBallsInfo.provider].matchesUsed;
+                }
             });
-            let worstDay="", worstWR=101; let dayNames=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
-            for(let d in dayStats) { let wr=dayStats[d].p>0?(dayStats[d].w/dayStats[d].p)*100:0; if(wr<worstWR&&dayStats[d].p>=10){worstWR=wr;worstDay=dayNames[d];} }
-            document.getElementById('cur-dia').innerText = `El ${worstDay} es el día con peor Win Rate del grupo (${worstWR.toFixed(0)}% V). ¡Cuidado con las resacas!`;
+
+            let bolasVidaText = "";
+            if (currentBallsInfo.openedDate) {
+                let formattedDate = new Date(currentBallsInfo.openedDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                bolasVidaText = `<strong class="text-slate-200">${currentBallsInfo.provider}</strong> estrenó las actuales el ${formattedDate}. Llevan <strong class="text-amber-400">${currentBallsInfo.matchesUsed} partidos</strong>.`;
+            } else if (currentBallsInfo.provider !== "Nadie") {
+                bolasVidaText = `<strong class="text-slate-200">${currentBallsInfo.provider}</strong> trajo sus bolas usadas. Llevan <strong class="text-amber-400">${currentBallsInfo.matchesUsed} partidos</strong> registrados.`;
+            } else {
+                bolasVidaText = `No hay datos de bolas recientes.`;
+            }
+
+            document.getElementById('cur-bolas-vida').innerHTML = bolasVidaText;
             renderHeatmap();
         }
 
