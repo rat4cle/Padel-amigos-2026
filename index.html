@@ -406,7 +406,7 @@
                         </div>
                         
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                            <h3 class="text-xl font-black mb-2 text-sky-400 text-center">🕸️ Matriz de Dominancia</h3>
+                            <h3 class="text-xl font-black mb-2 text-sky-400 text-center">🧮 Matriz de Dominancia</h3>
                             <p class="text-xs text-slate-500 mb-4 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
                             <div class="w-full overflow-x-auto pb-2 flex-1 flex items-start justify-center">
                                 <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
@@ -449,20 +449,41 @@
                                     <h2 class="text-xl sm:text-2xl font-black text-white tracking-widest uppercase">EXPEDIENTE: <span id="prof-nombre" class="text-emerald-400">#001 - JUGADOR</span></h2>
                                 </div>
                                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                    <div class="bg-slate-900/60 rounded-xl border border-slate-700 p-6 flex flex-col items-center justify-center shadow-inner">
+                                        <div class="bg-slate-900/60 rounded-xl border border-slate-700 p-6 flex flex-col items-center justify-center shadow-inner">
                                         <div class="w-28 h-28 sm:w-32 sm:h-32 bg-slate-800 rounded-full border-4 border-slate-600 mb-4 flex items-center justify-center overflow-hidden relative shadow-lg">
                                             <img id="prof-foto" src="" alt="Foto" class="w-full h-full object-cover hidden">
                                             <span id="prof-foto-placeholder" class="text-6xl opacity-20 transform translate-y-2">👤</span>
                                         </div>
                                         <h3 id="prof-nombre-card" class="text-2xl font-black text-slate-200 tracking-wide">-</h3>
-                                        <div class="text-5xl font-black text-white mt-4"><span id="prof-winrate-main">0%</span></div>
-                                        <div class="text-xs text-slate-500 font-bold mt-1">(<span id="prof-victorias-main">0</span>V / <span id="prof-partidosJug-main">0</span>PJ)</div>
+                                        
+                                        <!-- Nuevas cajas de Puntuación -->
+                                        <div class="mt-4 text-center w-full space-y-2">
+                                            <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-600">
+                                                <span class="text-[10px] text-emerald-400/80 uppercase font-bold block tracking-wider">% Puntuación General</span>
+                                                <span id="prof-puntuacion-main" class="text-3xl font-black text-white">0%</span>
+                                            </div>
+                                            <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-600">
+                                                <span class="text-[10px] text-amber-400/80 uppercase font-bold block tracking-wider">Pts Acumulados (Tramos)</span>
+                                                <span id="prof-tramos-main" class="text-3xl font-black text-white">0</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="lg:col-span-2 grid grid-cols-2 gap-4">
+                                        <div class="lg:col-span-2 grid grid-cols-2 gap-4">
                                         <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Posición Favorita</span><span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span><span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span></div>
-                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Compañero Frecuente</span><span id="prof-most-mate" class="text-sm font-bold text-sky-400 block mt-2">-</span></div>
+                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center">
+                                            <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">VICTORIAS / PARTIDOS</span>
+                                            <div class="text-3xl font-black block">
+                                                <span id="prof-wins-box" class="text-emerald-400">0</span><span class="text-slate-600">/</span><span id="prof-matches-box" class="text-slate-400">0</span>
+                                            </div>
+                                            <span id="prof-winrate-percent" class="text-xs text-slate-500 font-bold block mt-1">0% WR</span>
+                                        </div>
                                         <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-amber-900/20 p-4 rounded-xl border border-amber-900/30 flex flex-col justify-center"><span class="text-[10px] text-amber-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">🏆 Socio de Oro</span><span id="prof-socio" class="text-xl font-black text-amber-400">-</span><span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold mt-1">-</span></div>
                                         <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-red-900/20 p-4 rounded-xl border border-red-900/30 flex flex-col justify-center"><span class="text-[10px] text-red-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">⚠️ El Némesis</span><span id="prof-nemesis" class="text-xl font-black text-red-400">-</span></div>
+                                        
+                                        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-700"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1 block">Más veces compañero</span><span id="prof-most-mate" class="text-sm font-bold text-sky-400 block">-</span></div>
+                                        <div class="bg-gradient-to-br from-slate-900/60 to-orange-900/20 p-3 rounded-xl border border-orange-900/30 flex flex-col justify-center"><span class="text-[10px] text-orange-500/70 uppercase font-bold tracking-wider mb-1 flex items-center gap-1">👀 Menos veces rival</span><span id="prof-least-rival" class="text-sm font-black text-orange-400">-</span></div>
+                                        <div class="col-span-2 bg-gradient-to-br from-slate-900/60 to-pink-900/20 p-3 rounded-xl border border-pink-900/30 flex flex-col justify-center"><span class="text-[10px] text-pink-500/70 uppercase font-bold tracking-wider mb-1 flex items-center gap-1">Pareja rival menos vista</span><span id="prof-least-pair" class="text-sm font-black text-pink-400">-</span></div>
+
                                         <div class="col-span-2 bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-2 text-slate-300 uppercase tracking-wider text-center">🎾 Rendimiento por Posición</h4><div class="grid grid-cols-2 gap-8 mt-2"><div class="flex flex-col items-center"><h5 class="text-sm font-black text-emerald-400 mb-1">REVÉS</h5><div class="w-28 h-28 relative"><canvas id="chartReves"></canvas></div></div><div class="flex flex-col items-center"><h5 class="text-sm font-black text-sky-400 mb-1">DRIVE</h5><div class="w-28 h-28 relative"><canvas id="chartDrive"></canvas></div></div></div></div>
                                     </div>
                                 </div>
@@ -1047,12 +1068,41 @@
             document.getElementById('prof-nombre-card').innerText = player;
             let imgSrc = PLAYER_IMAGES[player]; let imgEl = document.getElementById('prof-foto'); let placeholderEl = document.getElementById('prof-foto-placeholder');
             if(imgSrc) { imgEl.src = imgSrc; imgEl.classList.remove('hidden'); placeholderEl.classList.add('hidden'); } else { imgEl.classList.add('hidden'); placeholderEl.classList.remove('hidden'); }
-            document.getElementById('prof-winrate-main').innerText = `${winRateCalc}%`;
-            document.getElementById('prof-victorias-main').innerText = vT;
-            document.getElementById('prof-partidosJug-main').innerText = pT;
+            
+            // Nuevos datos de Win Rate en la caja derecha
+            document.getElementById('prof-wins-box').innerText = vT;
+            document.getElementById('prof-matches-box').innerText = pT;
+            document.getElementById('prof-winrate-percent').innerText = `${winRateCalc}% WR`;
+
+            // Puntuaciones en la tarjeta izquierda
+            let playerRankingData = globalRankingArray.find(r => r.nombre === player);
+            document.getElementById('prof-puntuacion-main').innerText = playerRankingData ? `${playerRankingData.puntuacion}%` : '0%';
+            
+            let playerTramosData = tramosData['total'] ? tramosData['total'].data.find(r => r.nombre === player) : null;
+            document.getElementById('prof-tramos-main').innerText = playerTramosData ? `${playerTramosData.pts} pts` : '0 pts';
             document.getElementById('prof-socio').innerText = validSocios.length > 0 ? validSocios[0].name : "-"; document.getElementById('prof-socio-wr').innerText = validSocios.length > 0 ? `${(validSocios[0].wr*100).toFixed(0)}% efectividad (${validSocios[0].w}V / ${validSocios[0].p} PJ)` : "-"; document.getElementById('prof-nemesis').innerText = nemesisText;
             let mostMate = Object.entries(sociosStats).sort((a,b) => b[1].p - a[1].p)[0];
             document.getElementById('prof-most-mate').innerText = mostMate ? `${mostMate[0]} (${mostMate[1].p} veces)` : "-";
+            
+            // Calcular Menos veces rival
+            let minRivalCount = Infinity, leastSeenRival = "-";
+            for(let r in opponentsCount) {
+                if(opponentsCount[r] < minRivalCount) {
+                    minRivalCount = opponentsCount[r];
+                    leastSeenRival = r;
+                }
+            }
+            document.getElementById('prof-least-rival').innerText = leastSeenRival !== "-" ? `${leastSeenRival} (${minRivalCount} veces)` : "-";
+
+            // Calcular Pareja rival menos vista
+            let minPairCount = Infinity, leastSeenPair = "-";
+            for(let p in opponentPairsCount) {
+                if(opponentPairsCount[p] < minPairCount) {
+                    minPairCount = opponentPairsCount[p];
+                    leastSeenPair = p;
+                }
+            }
+            document.getElementById('prof-least-pair').innerText = leastSeenPair !== "-" ? `${leastSeenPair} (${minPairCount} veces)` : "-";
             renderPositionCharts(rV, rD, rJ-rV-rD, dV, dD, dJ-dV-dD); renderPlayerMonthlyChart(player); renderPlayerMatchChart(player); renderRadarChart(player);
         }
 
