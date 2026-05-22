@@ -396,7 +396,7 @@
         body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
             grid-template-rows: 1fr 1fr !important; 
             grid-template-columns: 2.5fr 1fr 1fr 1.5fr 2.5fr !important;
-            gap: 0.5rem !important; /* Reducido de 1rem a 0.5rem para acercar filas */
+            gap: 0 !important; /* Reducido de 1rem a 0.5rem para acercar filas */
             height: 100%; 
             min-height: 0;
             /* IMPORTANTE: 'start' sube el contenido de Team 1 y Team 2 a la parte superior de su celda */
@@ -448,12 +448,12 @@
 
             /* 1. ELIMINAR MÁRGENES DEL CONTENEDOR */
             body.in-fullscreen-mode #scoreboard-wrapper {
-                padding: 0.3vh 1vh !important; /* Margen mínimo solo arriba/abajo */
+                padding: 0.5vh 1vh !important; /* Margen mínimo solo arriba/abajo */
             }
 
             /* 2. HEADER ULTRA COMPACTO */
             body.in-fullscreen-mode .bg-slate-900\/50 {
-                padding: 0.3vh 1vh !important;
+                padding: 0.5vh 1vh !important;
                 margin-bottom: 0 !important; /* Sin espacio bajo el header */
             }
 
@@ -464,7 +464,7 @@
             body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
                 grid-template-rows: 1fr 1fr !important; 
                 grid-template-columns: 2fr 1fr 1fr 1.5fr 2fr !important; /* Ajustado para aprovechar ancho */
-                gap: 0.1vh !important; /* Gap mínimo entre celdas */
+                gap: 0.2vh !important; /* Gap mínimo entre celdas */
                 height: 100%;
                 align-items: center !important; 
             }
@@ -485,7 +485,7 @@
             
             /* Nombres */
             body.in-fullscreen-mode .text-xl { 
-                font-size: 5vh !important; /* Bastante más grande */
+                font-size: 6vh !important; /* Bastante más grande */
             }
             
             /* Sets y Games */
@@ -495,25 +495,25 @@
             
             /* SCORE - El protagonista */
             body.in-fullscreen-mode .text-4xl { 
-                font-size: 11vh !important; /* Muy grande para aprovechar la altura */
+                font-size: 15vh !important; /* Muy grande para aprovechar la altura */
                 line-height: 1;
             }
 
             /* 6. BOTONES MÁS GRANDES */
             body.in-fullscreen-mode #sb-actions-1,
             body.in-fullscreen-mode #sb-actions-2 {
-                grid-template-rows: 1fr 1fr !important;
-                gap: 0.3vh !important; /* Pequeño espacio entre botones */
+                grid-template-rows: 1fr 2fr !important;
+                gap: 0.5vh !important; /* Pequeño espacio entre botones */
             }
 
             body.in-fullscreen-mode button {
-                font-size: 2.5vh !important; /* Texto grande y legible */
+                font-size: 3.5vh !important; /* Texto grande y legible */
                 font-weight: 900 !important;
                 padding: 0 !important;
             }
 
             body.in-fullscreen-mode .btn-winner {
-                font-size: 3vh !important;
+                font-size: vh !important;
             }
             
             /* Iconos de saque pequeños pero visibles */
