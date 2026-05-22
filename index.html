@@ -440,6 +440,80 @@
             display: block;
             margin-bottom: 2px;
         }
+                /* ==========================================
+           AJUSTES ESPECÍFICOS PARA MÓVIL (Portrait)
+           ========================================== */
+        @media (max-width: 768px) {
+            
+            /* 1. Ocultar las cabeceras de columna (SET, GAME...) para ahorrar espacio */
+            body.in-fullscreen-mode .mb-4 {
+                display: none !important;
+            }
+
+            /* 2. Convertir la fila horizontal (5 columnas) en una lista vertical (Flex column) */
+            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
+                display: flex !important;
+                flex-direction: column !important; /* Apilar elementos verticalmente */
+                height: auto !important; /* Dejar que crezca según el contenido */
+                width: 100% !important;
+                gap: 8px !important;
+                padding: 5px 0;
+                align-items: stretch; /* Los elementos ocupan todo el ancho */
+            }
+
+            /* 3. Estilizar los elementos apilados (Cada celda de la cuadrícula original) */
+            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] > div {
+                width: 100% !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                background-color: rgba(255, 255, 255, 0.05); /* Fondo suave para distinguir filas */
+                border-radius: 8px;
+                padding: 10px 0 !important;
+            }
+
+            /* 4. Reordenar elementos visualmente (Opcional: Score arriba) */
+            /* Si quieres que la Puntuación salga antes que Sets/Games, descomenta esto:
+            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] > div:nth-child(4) { order: -1; } 
+            */
+
+            /* 5. Ajustar tamaños de fuente para móvil */
+            body.in-fullscreen-mode .text-xl { font-size: 1.8rem !important; } /* Nombres */
+            body.in-fullscreen-mode .text-3xl { font-size: 2.5rem !important; } /* Sets */
+            body.in-fullscreen-mode .text-4xl { font-size: 3.5rem !important; } /* Score */
+
+            /* 6. Ajustar el grid de botones (2x2) para que quepan bien */
+            body.in-fullscreen-mode #sb-actions-1,
+            body.in-fullscreen-mode #sb-actions-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important; /* 2 columnas */
+                grid-template-rows: auto auto !important;
+                gap: 5px !important;
+                width: 100%;
+                padding: 0 10px;
+                box-sizing: border-box;
+                background-color: transparent !important; /* Quitar fondo del contenedor de botones */
+            }
+
+            /* 7. Botones más pequeños y compactos */
+            body.in-fullscreen-mode button {
+                font-size: 1rem !important; /* Texto legible */
+                padding: 8px 5px !important;
+                height: auto !important;
+                line-height: 1.2;
+            }
+
+            body.in-fullscreen-mode .btn-winner {
+                font-size: 1.2rem !important;
+                grid-column: span 2 !important; /* El botón Winner ocupa todo el ancho */
+            }
+            
+            /* Ajuste final para que haya espacio para scroll si es necesario */
+            body.in-fullscreen-mode #scoreboard-wrapper {
+                justify-content: flex-start !important; /* Empezar arriba */
+                overflow-y: auto !important; /* Permitir scroll vertical si es muy largo */
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
