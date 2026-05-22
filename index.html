@@ -441,86 +441,81 @@
             margin-bottom: 2px;
         }
                 /* ==========================================
-           FIX MÓVIL DEFINITIVO (POR IDs)
+           FIX PARA MÓVIL EN HORIZONTAL (LANDSCAPE)
+           Detecta pantallas con poca altura (menos de 600px)
            ========================================== */
-        
-        /* Activar para pantallas menores a 640px (Casi todos los móviles) */
-        @media (max-width: 640px) {
+        @media (max-height: 600px) {
 
             /* 1. Permitir scroll en el contenedor principal */
             body.in-fullscreen-mode #scoreboard-wrapper {
                 display: block !important;
-                overflow-y: auto !important;
+                overflow-y: auto !important; /* Scroll vertical activado */
                 padding: 10px !important;
             }
 
-            /* 2. Ocultar cabeceras para ganar espacio */
+            /* 2. Ocultar cabeceras para ganar espacio vertical */
             body.in-fullscreen-mode .mb-4 {
                 display: none !important;
             }
 
-            /* 3. FORZAR LAS FILAS (TEAM 1 y TEAM 2) A SER VERTICALES */
+            /* 3. FORZAR LAS FILAS A SER VERTICALES (Apiladas) */
             body.in-fullscreen-mode #sb-row1,
             body.in-fullscreen-mode #sb-row2 {
-                display: flex !important;          /* Romper el Grid */
-                flex-direction: column !important; /* Apilar verticalmente */
-                height: auto !important;           /* Altura automática */
+                display: flex !important;
+                flex-direction: column !important; /* Poner todo en una columna */
+                height: auto !important;
                 width: 100% !important;
-                margin-bottom: 25px !important;    /* Separación entre equipos */
+                margin-bottom: 20px !important;
                 border: 1px solid rgba(255,255,255,0.2);
                 border-radius: 12px;
                 background-color: rgba(0,0,0,0.3);
                 padding: 10px !important;
             }
 
-            /* 4. Hacer que cada columna (Nombre, Set, Game...) ocupe todo el ancho */
+            /* 4. Hacer que cada dato (Nombre, Set, Game...) ocupe todo el ancho */
             body.in-fullscreen-mode #sb-row1 > div,
             body.in-fullscreen-mode #sb-row2 > div {
                 width: 100% !important;
                 display: flex !important;
-                justify-content: center !important; /* Centrar contenido horizontalmente */
-                align-items: center !important;     /* Centrar contenido verticalmente */
-                padding: 5px 0 !important;
+                justify-content: center !important;
+                align-items: center !important;
+                padding: 8px 0 !important;
                 text-align: center !important;
                 border-bottom: 1px solid rgba(255,255,255,0.05);
             }
 
-            /* Eliminar borde del último elemento */
             body.in-fullscreen-mode #sb-row1 > div:last-child,
             body.in-fullscreen-mode #sb-row2 > div:last-child {
                 border-bottom: none !important;
             }
 
-            /* 5. Tamaños de letra optimizados para móvil apilado */
-            body.in-fullscreen-mode .text-xl { font-size: 1.8rem !important; } /* Nombre */
-            body.in-fullscreen-mode .text-3xl { font-size: 2.2rem !important; } /* Set/Game */
-            body.in-fullscreen-mode .text-4xl { font-size: 3.5rem !important; } /* Score */
+            /* 5. Tamaños de letra ajustados para altura reducida */
+            body.in-fullscreen-mode .text-xl { font-size: 1.5rem !important; }
+            body.in-fullscreen-mode .text-3xl { font-size: 2rem !important; }
+            body.in-fullscreen-mode .text-4xl { font-size: 3rem !important; }
 
-            /* 6. Reorganizar los botones en cuadrícula 2x2 */
+            /* 6. Botones en cuadrícula */
             body.in-fullscreen-mode #sb-actions-1,
             body.in-fullscreen-mode #sb-actions-2 {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
-                grid-template-rows: auto auto !important;
                 gap: 8px !important;
                 width: 100% !important;
                 padding: 0 5px !important;
                 margin-top: 5px !important;
             }
 
-            /* 7. Estilo de botones */
             body.in-fullscreen-mode button {
                 font-size: 1rem !important;
                 font-weight: 700 !important;
-                padding: 12px 5px !important;
+                padding: 10px !important;
                 height: auto !important;
                 line-height: 1.1;
             }
 
-            /* El botón WINNER ocupa todo el ancho */
             body.in-fullscreen-mode .btn-winner {
                 grid-column: span 2 !important;
-                font-size: 1.2rem !important;
+                font-size: 1.1rem !important;
             }
         }
     </style>
