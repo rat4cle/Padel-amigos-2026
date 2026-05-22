@@ -292,6 +292,36 @@
         #loading { padding: 64px 24px; text-align: center; color: #64748b; }
         #main-content { display: none; }
         #main-content.visible { display: block; }
+        /* --- ESTILOS MARCADOR --- */
+        .sb-ball-active {
+            background-color: #34d399 !important;
+            box-shadow: 0 0 8px #34d399;
+            border-color: #34d399 !important;
+            opacity: 1 !important;
+        }
+
+        .sb-serving-row {
+            background-color: rgba(52, 211, 153, 0.05) !important;
+            border-color: rgba(52, 211, 153, 0.2);
+        }
+
+        .sb-double-fault {
+            background-color: #ef4444 !important;
+            animation: pulse-red 0.8s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Lógica visual cuando RECIBE (Winner ancho) */
+        .sb-receiving .btn-winner {
+            grid-column: span 2; /* <--- ESTO LO HACE OCUPAR 2 COLUMNAS */
+            grid-row: 1;       /* Se mantiene en la fila superior */
+            font-size: 1.1rem;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -320,6 +350,10 @@
             </div>
             <div class="sidebar-item" onclick="switchTab('logistica')" id="nav-logistica">
                 <span class="icon"><i class="ri-wallet-3-line"></i></span><span class="label">Finanzas</span>
+            </div>
+            <div class="sidebar-item" onclick="switchTab('scoreboard')" id="nav-scoreboard">
+                <span class="icon"><i class="ri-gamepad-line"></i></span>
+                <span class="label">Marcador</span>
             </div>
         </div>
     </nav>
@@ -406,7 +440,7 @@
                         </div>
                         
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                            <h3 class="text-xl font-black mb-2 text-sky-400 text-center">🧮 Matriz de Dominancia</h3>
+                            <h3 class="text-xl font-black mb-2 text-sky-400 text-center">🕸️ La Matriz de Dominancia</h3>
                             <p class="text-xs text-slate-500 mb-4 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
                             <div class="w-full overflow-x-auto pb-2 flex-1 flex items-start justify-center">
                                 <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
@@ -502,7 +536,6 @@
                         </div>
                     </div>
                 </section>
-
                 <!-- TAB 3: ANÁLISIS TÁCTICO -->
                 <section id="tab-tactico" class="tab-content hidden space-y-6">
                     
@@ -611,8 +644,105 @@
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-amber-400">💰 Pagos de Reservas</h3><div class="h-64 flex items-center justify-center"><canvas id="pagosChart"></canvas></div></div>
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-emerald-400">🎾 Aportaciones de Bolas</h3><div class="h-64 flex items-center justify-center"><canvas id="bolasChart"></canvas></div></div>
                     </div>
+                    
                 </section>
+                <!-- TAB 7: MARCADOR EN VIVO -->
+                <section id="tab-scoreboard" class="tab-content hidden">
+                    <div class="flex justify-center items-start py-4">
+                        
+                        <div id="scoreboard-wrapper" class="w-full max-w-5xl bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden">
+                            
+                            <!-- Header -->
+                            <div class="bg-slate-900/50 border-b border-slate-700 p-4 flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-emerald-400 text-2xl"><i class="ri-gamepad-fill"></i></span>
+                                    <span class="text-lg font-bold text-slate-200 tracking-wide">MARCADOR EN VIVO</span>
+                                </div>
+                                <div id="sb-timer" class="bg-slate-950 text-emerald-400 font-mono text-xl px-4 py-2 rounded-lg border border-slate-800 shadow-inner font-bold tracking-widest">00:00</div>
+                            </div>
 
+                            <div class="p-6">
+                                <!-- Cabeceras con Grid Personalizado (Más ancho en acciones) -->
+                                <div class="grid grid-cols-[2fr_80px_80px_100px_1fr] gap-4 mb-4 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                    <div class="text-left pl-4">Equipo</div>
+                                    <div>Set</div>
+                                    <div>Game</div>
+                                    <div>Score</div>
+                                    <div class="text-right pr-2">Acciones</div>
+                                </div>
+
+                                <!-- TEAM 1 -->
+                                <div class="grid grid-cols-[2fr_80px_80px_100px_1fr] gap-4 items-center mb-4 p-3 rounded-xl border border-slate-700 bg-slate-900/30" id="sb-row1">
+                                    <div class="flex items-center gap-3 pl-2">
+                                        <div class="flex gap-1" id="sb-serve-indicator-1">
+                                            <div class="w-2 h-2 rounded-full bg-slate-600"></div>
+                                            <div class="w-2 h-2 rounded-full bg-slate-600"></div>
+                                        </div>
+                                        <div class="text-xl font-black text-sky-400 uppercase tracking-wide" contenteditable="true" spellcheck="false" onblur="saveTeamName(1, this.innerText)">Team 1</div>
+                                    </div>
+                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-s1">0</div>
+                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-g1">0</div>
+                                    <div class="text-center text-4xl font-mono font-bold text-emerald-400" id="sb-p1">0</div>
+                                    
+                                    <!-- BOTONES TEAM 1 -->
+                                    <div class="pr-2">
+                                        <!-- EL ID ESTÁ AHORA EN EL GRID INTERNO -->
+                                        <div id="sb-actions-1" class="grid grid-cols-2 gap-2 h-full content-center">
+                                            <button onclick="handleScoreboardAction('winner', 1)" class="btn-winner bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
+                                            <button onclick="handleScoreboardAction('fault', 1)" id="sb-f1" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
+                                            
+                                            <!-- COLORES AÑADIDOS: bg-sky-600 -->
+                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TEAM 2 -->
+                                <div class="grid grid-cols-[2fr_80px_80px_100px_1fr] gap-4 items-center mb-6 p-3 rounded-xl border border-slate-700 bg-slate-900/30" id="sb-row2">
+                                    <!-- ... (Header T2 igual que antes) ... -->
+                                    <div class="flex items-center gap-3 pl-2">
+                                        <div class="flex gap-1" id="sb-serve-indicator-2">
+                                            <div class="w-2 h-2 rounded-full bg-slate-600"></div>
+                                            <div class="w-2 h-2 rounded-full bg-slate-600"></div>
+                                        </div>
+                                        <div class="text-xl font-black text-red-400 uppercase tracking-wide" contenteditable="true" spellcheck="false" onblur="saveTeamName(2, this.innerText)">Team 2</div>
+                                    </div>
+                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-s2">0</div>
+                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-g2">0</div>
+                                    <div class="text-center text-4xl font-mono font-bold text-emerald-400" id="sb-p2">0</div>
+                                    
+                                    <!-- BOTONES TEAM 2 -->
+                                    <div class="pr-2">
+                                        <!-- EL ID ESTÁ AHORA EN EL GRID INTERNO -->
+                                        <div id="sb-actions-2" class="grid grid-cols-2 gap-2 h-full content-center">
+                                            <button onclick="handleScoreboardAction('winner', 2)" class="btn-winner bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
+                                            <button onclick="handleScoreboardAction('fault', 2)" id="sb-f2" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
+                                            
+                                            <!-- COLORES AÑADIDOS: bg-red-600 -->
+                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                        </div>
+                                    </div>
+
+                                <!-- Controles Inferiores -->
+                                <div class="flex justify-center gap-4 pt-4 border-t border-slate-700">
+                                    <button onclick="undoScoreboard()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Deshacer">
+                                        <i class="ri-arrow-go-back-line text-xl"></i>
+                                    </button>
+                                    <button onclick="resetScoreboardMatch()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Reiniciar">
+                                        <i class="ri-refresh-line text-xl"></i>
+                                    </button>
+                                    <button onclick="toggleScoreboardServe()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Cambiar Saque">
+                                        <i class="ri-swap-line text-xl"></i>
+                                    </button>
+                                </div>
+
+                                <div id="sb-status-banner" class="hidden mt-4 text-center font-black text-sm uppercase tracking-widest py-2 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div><!-- /content-area -->
         </div><!-- /main-content -->
     </div><!-- /app-body -->
@@ -838,7 +968,7 @@
             });
             let worstDay="", worstWR=101; let dayNames=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
             for(let d in dayStats) { let wr=dayStats[d].p>0?(dayStats[d].w/dayStats[d].p)*100:0; if(wr<worstWR&&dayStats[d].p>=10){worstWR=wr;worstDay=dayNames[d];} }
-            document.getElementById('cur-dia').innerText = `El ${worstDay} es el día con peor Win Rate del grupo (${worstWR.toFixed(0)}% V). ¡Cuidado con las resacas!`;
+            document.getElementById('cur-dia').innerText = `📅 El ${worstDay} es el día con peor Win Rate del grupo (${worstWR.toFixed(0)}% V). ¡Cuidado con las resacas!`;
             renderHeatmap();
         }
 
@@ -955,7 +1085,7 @@
                 { id:'close_sets', name:'El Cerrajero', emoji:'🔐', desc:'El que mejor cierra (sets 7-5)', findMax: (b) => b.closeSetPlayed >= 2 ? (b.closeSetWins / b.closeSetPlayed)*100 : null, format: (v) => `${v.toFixed(1)}% en 7-5` },
                 { id:'choke', name:'Ícaro', emoji:'🐦‍🔥', desc:'El que más partidos ha perdido ganando el 1er set', findMax: (b) => b.chokeJobs > 0 ? b.chokeJobs : null, format: (v) => `${v} partidos perdidos` },
                 { id:'adaptable', name:'Camaleón', emoji:'🦎', desc:'Ha ganado al menos 1 partido con todos los miembros fijos del grupo', findMax: (b, name) => { let group = MANDATORY_PLAYERS.filter(p => p !== name); if(group.length === 0) return null; return group.every(mate => b.winsWith[mate] > 0) ? group.length : null; }, format: (v) => `Ha ganado con los ${v} fijos` },
-                { id:'kryptonite', name:'Criptonita', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
+                { id:'kryptonite', name:'Cazagigantes', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
                 { id:'matrimonio', name:'Matrimonio', emoji:'💍', desc:'La pareja fija que más partidos ha jugado junta', findMax: (b, name) => maxPairName.includes(name) ? maxPairCount : null, format: (v) => `${maxPairName} (${v} partidos)` },
                 { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', desc:'El compañero con el que peor % de victoria ponderado se tiene', findMin: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); let avgWR = sumP > 0 ? (sumWRxP / sumP) * 100 : null; return avgWR; }, format: (v) => `${v.toFixed(1)}% WR ponderado con compas` },
                 { id:'rey_granja', name:'Rey de La Granja', emoji:'🌾', desc:'Mayor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
@@ -1267,6 +1397,215 @@
             chart2 = new Chart(document.getElementById('pagosChart'), { type:'doughnut', data:{labels:Object.keys(pagos),datasets:[{data:Object.values(pagos),backgroundColor:['#fbbf24','#38bdf8','#34d399','#a78bfa','#f43f5e','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
             chart3 = new Chart(document.getElementById('bolasChart'), { type:'doughnut', data:{labels:Object.keys(bolas),datasets:[{data:Object.values(bolas),backgroundColor:['#34d399','#f43f5e','#fbbf24','#38bdf8','#a78bfa','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
         }
+        // ==========================================
+        // LÓGICA DEL MARCADOR (AISLADA)
+        // ==========================================
+
+        const sbScoreMap = ["0", "15", "30", "40", "AD"];
+        let scoreboardHistory = [];
+        let scoreboardState = {
+            t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1" },
+            t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2" }, 
+            server: 1,
+            matchFinished: false
+        };
+        let scoreboardSeconds = 0;
+        let scoreboardTimerInterval;
+        function saveTeamName(team, newName) {
+            scoreboardState['t' + team].name = newName;
+        }
+        function initScoreboard() {
+            // Iniciar timer si no está corriendo
+            if(!scoreboardTimerInterval) {
+                scoreboardTimerInterval = setInterval(() => {
+                    scoreboardSeconds++;
+                    let m = Math.floor(scoreboardSeconds/60).toString().padStart(2,'0');
+                    let s = (scoreboardSeconds%60).toString().padStart(2,'0');
+                    let timerEl = document.getElementById('sb-timer');
+                    if(timerEl) timerEl.innerText = `${m}:${s}`;
+                }, 1000);
+            }
+            updateScoreboardUI();
+        }
+
+        function saveScoreboardState() { 
+            // Clonación profunda para el historial
+            scoreboardHistory.push(JSON.parse(JSON.stringify(scoreboardState))); 
+        }
+
+        function updateScoreboardUI() {
+            // ... (Código de actualización de números igual que antes) ...
+            document.getElementById('sb-s1').innerText = scoreboardState.t1.sets;
+            document.getElementById('sb-g1').innerText = scoreboardState.t1.games;
+            document.getElementById('sb-p1').innerText = sbScoreMap[scoreboardState.t1.pIdx];
+
+            document.getElementById('sb-s2').innerText = scoreboardState.t2.sets;
+            document.getElementById('sb-g2').innerText = scoreboardState.t2.games;
+            document.getElementById('sb-p2').innerText = sbScoreMap[scoreboardState.t2.pIdx];
+
+            // Estilos de Saque
+            const row1 = document.getElementById('sb-row1');
+            const row2 = document.getElementById('sb-row2');
+            
+            row1.classList.toggle('sb-serving-row', scoreboardState.server === 1);
+            row2.classList.toggle('sb-serving-row', scoreboardState.server === 2);
+
+            // Clase para controlar el tamaño del botón Winner (Recibe vs Saca)
+            const actions1 = document.getElementById('sb-actions-1');
+            const actions2 = document.getElementById('sb-actions-2');
+
+            if(scoreboardState.server === 1) {
+                actions1.classList.remove('sb-receiving'); // Saca: Winner normal
+                actions2.classList.add('sb-receiving');    // Recibe: Winner grande
+            } else {
+                actions1.classList.add('sb-receiving');    // Recibe: Winner grande
+                actions2.classList.remove('sb-receiving'); // Saca: Winner normal
+            }
+
+            // Indicador de pelotas
+            const renderBalls = (teamNum, side) => {
+                const dots = document.getElementById(`sb-serve-indicator-${teamNum}`).children;
+                for(let i=0; i<dots.length; i++) {
+                    dots[i].className = 'w-2 h-2 rounded-full bg-slate-600';
+                }
+                if (side === 'left' || side === 'right') {
+                    const idx = side === 'left' ? 0 : 1;
+                    dots[idx].className = 'w-2 h-2 rounded-full sb-ball-active';
+                }
+            };
+
+            let side = (scoreboardState.t1.pIdx + scoreboardState.t2.pIdx) % 2 !== 0 ? 'right' : 'left';
+            if (scoreboardState.server === 1) renderBalls(1, side);
+            else renderBalls(2, side);
+
+            // Botones de Falta
+            const f1 = document.getElementById('sb-f1');
+            f1.innerText = scoreboardState.t1.faults === 1 ? "DOBLE FALTA" : "FALTA";
+            f1.className = scoreboardState.t1.faults === 1 
+                ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
+                : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
+
+            const f2 = document.getElementById('sb-f2');
+            f2.innerText = scoreboardState.t2.faults === 1 ? "DOBLE FALTA" : "FALTA";
+            f2.className = scoreboardState.t2.faults === 1 
+                ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
+                : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
+
+            // Mostrar botón de falta si el equipo saca
+            f1.style.display = (scoreboardState.server === 1) ? 'block' : 'none';
+            f2.style.display = (scoreboardState.server === 2) ? 'block' : 'none';
+        }
+
+        function handleScoreboardAction(type, team) {
+            if (scoreboardState.matchFinished) return;
+            saveScoreboardState();
+            const opponent = team === 1 ? 2 : 1;
+
+            if (type === 'winner') {
+                addScoreboardPoint(team);
+            } else if (type === 'error') {
+                addScoreboardPoint(opponent);
+            } else if (type === 'fault') {
+                scoreboardState['t' + team].faults++;
+                if (scoreboardState['t' + team].faults >= 2) {
+                    addScoreboardPoint(opponent);
+                }
+            }
+            updateScoreboardUI();
+        }
+
+        function addScoreboardPoint(teamNum) {
+            let winner = scoreboardState['t' + teamNum];
+            let loser = scoreboardState['t' + (teamNum === 1 ? 2 : 1)];
+
+            scoreboardState.t1.faults = 0;
+            scoreboardState.t2.faults = 0;
+
+            if (winner.pIdx === 3 && loser.pIdx === 4) {
+                loser.pIdx = 3;
+            } else if (winner.pIdx >= 3 && winner.pIdx > loser.pIdx) {
+                winScoreboardGame(teamNum);
+            } else {
+                winner.pIdx++;
+                if (winner.pIdx === 4 && loser.pIdx < 3) winScoreboardGame(teamNum);
+            }
+        }
+
+        function winScoreboardGame(teamNum) {
+            scoreboardState.t1.pIdx = 0;
+            scoreboardState.t2.pIdx = 0;
+            scoreboardState['t' + teamNum].games++;
+            scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+
+            // Lógica de Sets
+            if (scoreboardState['t' + teamNum].games >= 6) {
+                scoreboardState.t1.games = 0;
+                scoreboardState.t2.games = 0;
+                scoreboardState['t' + teamNum].sets++;
+                
+                // Check Victoria Final (Mejor de 3)
+                if(scoreboardState['t' + teamNum].sets === 2) {
+                    scoreboardState.matchFinished = true;
+                    showScoreboardBanner(`PARTIDO TERMINADO - TEAM ${teamNum} GANA`, 'bg-red-600');
+                } else {
+                    showScoreboardBanner(`SET PARA TEAM ${teamNum}`, 'bg-emerald-600');
+                    setTimeout(() => hideScoreboardBanner(), 2000);
+                }
+            }
+        }
+
+        function undoScoreboard() {
+            if (scoreboardHistory.length > 0) {
+                if(scoreboardState.matchFinished) {
+                    hideScoreboardBanner();
+                    scoreboardState.matchFinished = false;
+                }
+                scoreboardState = scoreboardHistory.pop();
+                updateScoreboardUI();
+            }
+        }
+
+        function resetScoreboardMatch() {
+            if(confirm("¿Reiniciar partido?")) {
+                scoreboardState = {
+                    t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1" }, // Restaurado
+                    t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2" }, // Restaurado
+                    server: 1,
+                    matchFinished: false
+                };
+                scoreboardHistory = [];
+                scoreboardSeconds = 0;
+                hideScoreboardBanner();
+                updateScoreboardUI();
+                
+                // También restaurar visualmente el texto en el HTML por si acaso
+                document.querySelector('#sb-row1 .text-xl').innerText = "Team 1";
+                document.querySelector('#sb-row2 .text-xl').innerText = "Team 2";
+            }
+        }
+
+        function toggleScoreboardServe() {
+            if(scoreboardState.matchFinished) return;
+            saveScoreboardState();
+            scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+            updateScoreboardUI();
+        }
+
+        function showScoreboardBanner(msg, colorClass) {
+            const b = document.getElementById('sb-status-banner');
+            b.innerText = msg;
+            b.className = `mt-4 text-center font-black text-sm uppercase tracking-widest py-2 rounded text-white ${colorClass}`;
+            b.classList.remove('hidden');
+        }
+
+        function hideScoreboardBanner() {
+            document.getElementById('sb-status-banner').classList.add('hidden');
+        }
+
+        // Iniciar el marcador al cargar la página
+        window.addEventListener('load', () => {
+            initScoreboard();
+        });
     </script>
 </body>
 </html>
