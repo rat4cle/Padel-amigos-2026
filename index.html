@@ -440,83 +440,83 @@
             display: block;
             margin-bottom: 2px;
         }
-                /* ==========================================
-           FIX PARA MÓVIL EN HORIZONTAL (LANDSCAPE)
-           Detecta pantallas con poca altura (menos de 600px)
+               /* ==========================================
+           MODO HORIZONTAL: ESCALADO PARA AJUSTAR (SIN SCROLL)
+           Se activa cuando la altura es menor a 600px
            ========================================== */
         @media (max-height: 600px) {
 
-            /* 1. Permitir scroll en el contenedor principal */
-            body.in-fullscreen-mode #scoreboard-wrapper {
-                display: block !important;
-                overflow-y: auto !important; /* Scroll vertical activado */
-                padding: 10px !important;
-            }
-
-            /* 2. Ocultar cabeceras para ganar espacio vertical */
-            body.in-fullscreen-mode .mb-4 {
-                display: none !important;
-            }
-
-            /* 3. FORZAR LAS FILAS A SER VERTICALES (Apiladas) */
+            /* 1. Restaurar el diseño de GRID (Cancelar el apilado vertical) */
             body.in-fullscreen-mode #sb-row1,
             body.in-fullscreen-mode #sb-row2 {
-                display: flex !important;
-                flex-direction: column !important; /* Poner todo en una columna */
+                display: grid !important; /* Volver a ser rejilla horizontal */
+                flex-direction: unset !important;
                 height: auto !important;
-                width: 100% !important;
-                margin-bottom: 20px !important;
-                border: 1px solid rgba(255,255,255,0.2);
-                border-radius: 12px;
-                background-color: rgba(0,0,0,0.3);
-                padding: 10px !important;
+                margin-bottom: 0.5vh !important; /* Espacio mínimo entre equipos */
+                padding: 0.5vh !important; /* Padding mínimo */
             }
 
-            /* 4. Hacer que cada dato (Nombre, Set, Game...) ocupe todo el ancho */
-            body.in-fullscreen-mode #sb-row1 > div,
-            body.in-fullscreen-mode #sb-row2 > div {
-                width: 100% !important;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                padding: 8px 0 !important;
-                text-align: center !important;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
+            /* 2. Ajustar las filas para que ocupen el 50% de la altura cada una */
+            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
+                grid-template-rows: 1fr 1fr !important; 
+                grid-template-columns: 2.5fr 1fr 1fr 1.5fr 2.5fr !important;
+                gap: 0.5vh !important; /* Espacio entre celdas proporcional */
+                height: 100%;
+                align-items: center !important; /* Centrado vertical */
             }
 
-            body.in-fullscreen-mode #sb-row1 > div:last-child,
-            body.in-fullscreen-mode #sb-row2 > div:last-child {
-                border-bottom: none !important;
+            /* 3. ESCALADO DE FUENTES (Usando 'vh' para que se adapten a la altura) */
+            
+            /* Cabeceras (SET, GAME...) */
+            body.in-fullscreen-mode .text-xs { 
+                font-size: 1.8vh !important; 
+                letter-spacing: 0.05em;
+            }
+            
+            /* Nombres de Equipos */
+            body.in-fullscreen-mode .text-xl { 
+                font-size: 3vh !important; 
+            }
+            
+            /* Sets y Games */
+            body.in-fullscreen-mode .text-3xl { 
+                font-size: 5vh !important; 
+            }
+            
+            /* Puntuación Principal (Score) */
+            body.in-fullscreen-mode .text-4xl { 
+                font-size: 8vh !important; /* Grande pero ajustado a la altura */
+                line-height: 1;
             }
 
-            /* 5. Tamaños de letra ajustados para altura reducida */
-            body.in-fullscreen-mode .text-xl { font-size: 1.5rem !important; }
-            body.in-fullscreen-mode .text-3xl { font-size: 2rem !important; }
-            body.in-fullscreen-mode .text-4xl { font-size: 3rem !important; }
+            /* 4. HEADER Y MÁRGENES MINIMOS */
+            body.in-fullscreen-mode .bg-slate-900\/50 {
+                padding: 0.2vh 1vh !important;
+                margin-bottom: 0.2vh !important;
+            }
+            body.in-fullscreen-mode .text-lg { font-size: 1.5vh !important; }
+            body.in-fullscreen-mode #sb-timer { font-size: 2vh !important; }
+            body.in-fullscreen-mode #scoreboard-wrapper { padding: 1vh !important; }
 
-            /* 6. Botones en cuadrícula */
+            /* 5. BOTONES ESCALADOS */
             body.in-fullscreen-mode #sb-actions-1,
             body.in-fullscreen-mode #sb-actions-2 {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 8px !important;
-                width: 100% !important;
-                padding: 0 5px !important;
-                margin-top: 5px !important;
+                grid-template-rows: 1fr 1fr !important;
+                gap: 0.5vh !important;
             }
 
             body.in-fullscreen-mode button {
-                font-size: 1rem !important;
+                font-size: 1.8vh !important; /* Texto de botones pequeño */
+                padding: 0 !important;
                 font-weight: 700 !important;
-                padding: 10px !important;
-                height: auto !important;
-                line-height: 1.1;
             }
 
             body.in-fullscreen-mode .btn-winner {
-                grid-column: span 2 !important;
-                font-size: 1.1rem !important;
+                font-size: 2.5vh !important;
             }
+            
+            /* Ajustar el icono de saque */
+            body.in-fullscreen-mode .w-2 { width: 0.6vh !important; height: 0.6vh !important; }
         }
     </style>
 </head>
