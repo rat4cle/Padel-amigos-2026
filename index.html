@@ -440,84 +440,87 @@
             display: block;
             margin-bottom: 2px;
         }
-        /* ==========================================
-           FIX MÓVIL AGRESIVO (STACKING FORZADO)
+                /* ==========================================
+           FIX MÓVIL DEFINITIVO (POR IDs)
            ========================================== */
-        @media (max-width: 600px) {
-            
-            /* 1. RESET DEL CONTENEDOR PRINCIPAL */
+        
+        /* Activar para pantallas menores a 640px (Casi todos los móviles) */
+        @media (max-width: 640px) {
+
+            /* 1. Permitir scroll en el contenedor principal */
             body.in-fullscreen-mode #scoreboard-wrapper {
-                overflow-y: auto !important; /* Permitir Scroll Vertical */
-                justify-content: flex-start !important; /* Empezar arriba */
-                display: block !important; /* Romper el flex center */
-            }
-
-            body.in-fullscreen-mode #scoreboard-wrapper > div {
                 display: block !important;
-                height: auto !important; /* Altura automática */
-                min-height: 0 !important;
+                overflow-y: auto !important;
+                padding: 10px !important;
             }
 
-            /* 2. ROMPER LA REJILLA EN UNA COLUMNA (STACK) */
-            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
-                display: grid !important;
-                grid-template-columns: 1fr !important; /* FORZAR 1 COLUMNA (Vertical) */
-                grid-template-rows: auto !important;    /* Altura automática */
-                height: auto !important;                /* No estirar */
-                gap: 10px !important;
-                align-items: stretch !important;
-                padding-bottom: 50px; /* Espacio al final */
-            }
-
-            /* 3. OCULTAR CABECERAS */
+            /* 2. Ocultar cabeceras para ganar espacio */
             body.in-fullscreen-mode .mb-4 {
                 display: none !important;
             }
 
-            /* 4. ESTILOS PARA CADA ELEMENTO APILADO */
-            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] > div {
-                background-color: rgba(255, 255, 255, 0.05);
-                border-radius: 8px;
-                padding: 15px 10px !important;
-                min-height: 60px; /* Altura mínima para tocar */
+            /* 3. FORZAR LAS FILAS (TEAM 1 y TEAM 2) A SER VERTICALES */
+            body.in-fullscreen-mode #sb-row1,
+            body.in-fullscreen-mode #sb-row2 {
+                display: flex !important;          /* Romper el Grid */
+                flex-direction: column !important; /* Apilar verticalmente */
+                height: auto !important;           /* Altura automática */
+                width: 100% !important;
+                margin-bottom: 25px !important;    /* Separación entre equipos */
+                border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 12px;
+                background-color: rgba(0,0,0,0.3);
+                padding: 10px !important;
             }
 
-            /* 5. FUENTES ADAPTADAS A MÓVIL */
-            body.in-fullscreen-mode .text-xl { font-size: 1.5rem !important; } /* Nombre Equipo */
-            body.in-fullscreen-mode .text-3xl { font-size: 2.2rem !important; } /* Sets/Games */
-            body.in-fullscreen-mode .text-4xl { font-size: 3.5rem !important; } /* Puntuación */
+            /* 4. Hacer que cada columna (Nombre, Set, Game...) ocupe todo el ancho */
+            body.in-fullscreen-mode #sb-row1 > div,
+            body.in-fullscreen-mode #sb-row2 > div {
+                width: 100% !important;
+                display: flex !important;
+                justify-content: center !important; /* Centrar contenido horizontalmente */
+                align-items: center !important;     /* Centrar contenido verticalmente */
+                padding: 5px 0 !important;
+                text-align: center !important;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
 
-            /* 6. BOTONES EN GRILLA 2x2 */
+            /* Eliminar borde del último elemento */
+            body.in-fullscreen-mode #sb-row1 > div:last-child,
+            body.in-fullscreen-mode #sb-row2 > div:last-child {
+                border-bottom: none !important;
+            }
+
+            /* 5. Tamaños de letra optimizados para móvil apilado */
+            body.in-fullscreen-mode .text-xl { font-size: 1.8rem !important; } /* Nombre */
+            body.in-fullscreen-mode .text-3xl { font-size: 2.2rem !important; } /* Set/Game */
+            body.in-fullscreen-mode .text-4xl { font-size: 3.5rem !important; } /* Score */
+
+            /* 6. Reorganizar los botones en cuadrícula 2x2 */
             body.in-fullscreen-mode #sb-actions-1,
             body.in-fullscreen-mode #sb-actions-2 {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
                 grid-template-rows: auto auto !important;
                 gap: 8px !important;
+                width: 100% !important;
                 padding: 0 5px !important;
-                background: transparent !important;
-                min-height: auto !important;
+                margin-top: 5px !important;
             }
 
+            /* 7. Estilo de botones */
             body.in-fullscreen-mode button {
-                font-size: 0.9rem !important; /* Texto pequeño pero legible */
-                padding: 10px !important;
-                height: auto !important;
-                line-height: 1.2;
+                font-size: 1rem !important;
                 font-weight: 700 !important;
+                padding: 12px 5px !important;
+                height: auto !important;
+                line-height: 1.1;
             }
 
-            /* El botón Winner ocupa todo el ancho */
+            /* El botón WINNER ocupa todo el ancho */
             body.in-fullscreen-mode .btn-winner {
                 grid-column: span 2 !important;
-                font-size: 1.1rem !important;
-                padding: 15px !important;
-            }
-
-            /* Ajuste final para el icono del saque si se ve mal */
-            body.in-fullscreen-mode .w-2 {
-                width: 8px !important;
-                height: 8px !important;
+                font-size: 1.2rem !important;
             }
         }
     </style>
