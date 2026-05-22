@@ -518,6 +518,82 @@
             /* Ajustar el icono de saque */
             body.in-fullscreen-mode .w-2 { width: 0.6vh !important; height: 0.6vh !important; }
         }
+                /* ==========================================
+           NUEVA PALETA: VERDE VS GRIS
+           ========================================== */
+
+        /* 1. SOMBRA PROFUNDA (Mantenemos la misma) */
+        #scoreboard-wrapper {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3); 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 2. ESTILO DE LAS FILAS (EQUIPOS) */
+        
+        /* TEAM 1 (VERDE - Emerald) */
+        #sb-row1 {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(15, 23, 42, 0) 100%);
+            border-left: 5px solid #10b981; /* Emerald-500 */
+        }
+        
+        /* TEAM 2 (GRIS - Slate) */
+        #sb-row2 {
+            background: linear-gradient(90deg, rgba(148, 163, 184, 0.1) 0%, rgba(15, 23, 42, 0.4) 50%, rgba(15, 23, 42, 0) 100%);
+            border-left: 5px solid #cbd5e1; /* Slate-300 (Blanquinoso) */
+        }
+
+        /* 3. ETIQUETAS "DRIVE" y "REVÉS" (Las mantenemos gris neutro) */
+        #sb-row1 span.text-slate-600,
+        #sb-row2 span.text-slate-600 {
+            color: #94a3b8 !important;
+            font-size: 0.7rem !important;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* 4. INPUTS (Nombres de jugadores) */
+        #sb-row1 input, 
+        #sb-row2 input {
+            font-weight: 900 !important;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            padding-left: 5px;
+        }
+        
+        /* Team 1 Input: Verde brillante */
+        #sb-row1 input { 
+            color: #34d399 !important; /* Emerald-400 */
+        }
+        
+        /* Team 2 Input: Gris claro / Blanco */
+        #sb-row2 input { 
+            color: #f1f5f9 !important; /* Slate-100 (Casi blanco) */
+        }
+
+        /* Placeholders */
+        #sb-row1 input::placeholder,
+        #sb-row2 input::placeholder {
+            color: rgba(148, 163, 184, 0.2) !important;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* 5. BOTONES */
+        .btn-winner {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        button:not(.btn-winner) {
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        /* 6. HEADER */
+        .bg-slate-900\/50 {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(4px);
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -636,7 +712,7 @@
                         </div>
                         
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                            <h3 class="text-xl font-black mb-2 text-sky-400 text-center">🕸️ La Matriz de Dominancia</h3>
+                            <h3 class="text-xl font-black mb-2 text-sky-400 text-center">🧮 Matriz de Dominancia</h3>
                             <p class="text-xs text-slate-500 mb-4 text-center">% de victoria (sin empates) de (Fila) vs (Columna)</p>
                             <div class="w-full overflow-x-auto pb-2 flex-1 flex items-start justify-center">
                                 <table id="heatmap-table" class="mx-auto w-auto border-separate border-spacing-1 md:border-spacing-2"></table>
@@ -652,7 +728,7 @@
                     <div class="bg-gradient-to-r from-amber-900/10 to-emerald-900/10 border border-slate-700 rounded-2xl overflow-hidden"><button onclick="toggleAdvancedStats()" class="w-full p-6 text-left flex justify-between items-center hover:bg-slate-800/50 transition-colors"><h3 class="text-lg font-bold text-white flex items-center gap-2">🌟 Estadísticas por Meses</h3><span id="adv-stats-icon" class="text-2xl text-emerald-400 transform transition-transform">+</span></button><div id="advanced-stats-container" class="hidden px-6 pb-6 space-y-3"></div></div>
                     <!-- CURIOSIDADES -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🧊 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🥶 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
                         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">📅 El Día Maldito</h3><p id="cur-dia" class="text-sm text-slate-400">Calculando...</p></div>
                     </div>
                 </section>
@@ -672,49 +748,90 @@
                                 <button onclick="switchProfileTab('resumen')" id="profile-btn-resumen" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all bg-emerald-500 text-slate-950">📊 Resumen</button>
                                 <button onclick="switchProfileTab('evolucion')" id="profile-btn-evolucion" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">📈 Evolución</button>
                                 <button onclick="switchProfileTab('insignias')" id="profile-btn-insignias" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🎖️ Insignias</button>
-                                <button onclick="switchProfileTab('radar')" id="profile-btn-radar" class="profile-tab-btn px-4 py-2 rounded-lg font-bold text-sm transition-all text-slate-400 hover:text-white">🕸️ Radar</button>
                             </div>
                             <div id="profile-tab-resumen" class="profile-tab-content">
                                 <div class="border-b border-slate-700 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                     <h2 class="text-xl sm:text-2xl font-black text-white tracking-widest uppercase">EXPEDIENTE: <span id="prof-nombre" class="text-emerald-400">#001 - JUGADOR</span></h2>
                                 </div>
-                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                        <div class="bg-slate-900/60 rounded-xl border border-slate-700 p-6 flex flex-col items-center justify-center shadow-inner">
+                                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
+                                    <!-- COLUMNA IZQUIERDA: Identidad y Resumen (40%) -->
+                                    <div class="lg:col-span-2 bg-slate-900/60 rounded-xl border border-slate-700 p-6 sm:p-8 flex flex-col items-center shadow-inner">
                                         <div class="w-28 h-28 sm:w-32 sm:h-32 bg-slate-800 rounded-full border-4 border-slate-600 mb-4 flex items-center justify-center overflow-hidden relative shadow-lg">
                                             <img id="prof-foto" src="" alt="Foto" class="w-full h-full object-cover hidden">
                                             <span id="prof-foto-placeholder" class="text-6xl opacity-20 transform translate-y-2">👤</span>
                                         </div>
-                                        <h3 id="prof-nombre-card" class="text-2xl font-black text-slate-200 tracking-wide">-</h3>
+                                        <h3 id="prof-nombre-card" class="text-2xl font-black text-slate-200 tracking-wide mb-4">-</h3>
                                         
-                                        <!-- Nuevas cajas de Puntuación -->
-                                        <div class="mt-4 text-center w-full space-y-2">
-                                            <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-600">
-                                                <span class="text-[10px] text-emerald-400/80 uppercase font-bold block tracking-wider">% Puntuación General</span>
-                                                <span id="prof-puntuacion-main" class="text-3xl font-black text-white">0%</span>
+                                        <!-- Puntuaciones (Sin cajas, en fila) -->
+                                        <div class="w-full grid grid-cols-2 gap-4 mb-5 pb-4 border-b border-slate-700/50">
+                                            <div class="text-center">
+                                                <span class="text-[10px] text-emerald-400/80 uppercase font-bold block tracking-wider mb-1">% Puntuación</span>
+                                                <span id="prof-puntuacion-main" class="text-3xl sm:text-4xl font-black text-white">0%</span>
                                             </div>
-                                            <div class="bg-slate-800/80 p-2 rounded-lg border border-slate-600">
-                                                <span class="text-[10px] text-amber-400/80 uppercase font-bold block tracking-wider">Pts Acumulados (Tramos)</span>
-                                                <span id="prof-tramos-main" class="text-3xl font-black text-white">0</span>
+                                            <div class="text-center">
+                                                <span class="text-[10px] text-amber-400/80 uppercase font-bold block tracking-wider mb-1">Pts Acumulados</span>
+                                                <span id="prof-tramos-main" class="text-3xl sm:text-4xl font-black text-white">0</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- MINI-GRID: Pegado a las puntuaciones -->
+                                        <div class="w-full grid grid-cols-2 gap-3 sm:gap-4">
+                                            <div class="bg-slate-900/40 p-3 sm:p-4 rounded-xl border border-slate-700 text-center">
+                                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1 block">Posición</span>
+                                                <span id="prof-posicion" class="text-xl sm:text-2xl font-black text-sky-400 block">-</span>
+                                                <span id="prof-posicion-detail" class="text-[10px] text-slate-500 block mt-0.5"></span>
+                                            </div>
+                                            <div class="bg-slate-900/40 p-3 sm:p-4 rounded-xl border border-slate-700 text-center">
+                                                <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1 block">Victorias</span>
+                                                <div class="text-xl sm:text-2xl font-black block">
+                                                    <span id="prof-wins-box" class="text-emerald-400">0</span><span class="text-slate-600">/</span><span id="prof-matches-box" class="text-slate-400">0</span>
+                                                </div>
+                                                <span id="prof-winrate-percent" class="text-[10px] text-slate-500 font-bold block mt-0.5">0% WR</span>
+                                            </div>
+                                            <div class="bg-gradient-to-br from-slate-900/60 to-amber-900/20 p-3 sm:p-4 rounded-xl border border-amber-900/30 flex flex-col justify-center text-center">
+                                                <span class="text-[10px] text-amber-500/70 uppercase font-bold tracking-wider mb-1">🏆 Socio de Oro</span>
+                                                <span id="prof-socio" class="text-base sm:text-lg font-black text-amber-400">-</span>
+                                                <span id="prof-socio-wr" class="text-[9px] text-amber-200/50 font-bold mt-1">-</span>
+                                            </div>
+                                            <div class="bg-gradient-to-br from-slate-900/60 to-red-900/20 p-3 sm:p-4 rounded-xl border border-red-900/30 flex flex-col justify-center text-center">
+                                                <span class="text-[10px] text-red-500/70 uppercase font-bold tracking-wider mb-1">⚠️ Némesis</span>
+                                                <span id="prof-nemesis" class="text-base sm:text-lg font-black text-red-400">-</span>
                                             </div>
                                         </div>
                                     </div>
-                                        <div class="lg:col-span-2 grid grid-cols-2 gap-4">
-                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Posición Favorita</span><span id="prof-posicion" class="text-2xl font-black text-sky-400 block">-</span><span id="prof-posicion-detail" class="text-[11px] text-slate-500 block mt-1"></span></div>
-                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 text-center">
-                                            <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">VICTORIAS / PARTIDOS</span>
-                                            <div class="text-3xl font-black block">
-                                                <span id="prof-wins-box" class="text-emerald-400">0</span><span class="text-slate-600">/</span><span id="prof-matches-box" class="text-slate-400">0</span>
-                                            </div>
-                                            <span id="prof-winrate-percent" class="text-xs text-slate-500 font-bold block mt-1">0% WR</span>
-                                        </div>
-                                        <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-amber-900/20 p-4 rounded-xl border border-amber-900/30 flex flex-col justify-center"><span class="text-[10px] text-amber-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">🏆 Socio de Oro</span><span id="prof-socio" class="text-xl font-black text-amber-400">-</span><span id="prof-socio-wr" class="text-xs text-amber-200/50 block font-bold mt-1">-</span></div>
-                                        <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-slate-900/60 to-red-900/20 p-4 rounded-xl border border-red-900/30 flex flex-col justify-center"><span class="text-[10px] text-red-500/70 uppercase font-bold tracking-wider mb-2 flex items-center gap-2">⚠️ El Némesis</span><span id="prof-nemesis" class="text-xl font-black text-red-400">-</span></div>
-                                        
-                                        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-700"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1 block">Más veces compañero</span><span id="prof-most-mate" class="text-sm font-bold text-sky-400 block">-</span></div>
-                                        <div class="bg-gradient-to-br from-slate-900/60 to-orange-900/20 p-3 rounded-xl border border-orange-900/30 flex flex-col justify-center"><span class="text-[10px] text-orange-500/70 uppercase font-bold tracking-wider mb-1 flex items-center gap-1">👀 Menos veces rival</span><span id="prof-least-rival" class="text-sm font-black text-orange-400">-</span></div>
-                                        <div class="col-span-2 bg-gradient-to-br from-slate-900/60 to-pink-900/20 p-3 rounded-xl border border-pink-900/30 flex flex-col justify-center"><span class="text-[10px] text-pink-500/70 uppercase font-bold tracking-wider mb-1 flex items-center gap-1">Pareja rival menos vista</span><span id="prof-least-pair" class="text-sm font-black text-pink-400">-</span></div>
 
-                                        <div class="col-span-2 bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-2 text-slate-300 uppercase tracking-wider text-center">🎾 Rendimiento por Posición</h4><div class="grid grid-cols-2 gap-8 mt-2"><div class="flex flex-col items-center"><h5 class="text-sm font-black text-emerald-400 mb-1">REVÉS</h5><div class="w-28 h-28 relative"><canvas id="chartReves"></canvas></div></div><div class="flex flex-col items-center"><h5 class="text-sm font-black text-sky-400 mb-1">DRIVE</h5><div class="w-28 h-28 relative"><canvas id="chartDrive"></canvas></div></div></div></div>
+                                    <!-- COLUMNA DERECHA: Estadísticas, Gráficos y Radar (60%) -->
+                                    <div class="lg:col-span-3 grid grid-cols-2 gap-4 h-full">
+                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Más veces compañero</span><span id="prof-most-mate" class="text-lg font-bold text-green-400 block">-</span></div>
+                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Menos veces compañero</span><span id="prof-least-mate" class="text-lg font-bold text-purple-400 block">-</span></div>
+                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Menos veces rival</span><span id="prof-least-rival" class="text-lg font-bold text-yellow-400">-</span></div>
+                                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700"><span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-2 block">Pareja rival menos vista</span><span id="prof-least-pair" class="text-lg font-bold text-orange-400">-</span></div>
+
+                                        <!-- FILA INFERIOR: Rendimiento y Radar (Alturas fijas aumentadas) -->
+                                        <div class="col-span-2 grid grid-cols-2 gap-4 mt-auto">
+                                            <!-- Rendimiento por Posición -->
+                                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800 flex flex-col h-[360px] sm:h-[420px]">
+                                                <h4 class="text-sm font-bold mb-3 text-slate-300 uppercase tracking-wider text-center">🎾 Rendimiento</h4>
+                                                <div class="grid grid-cols-2 gap-4 flex-1 place-items-center overflow-hidden">
+                                                    <div class="flex flex-col items-center justify-center">
+                                                        <h5 class="text-xs font-black text-emerald-400 mb-1 uppercase">Revés</h5>
+                                                        <div class="w-36 h-36 sm:w-40 sm:h-40 relative"><canvas id="chartReves"></canvas></div>
+                                                    </div>
+                                                    <div class="flex flex-col items-center justify-center">
+                                                        <h5 class="text-xs font-black text-sky-400 mb-1 uppercase">Drive</h5>
+                                                        <div class="w-36 h-36 sm:w-40 sm:h-40 relative"><canvas id="chartDrive"></canvas></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Perfil Radar (con overflow-hidden para evitar que sobresalga) -->
+                                            <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800 flex flex-col h-[360px] sm:h-[420px]">
+                                                <h4 class="text-sm font-bold mb-3 text-slate-300 uppercase tracking-wider text-center">🕸️ Perfil Radar</h4>
+                                                <div class="flex-1 relative overflow-hidden">
+                                                    <canvas id="chartRadar"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -725,9 +842,6 @@
                             <div id="profile-tab-insignias" class="profile-tab-content hidden">
                                 <div id="badge-detail" class="hidden mb-6 bg-slate-900 p-5 rounded-xl border border-amber-900/30 transition-all duration-300 animate-fade-in"></div>
                                 <div id="profile-badges" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
-                            </div>
-                            <div id="profile-tab-radar" class="profile-tab-content hidden space-y-6">
-                                <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-md font-bold mb-4 text-slate-300 uppercase tracking-wider">🕸️ Perfil Radar (vs Media Grupo)</h4><div class="relative h-72"><canvas id="chartRadar"></canvas></div></div>
                             </div>
                         </div>
                     </div>
@@ -872,70 +986,123 @@
 
                                 <!-- TEAM 1 -->
                                 <div class="grid grid-cols-[2fr_80px_80px_100px_1fr] gap-4 items-center mb-4 p-3 rounded-xl border border-slate-700 bg-slate-900/30" id="sb-row1">
-                                    <div class="flex items-center gap-3 pl-2">
+                                    <!-- COLUMNA EQUIPO -->
+                                    <div class="flex items-center gap-3 pl-2 w-full">
+                                        <!-- Indicador de Saque -->
                                         <div class="flex gap-1" id="sb-serve-indicator-1">
                                             <div class="w-2 h-2 rounded-full bg-slate-600"></div>
                                             <div class="w-2 h-2 rounded-full bg-slate-600"></div>
                                         </div>
-                                        <div class="text-xl font-black text-sky-400 uppercase tracking-wide" contenteditable="true" spellcheck="false" onblur="saveTeamName(1, this.innerText)">Team 1</div>
+                                        
+                                        <!-- NUEVOS CAMPOS DE NOMBRE -->
+                                        <div class="flex flex-col justify-center gap-1 w-full">
+                                            <!-- Drive -->
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[9px] text-slate-600 font-bold tracking-wider">DRIVE</span>
+                                                <input type="text" 
+                                                    class="bg-transparent border-b border-slate-700 focus:border-emerald-400 outline-none w-full text-emerald-400 font-black uppercase leading-tight placeholder-slate-700"
+                                                    value="JUGADOR A" 
+                                                    placeholder="Nombre Drive"
+                                                    style="border:none !important;"
+                                                    onblur="updatePlayerName(1, 'p1', this.value)">
+                                            </div>
+                                            <!-- Revés -->
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[9px] text-slate-600 font-bold tracking-wider">REVÉS</span>
+                                                <input type="text" 
+                                                    class="bg-transparent border-b border-slate-700 focus:border-emerald-400 outline-none w-full text-emerald-400 font-black uppercase leading-tight placeholder-slate-700"
+                                                    value="JUGADOR B" 
+                                                    placeholder="Nombre Revés"
+                                                    style="border:none !important;"
+                                                    onblur="updatePlayerName(1, 'p2', this.value)">
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    <!-- SET -->
                                     <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-s1">0</div>
+                                    <!-- GAME -->
                                     <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-g1">0</div>
+                                    <!-- SCORE -->
                                     <div class="text-center text-4xl font-mono font-bold text-emerald-400" id="sb-p1">0</div>
                                     
-                                    <!-- BOTONES TEAM 1 -->
+                                    <!-- BOTONES -->
                                     <div class="pr-2">
-                                        <!-- EL ID ESTÁ AHORA EN EL GRID INTERNO -->
                                         <div id="sb-actions-1" class="grid grid-cols-2 gap-2 h-full content-center">
-                                            <button onclick="handleScoreboardAction('winner', 1)" class="btn-winner bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
+                                            <button onclick="handleScoreboardAction('winner', 1)" class="btn-winner bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
                                             <button onclick="handleScoreboardAction('fault', 1)" id="sb-f1" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
-                                            
-                                            <!-- COLORES AÑADIDOS: bg-sky-600 -->
-                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
-                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
                                         </div>
                                     </div>
                                 </div>
 
+                                
                                 <!-- TEAM 2 -->
                                 <div class="grid grid-cols-[2fr_80px_80px_100px_1fr] gap-4 items-center mb-6 p-3 rounded-xl border border-slate-700 bg-slate-900/30" id="sb-row2">
-                                    <!-- ... (Header T2 igual que antes) ... -->
-                                    <div class="flex items-center gap-3 pl-2">
+                                    <!-- COLUMNA EQUIPO -->
+                                    <div class="flex items-center gap-3 pl-2 w-full">
+                                        <!-- Indicador de Saque -->
                                         <div class="flex gap-1" id="sb-serve-indicator-2">
                                             <div class="w-2 h-2 rounded-full bg-slate-600"></div>
                                             <div class="w-2 h-2 rounded-full bg-slate-600"></div>
                                         </div>
-                                        <div class="text-xl font-black text-red-400 uppercase tracking-wide" contenteditable="true" spellcheck="false" onblur="saveTeamName(2, this.innerText)">Team 2</div>
-                                    </div>
-                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-s2">0</div>
-                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-g2">0</div>
-                                    <div class="text-center text-4xl font-mono font-bold text-emerald-400" id="sb-p2">0</div>
-                                    
-                                    <!-- BOTONES TEAM 2 -->
-                                    <div class="pr-2">
-                                        <!-- EL ID ESTÁ AHORA EN EL GRID INTERNO -->
-                                        <div id="sb-actions-2" class="grid grid-cols-2 gap-2 h-full content-center">
-                                            <button onclick="handleScoreboardAction('winner', 2)" class="btn-winner bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
-                                            <button onclick="handleScoreboardAction('fault', 2)" id="sb-f2" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
-                                            
-                                            <!-- COLORES AÑADIDOS: bg-red-600 -->
-                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
-                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                        
+                                        <!-- NUEVOS CAMPOS DE NOMBRE -->
+                                        <div class="flex flex-col justify-center gap-1 w-full">
+                                            <!-- Drive -->
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[9px] text-slate-600 font-bold tracking-wider">DRIVE</span>
+                                                <input type="text" 
+                                                    class="bg-transparent border-b border-slate-700 focus:border-slate-300 outline-none w-full text-slate-200 font-black uppercase leading-tight placeholder-slate-700"
+                                                    value="JUGADOR C" 
+                                                    placeholder="Nombre Drive"
+                                                    style="border:none !important;"
+                                                    onblur="updatePlayerName(2, 'p1', this.value)">
+                                            </div>
+                                            <!-- Revés -->
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[9px] text-slate-600 font-bold tracking-wider">REVÉS</span>
+                                                <input type="text" 
+                                                    class="bg-transparent border-b border-slate-700 focus:border-red-400 outline-none w-full text-slate-200 font-black uppercase leading-tight placeholder-slate-700"
+                                                    value="JUGADOR D" 
+                                                    placeholder="Nombre Revés"
+                                                    style="border:none !important;"
+                                                    onblur="updatePlayerName(2, 'p2', this.value)">
+                                            </div>
                                         </div>
                                     </div>
 
-                                <!-- Controles Inferiores -->
-                                <div class="flex justify-center gap-4 pt-4 border-t border-slate-700">
-                                    <button onclick="undoScoreboard()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Deshacer">
-                                        <i class="ri-arrow-go-back-line text-xl"></i>
-                                    </button>
-                                    <button onclick="resetScoreboardMatch()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Reiniciar">
-                                        <i class="ri-refresh-line text-xl"></i>
-                                    </button>
-                                    <button onclick="toggleScoreboardServe()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Cambiar Saque">
-                                        <i class="ri-swap-line text-xl"></i>
-                                    </button>
+                                    <!-- SET -->
+                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-s2">0</div>
+                                    <!-- GAME -->
+                                    <div class="text-center text-3xl font-mono font-bold text-slate-200" id="sb-g2">0</div>
+                                    <!-- SCORE -->
+                                    <div class="text-center text-4xl font-mono font-bold text-emerald-400" id="sb-p2">0</div>
+                                    
+                                    <!-- BOTONES -->
+                                    <div class="pr-2">
+                                        <div id="sb-actions-2" class="grid grid-cols-2 gap-2 h-full content-center">
+                                            <button onclick="handleScoreboardAction('winner', 2)" class="btn-winner bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
+                                            <button onclick="handleScoreboardAction('fault', 2)" id="sb-f2" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
+                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <!-- Controles Inferiores -->
+                                    <div class="flex justify-center gap-4 pt-4 border-t border-slate-700">
+                                        <button onclick="undoScoreboard()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Deshacer">
+                                            <i class="ri-arrow-go-back-line text-xl"></i>
+                                        </button>
+                                        <button onclick="resetScoreboardMatch()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Reiniciar">
+                                            <i class="ri-refresh-line text-xl"></i>
+                                        </button>
+                                        <button onclick="toggleScoreboardServe()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Cambiar Saque">
+                                            <i class="ri-swap-line text-xl"></i>
+                                        </button>
+                                    </div>
 
                                 <div id="sb-status-banner" class="hidden mt-4 text-center font-black text-sm uppercase tracking-widest py-2 rounded"></div>
                             </div>
@@ -1014,6 +1181,16 @@
             document.querySelectorAll('.sidebar-item').forEach(btn => btn.classList.remove('active'));
             let navEl = document.getElementById('nav-' + tabId);
             if (navEl) navEl.classList.add('active');
+
+            // --- SOLUCIÓN DEFINITIVA PARA CHART.JS ---
+            if (tabId === 'ficha') {
+                setTimeout(() => {
+                    // Forzamos el resize de cada gráfico individualmente
+                    if(chartRevesInstance) chartRevesInstance.resize();
+                    if(chartDriveInstance) chartDriveInstance.resize();
+                    if(chartRadarInstance) chartRadarInstance.resize();
+                }, 100); // 100ms de espera para que el HTML termine de dibujar la pestaña
+            }
         }
 
         function renderPlayerFolderTabs() {
@@ -1147,11 +1324,14 @@
             renderPlayerFolderTabs();
             renderPlayerProfile();
 
-            // CURIOSIDAD: El Frigorífico
+            // CURIOSIDAD: El Frigorífico (Solo fijos)
             let lastDates = {};
             rows.forEach(row => { let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let d = parseCSVDate(row.fecha); [j1A,j1B,j2A,j2B].forEach(j => { if(j&&j!=="Playtomic") { if(!lastDates[j]||d>lastDates[j]) lastDates[j]=d; } }); });
             let now = Date.now(); let maxDays=0, frozen="Nadie";
-            for(let j in lastDates) { let diff=Math.floor((now-lastDates[j])/86400000); if(diff>maxDays){maxDays=diff;frozen=j;} }
+            for(let j in lastDates) { 
+                if (!MANDATORY_PLAYERS.includes(j)) continue; // Filtra solo los 5 fijos
+                let diff=Math.floor((now-lastDates[j])/86400000); if(diff>maxDays){maxDays=diff;frozen=j;} 
+            }
             document.getElementById('cur-frio').innerText = `🥶 ${frozen} lleva ${maxDays} días sin jugar. ¡Sacadlo del congelador!`;
 
             // CURIOSIDAD: El Día Maldito
@@ -1167,7 +1347,7 @@
             });
             let worstDay="", worstWR=101; let dayNames=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
             for(let d in dayStats) { let wr=dayStats[d].p>0?(dayStats[d].w/dayStats[d].p)*100:0; if(wr<worstWR&&dayStats[d].p>=10){worstWR=wr;worstDay=dayNames[d];} }
-            document.getElementById('cur-dia').innerText = `📅 El ${worstDay} es el día con peor Win Rate del grupo (${worstWR.toFixed(0)}% V). ¡Cuidado con las resacas!`;
+            document.getElementById('cur-dia').innerText = `El ${worstDay} es el día con peor Win Rate del grupo (${worstWR.toFixed(0)}% V). ¡Cuidado con las resacas!`;
             renderHeatmap();
         }
 
@@ -1284,7 +1464,7 @@
                 { id:'close_sets', name:'El Cerrajero', emoji:'🔐', desc:'El que mejor cierra (sets 7-5)', findMax: (b) => b.closeSetPlayed >= 2 ? (b.closeSetWins / b.closeSetPlayed)*100 : null, format: (v) => `${v.toFixed(1)}% en 7-5` },
                 { id:'choke', name:'Ícaro', emoji:'🐦‍🔥', desc:'El que más partidos ha perdido ganando el 1er set', findMax: (b) => b.chokeJobs > 0 ? b.chokeJobs : null, format: (v) => `${v} partidos perdidos` },
                 { id:'adaptable', name:'Camaleón', emoji:'🦎', desc:'Ha ganado al menos 1 partido con todos los miembros fijos del grupo', findMax: (b, name) => { let group = MANDATORY_PLAYERS.filter(p => p !== name); if(group.length === 0) return null; return group.every(mate => b.winsWith[mate] > 0) ? group.length : null; }, format: (v) => `Ha ganado con los ${v} fijos` },
-                { id:'kryptonite', name:'Cazagigantes', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
+                { id:'kryptonite', name:'Kriptonita', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
                 { id:'matrimonio', name:'Matrimonio', emoji:'💍', desc:'La pareja fija que más partidos ha jugado junta', findMax: (b, name) => maxPairName.includes(name) ? maxPairCount : null, format: (v) => `${maxPairName} (${v} partidos)` },
                 { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', desc:'El compañero con el que peor % de victoria ponderado se tiene', findMin: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); let avgWR = sumP > 0 ? (sumWRxP / sumP) * 100 : null; return avgWR; }, format: (v) => `${v.toFixed(1)}% WR ponderado con compas` },
                 { id:'rey_granja', name:'Rey de La Granja', emoji:'🌾', desc:'Mayor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
@@ -1412,6 +1592,11 @@
             document.getElementById('prof-socio').innerText = validSocios.length > 0 ? validSocios[0].name : "-"; document.getElementById('prof-socio-wr').innerText = validSocios.length > 0 ? `${(validSocios[0].wr*100).toFixed(0)}% efectividad (${validSocios[0].w}V / ${validSocios[0].p} PJ)` : "-"; document.getElementById('prof-nemesis').innerText = nemesisText;
             let mostMate = Object.entries(sociosStats).sort((a,b) => b[1].p - a[1].p)[0];
             document.getElementById('prof-most-mate').innerText = mostMate ? `${mostMate[0]} (${mostMate[1].p} veces)` : "-";
+            // Calcular Menos veces compañero (Solo fijos)
+            let leastMate = Object.entries(sociosStats)
+                .filter(([name]) => MANDATORY_PLAYERS.includes(name)) // Filtra solo los 5 fijos
+                .sort((a,b) => a[1].p - b[1].p)[0];
+            document.getElementById('prof-least-mate').innerText = leastMate ? `${leastMate[0]} (${leastMate[1].p} veces)` : "-";
             
             // Calcular Menos veces rival
             let minRivalCount = Infinity, leastSeenRival = "-";
@@ -1606,7 +1791,8 @@
             t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1" },
             t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2" }, 
             server: 1,
-            matchFinished: false
+            matchFinished: false,
+            isTieBreak: false
         };
         let scoreboardSeconds = 0;
         let scoreboardTimerInterval;
@@ -1631,7 +1817,16 @@
             // Clonación profunda para el historial
             scoreboardHistory.push(JSON.parse(JSON.stringify(scoreboardState))); 
         }
-
+        function startTieBreak() {
+            scoreboardState.isTieBreak = true;
+            scoreboardState.t1.pIdx = 0;
+            scoreboardState.t2.pIdx = 0;
+            // En Tie-Break, saca el equipo que recibía en el último juego
+            // Cambiamos el saque
+            toggleScoreboardServe(); 
+            showScoreboardBanner("¡TIE BREAK!", 'bg-purple-600');
+            setTimeout(() => hideScoreboardBanner(), 2000);
+        }
         function updateScoreboardUI() {
             // ... (Código de actualización de números igual que antes) ...
             document.getElementById('sb-s1').innerText = scoreboardState.t1.sets;
@@ -1641,13 +1836,40 @@
             document.getElementById('sb-s2').innerText = scoreboardState.t2.sets;
             document.getElementById('sb-g2').innerText = scoreboardState.t2.games;
             document.getElementById('sb-p2').innerText = sbScoreMap[scoreboardState.t2.pIdx];
-
+            // Mostrar Puntuación (SCORE)
+            if (scoreboardState.isTieBreak) {
+                // Si es Tie-Break, mostramos el número directo (0, 1, 2, 3...)
+                document.getElementById('sb-p1').innerText = scoreboardState.t1.pIdx;
+                document.getElementById('sb-p2').innerText = scoreboardState.t2.pIdx;
+            } else {
+                // Si es juego normal, mostramos 15, 30, 40, AD
+                document.getElementById('sb-p1').innerText = sbScoreMap[scoreboardState.t1.pIdx];
+                document.getElementById('sb-p2').innerText = sbScoreMap[scoreboardState.t2.pIdx];
+            }
             // Estilos de Saque
-            const row1 = document.getElementById('sb-row1');
-            const row2 = document.getElementById('sb-row2');
+                    // === LÓGICA DE BOLITAS (SAQUE) ===
+        
+            // 1. Primero, reseteamos TODAS las bolitas a gris
+            for(let t=1; t<=2; t++) {
+                let dots = document.getElementById(`sb-serve-indicator-${t}`).children;
+                for(let i=0; i<dots.length; i++) {
+                    dots[i].className = 'w-2 h-2 rounded-full bg-slate-600';
+                }
+            }
+
+            // 2. Calculamos el lado
+            let totalPoints = scoreboardState.t1.pIdx + scoreboardState.t2.pIdx;
             
-            row1.classList.toggle('sb-serving-row', scoreboardState.server === 1);
-            row2.classList.toggle('sb-serving-row', scoreboardState.server === 2);
+            // Usamos 'serveSide' en vez de 'side' para evitar el error
+            let serveSide = (totalPoints % 2 === 0) ? 'right' : 'left';
+
+            // 3. Encendemos la bolita correspondiente del equipo que SACA
+            let activeTeam = scoreboardState.server; 
+            let activeDots = document.getElementById(`sb-serve-indicator-${activeTeam}`).children;
+            
+            let dotIndex = (serveSide === 'left') ? 0 : 1; 
+            
+            activeDots[dotIndex].className = 'w-2 h-2 rounded-full sb-ball-active';
 
             // Clase para controlar el tamaño del botón Winner (Recibe vs Saca)
             const actions1 = document.getElementById('sb-actions-1');
@@ -1668,7 +1890,7 @@
                     dots[i].className = 'w-2 h-2 rounded-full bg-slate-600';
                 }
                 if (side === 'left' || side === 'right') {
-                    const idx = side === 'left' ? 0 : 1;
+                    const idx = side === 'right' ? 0 : 1;
                     dots[idx].className = 'w-2 h-2 rounded-full sb-ball-active';
                 }
             };
@@ -1712,7 +1934,31 @@
             }
             updateScoreboardUI();
         }
+        function winScoreboardSet(teamNum) {
+            // Resetear juegos y puntos
+            scoreboardState.t1.pIdx = 0;
+            scoreboardState.t2.pIdx = 0;
+            scoreboardState.t1.games = 0;
+            scoreboardState.t2.games = 0;
+            
+            // Sumar set
+            scoreboardState['t' + teamNum].sets++;
+            
+            // IMPORTANTE: Salir del modo Tie-Break si estaba activo
+            scoreboardState.isTieBreak = false;
 
+            // Verificar fin del partido (Mejor de 3 sets)
+            if(scoreboardState['t' + teamNum].sets === 2) {
+                scoreboardState.matchFinished = true;
+                showScoreboardBanner(`PARTIDO TERMINADO - TEAM ${teamNum} GANA`, 'bg-red-600');
+            } else {
+                showScoreboardBanner(`SET PARA TEAM ${teamNum}`, 'bg-emerald-600');
+                setTimeout(() => hideScoreboardBanner(), 2000);
+            }
+            
+            // Cambio de saque normal al empezar nuevo set
+            scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+        }
         function addScoreboardPoint(teamNum) {
             let winner = scoreboardState['t' + teamNum];
             let loser = scoreboardState['t' + (teamNum === 1 ? 2 : 1)];
@@ -1720,36 +1966,65 @@
             scoreboardState.t1.faults = 0;
             scoreboardState.t2.faults = 0;
 
-            if (winner.pIdx === 3 && loser.pIdx === 4) {
-                loser.pIdx = 3;
-            } else if (winner.pIdx >= 3 && winner.pIdx > loser.pIdx) {
-                winScoreboardGame(teamNum);
-            } else {
+            if (scoreboardState.isTieBreak) {
+                // --- LÓGICA DE TIE-BREAK ---
+                // Conteo lineal: 0, 1, 2, 3...
                 winner.pIdx++;
-                if (winner.pIdx === 4 && loser.pIdx < 3) winScoreboardGame(teamNum);
+
+                // Condición de victoria en Tie-Break: Llegar a 7 y diferencia de 2
+                if (winner.pIdx >= 7 && (winner.pIdx - loser.pIdx) >= 2) {
+                    winScoreboardSet(teamNum); // ¡Gana el Set directamente!
+                } else {
+                    // En Tie-Break se cambia de sacador CADA PUNTO
+                    // (Suma total de puntos impar = cambio de saque)
+                    if ((winner.pIdx + loser.pIdx) % 2 !== 0) {
+                        toggleScoreboardServe();
+                    }
+                }
+            } else {
+                // --- LÓGICA DE JUEGO NORMAL (15, 30, 40) ---
+                if (winner.pIdx === 3 && loser.pIdx === 4) {
+                    loser.pIdx = 3;
+                } else if (winner.pIdx >= 3 && winner.pIdx > loser.pIdx) {
+                    winScoreboardGame(teamNum);
+                } else {
+                    winner.pIdx++;
+                    if (winner.pIdx === 4 && loser.pIdx < 3) winScoreboardGame(teamNum);
+                }
             }
+            updateScoreboardUI();
         }
 
         function winScoreboardGame(teamNum) {
+            // Reseteamos puntos del juego actual
             scoreboardState.t1.pIdx = 0;
             scoreboardState.t2.pIdx = 0;
+            
+            // Sumamos juego al ganador
             scoreboardState['t' + teamNum].games++;
-            scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+            
+            // Datos para comprobaciones
+            let g1 = scoreboardState.t1.games;
+            let g2 = scoreboardState.t2.games;
+            let winnerGames = scoreboardState['t' + teamNum].games;
+            let loserGames = scoreboardState['t' + (teamNum === 1 ? 2 : 1)].games;
 
-            // Lógica de Sets
-            if (scoreboardState['t' + teamNum].games >= 6) {
-                scoreboardState.t1.games = 0;
-                scoreboardState.t2.games = 0;
-                scoreboardState['t' + teamNum].sets++;
-                
-                // Check Victoria Final (Mejor de 3)
-                if(scoreboardState['t' + teamNum].sets === 2) {
-                    scoreboardState.matchFinished = true;
-                    showScoreboardBanner(`PARTIDO TERMINADO - TEAM ${teamNum} GANA`, 'bg-red-600');
-                } else {
-                    showScoreboardBanner(`SET PARA TEAM ${teamNum}`, 'bg-emerald-600');
-                    setTimeout(() => hideScoreboardBanner(), 2000);
-                }
+            // LÓGICA DE SET:
+            // 1. Si ganador tiene 6 y perdedor menos de 5 -> Gana Set (6-0, 6-1... 6-4)
+            if (winnerGames === 6 && loserGames < 5) {
+                winScoreboardSet(teamNum);
+            }
+            // 2. Si ganador tiene 7 y perdedor 5 o menos -> Gana Set (7-5)
+            else if (winnerGames === 7 && loserGames <= 5) {
+                winScoreboardSet(teamNum);
+            }
+            // 3. Si van 6-6 -> ¡TIE BREAK!
+            else if (g1 === 6 && g2 === 6) {
+                startTieBreak();
+            }
+            // 4. Si no, seguimos jugando el set normalmente (cambiamos saque)
+            else {
+                scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
             }
         }
 
@@ -1770,7 +2045,8 @@
                     t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1" }, // Restaurado
                     t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2" }, // Restaurado
                     server: 1,
-                    matchFinished: false
+                    matchFinished: false,
+                    isTieBreak: false
                 };
                 scoreboardHistory = [];
                 scoreboardSeconds = 0;
@@ -1869,6 +2145,37 @@
                 btn.classList.remove('text-emerald-400');
             }
         });
+        // Función para guardar los nombres de los jugadores
+        function updatePlayerName(teamNum, position, value) {
+            // Aseguramos que el estado tenga estas variables
+            if (!scoreboardState['t' + teamNum].p1) scoreboardState['t' + teamNum].p1 = "";
+            if (!scoreboardState['t' + teamNum].p2) scoreboardState['t' + teamNum].p2 = "";
+            
+            // Guardamos el valor
+            scoreboardState['t' + teamNum][position] = value;
+        }
+
+        // Actualizamos el reinicio para que limpie también los nombres
+        const originalReset = resetScoreboardMatch; // Guardamos la función antigua si existe
+        resetScoreboardMatch = function() {
+            if(confirm("¿Reiniciar partido?")) {
+                // Reseteamos los valores
+                scoreboardState = {
+                    t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "JUGADOR A", p2: "JUGADOR B" },
+                    t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2", p1: "JUGADOR C", p2: "JUGADOR D" }, 
+                    server: 1,
+                    matchFinished: false
+                };
+                scoreboardHistory = [];
+                scoreboardSeconds = 0;
+                hideScoreboardBanner();
+                updateScoreboardUI();
+                
+                // Limpiamos los inputs visuales
+                document.querySelectorAll('#sb-row1 input').forEach((inp, idx) => inp.value = idx === 0 ? "JUGADOR A" : "JUGADOR B");
+                document.querySelectorAll('#sb-row2 input').forEach((inp, idx) => inp.value = idx === 0 ? "JUGADOR C" : "JUGADOR D");
+            }
+        };
     </script>
 </body>
 </html>
