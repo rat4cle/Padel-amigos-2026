@@ -322,6 +322,124 @@
             grid-row: 1;       /* Se mantiene en la fila superior */
             font-size: 1.1rem;
         }
+                /* ========== MODO PANTALLA COMPLETA (AJUSTE FINAL) ========== */
+        
+        /* 1. CUERPO Y CONTENEDORES */
+        body.in-fullscreen-mode {
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            background-color: #121517;
+        }
+
+        body.in-fullscreen-mode #sidebar,
+        body.in-fullscreen-mode #filter-panel,
+        body.in-fullscreen-mode #topbar {
+            display: none !important;
+        }
+
+        body.in-fullscreen-mode #app-body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+        }
+
+        body.in-fullscreen-mode #content-area {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: #121517;
+        }
+
+        /* 2. WRAPPER CON MARGEN */
+        body.in-fullscreen-mode #scoreboard-wrapper {
+            width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            border-radius: 0 !important;
+            border: none !important;
+            display: flex;
+            flex-direction: column;
+            padding: 2vmin; 
+            box-sizing: border-box; 
+            background-color: #0f172a;
+        }
+
+        /* 3. HEADER */
+        body.in-fullscreen-mode .bg-slate-900\/50 {
+            padding: 0.5rem 1rem !important;
+            margin-bottom: 0.2rem !important; /* Menos espacio debajo del header */
+        }
+
+        body.in-fullscreen-mode .text-lg { font-size: 1.8rem !important; }
+        body.in-fullscreen-mode #sb-timer { font-size: 2rem !important; }
+
+        /* 4. CONTENEDOR DEL GRID - Alineado arriba */
+        body.in-fullscreen-mode #scoreboard-wrapper > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 0 !important;
+        }
+
+        /* Eliminar el margen grande que separa las cabeceras de Team 1 */
+        body.in-fullscreen-mode .mb-4 {
+            margin-bottom: 0 !important; 
+        }
+
+        /* 5. GRID PRINCIPAL */
+        body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
+            grid-template-rows: 1fr 1fr !important; 
+            grid-template-columns: 2.5fr 1fr 1fr 1.5fr 2.5fr !important;
+            gap: 0.5rem !important; /* Reducido de 1rem a 0.5rem para acercar filas */
+            height: 100%; 
+            min-height: 0;
+            /* IMPORTANTE: 'start' sube el contenido de Team 1 y Team 2 a la parte superior de su celda */
+            align-items: start !important; 
+        }
+
+        /* 6. ESCALADO DE TEXTOS */
+        /* Cabeceras (SET, GAME, SCORE...) - AGRANDADAS */
+        body.in-fullscreen-mode .text-xs { 
+            font-size: 1.6rem !important; /* Subido de 1.2rem */
+            letter-spacing: 0.1em;
+            font-weight: 700 !important; /* Un poco más gruesas */
+        }
+        
+        body.in-fullscreen-mode .text-xl { font-size: 2.5rem !important; }
+        body.in-fullscreen-mode .text-3xl { font-size: 4rem !important; }
+        body.in-fullscreen-mode .text-4xl { font-size: 6rem !important; line-height: 1; }
+
+        /* 7. BOTONES */
+        body.in-fullscreen-mode #sb-actions-1,
+        body.in-fullscreen-mode #sb-actions-2 {
+            height: 100% !important;
+            grid-template-rows: 1fr 1fr !important; 
+            gap: 8px !important;
+            /* Alinear botones arriba también para que sigan a los nombres/scores */
+            align-content: start !important;
+        }
+
+        body.in-fullscreen-mode button {
+            font-size: 1.4rem !important; 
+            font-weight: 800 !important;
+            padding: 0 !important;
+            line-height: 1.1;
+        }
+
+        body.in-fullscreen-mode .btn-winner {
+            font-size: 2rem !important;
+        }
+
+        body.in-fullscreen-mode button br {
+            display: block;
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -659,6 +777,9 @@
                                     <span class="text-lg font-bold text-slate-200 tracking-wide">MARCADOR EN VIVO</span>
                                 </div>
                                 <div id="sb-timer" class="bg-slate-950 text-emerald-400 font-mono text-xl px-4 py-2 rounded-lg border border-slate-800 shadow-inner font-bold tracking-widest">00:00</div>
+                                <button onclick="toggleScoreboardFullscreen()" id="fs-btn" class="ml-4 text-emerald-400 hover:text-white transition" title="Pantalla Completa">
+                                    <i class="ri-fullscreen-line text-xl"></i>
+                                </button>
                             </div>
 
                             <div class="p-6">
@@ -1605,6 +1726,70 @@
         // Iniciar el marcador al cargar la página
         window.addEventListener('load', () => {
             initScoreboard();
+        });
+        function toggleScoreboardFullscreen() {
+            const wrapper = document.getElementById('scoreboard-wrapper');
+            const btn = document.getElementById('fs-btn');
+            const icon = btn.querySelector('i');
+
+            // Verificar si ya estamos en pantalla completa
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+
+            if (!isFullscreen) {
+                // ENTRAR EN PANTALLA COMPLETA
+                if (wrapper.requestFullscreen) {
+                    wrapper.requestFullscreen().catch(err => {
+                        console.error(`Error al activar pantalla completa: ${err.message}`);
+                        alert("Tu navegador no soporta pantalla completa automática o fue bloqueada.");
+                    });
+                } else if (wrapper.webkitRequestFullscreen) { /* Safari */
+                    wrapper.webkitRequestFullscreen();
+                }
+                
+                // Añadir clase al body para ajustes de CSS personalizados (ocultar sidebars, etc)
+                document.body.classList.add('in-fullscreen-mode');
+                
+                // Cambiar icono visualmente
+                icon.className = 'ri-fullscreen-exit-line';
+                btn.classList.add('text-red-400');
+                btn.classList.remove('text-emerald-400');
+
+            } else {
+                // SALIR DE PANTALLA COMPLETA
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                }
+                
+                // Quitamos la clase del body
+                document.body.classList.remove('in-fullscreen-mode');
+                
+                // Restaurar icono
+                icon.className = 'ri-fullscreen-line';
+                btn.classList.remove('text-red-400');
+                btn.classList.add('text-emerald-400');
+            }
+        }
+
+        // Escuchar cambios nativos de pantalla completa (ej: si el usuario pulsa ESC)
+        document.addEventListener('fullscreenchange', () => {
+            const isFullscreen = !!document.fullscreenElement;
+            const btn = document.getElementById('fs-btn');
+            const icon = btn.querySelector('i');
+
+            if (!isFullscreen) {
+                // Si salimos por cualquier motivo (ESC), sincronizar estado
+                document.body.classList.remove('in-fullscreen-mode');
+                icon.className = 'ri-fullscreen-line';
+                btn.classList.remove('text-red-400');
+                btn.classList.add('text-emerald-400');
+            } else {
+                document.body.classList.add('in-fullscreen-mode');
+                icon.className = 'ri-fullscreen-exit-line';
+                btn.classList.add('text-red-400');
+                btn.classList.remove('text-emerald-400');
+            }
         });
     </script>
 </body>
