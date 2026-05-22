@@ -396,7 +396,7 @@
         body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
             grid-template-rows: 1fr 1fr !important; 
             grid-template-columns: 2.5fr 1fr 1fr 1.5fr 2.5fr !important;
-            gap: 0 !important; /* Reducido de 1rem a 0.5rem para acercar filas */
+            gap: 0.5rem !important; /* Reducido de 1rem a 0.5rem para acercar filas */
             height: 100%; 
             min-height: 0;
             /* IMPORTANTE: 'start' sube el contenido de Team 1 y Team 2 a la parte superior de su celda */
@@ -440,84 +440,83 @@
             display: block;
             margin-bottom: 2px;
         }
-                /* ==========================================
-           MODO HORIZONTAL: MAXIMIZADO Y COMPACTO
-           Ocupa el 100% de la pantalla sin dejar márgenes sobrantes
+               /* ==========================================
+           MODO HORIZONTAL: ESCALADO PARA AJUSTAR (SIN SCROLL)
+           Se activa cuando la altura es menor a 600px
            ========================================== */
         @media (max-height: 600px) {
 
-            /* 1. ELIMINAR MÁRGENES DEL CONTENEDOR */
-            body.in-fullscreen-mode #scoreboard-wrapper {
-                padding: 0.5vh 1vh !important; /* Margen mínimo solo arriba/abajo */
-            }
-
-            /* 2. HEADER ULTRA COMPACTO */
-            body.in-fullscreen-mode .bg-slate-900\/50 {
-                padding: 0.5vh 1vh !important;
-                margin-bottom: 0 !important; /* Sin espacio bajo el header */
-            }
-
-            body.in-fullscreen-mode .text-lg { font-size: 2vh !important; }
-            body.in-fullscreen-mode #sb-timer { font-size: 2vh !important; }
-
-            /* 3. GRID: Eliminar espacio entre filas y columnas */
-            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
-                grid-template-rows: 1fr 1fr !important; 
-                grid-template-columns: 2fr 1fr 1fr 1.5fr 2fr !important; /* Ajustado para aprovechar ancho */
-                gap: 0.2vh !important; /* Gap mínimo entre celdas */
-                height: 100%;
-                align-items: center !important; 
-            }
-
-            /* 4. FILAS (TEAM 1 Y 2): Sin margen entre ellas */
+            /* 1. Restaurar el diseño de GRID (Cancelar el apilado vertical) */
             body.in-fullscreen-mode #sb-row1,
             body.in-fullscreen-mode #sb-row2 {
-                margin-bottom: 0 !important;
-                padding: 0 !important;
+                display: grid !important; /* Volver a ser rejilla horizontal */
+                flex-direction: unset !important;
+                height: auto !important;
+                margin-bottom: 0.5vh !important; /* Espacio mínimo entre equipos */
+                padding: 0.5vh !important; /* Padding mínimo */
             }
 
-            /* 5. ESCALADO DE FUENTES AGRESIVO (Más grandes para llenar el hueco) */
+            /* 2. Ajustar las filas para que ocupen el 50% de la altura cada una */
+            body.in-fullscreen-mode .grid-cols-\[2fr_80px_80px_100px_1fr\] {
+                grid-template-rows: 1fr 1fr !important; 
+                grid-template-columns: 2.5fr 1fr 1fr 1.5fr 2.5fr !important;
+                gap: 0.5vh !important; /* Espacio entre celdas proporcional */
+                height: 100%;
+                align-items: center !important; /* Centrado vertical */
+            }
+
+            /* 3. ESCALADO DE FUENTES (Usando 'vh' para que se adapten a la altura) */
             
-            /* Cabeceras */
+            /* Cabeceras (SET, GAME...) */
             body.in-fullscreen-mode .text-xs { 
-                font-size: 2vh !important; 
+                font-size: 1.8vh !important; 
+                letter-spacing: 0.05em;
             }
             
-            /* Nombres */
+            /* Nombres de Equipos */
             body.in-fullscreen-mode .text-xl { 
-                font-size: 6vh !important; /* Bastante más grande */
+                font-size: 3vh !important; 
             }
             
             /* Sets y Games */
             body.in-fullscreen-mode .text-3xl { 
-                font-size: 7.5vh !important; 
+                font-size: 5vh !important; 
             }
             
-            /* SCORE - El protagonista */
+            /* Puntuación Principal (Score) */
             body.in-fullscreen-mode .text-4xl { 
-                font-size: 15vh !important; /* Muy grande para aprovechar la altura */
+                font-size: 8vh !important; /* Grande pero ajustado a la altura */
                 line-height: 1;
             }
 
-            /* 6. BOTONES MÁS GRANDES */
+            /* 4. HEADER Y MÁRGENES MINIMOS */
+            body.in-fullscreen-mode .bg-slate-900\/50 {
+                padding: 0.2vh 1vh !important;
+                margin-bottom: 0.2vh !important;
+            }
+            body.in-fullscreen-mode .text-lg { font-size: 1.5vh !important; }
+            body.in-fullscreen-mode #sb-timer { font-size: 2vh !important; }
+            body.in-fullscreen-mode #scoreboard-wrapper { padding: 1vh !important; }
+
+            /* 5. BOTONES ESCALADOS */
             body.in-fullscreen-mode #sb-actions-1,
             body.in-fullscreen-mode #sb-actions-2 {
-                grid-template-rows: 1fr 2fr !important;
-                gap: 0.5vh !important; /* Pequeño espacio entre botones */
+                grid-template-rows: 1fr 1fr !important;
+                gap: 0.5vh !important;
             }
 
             body.in-fullscreen-mode button {
-                font-size: 3.5vh !important; /* Texto grande y legible */
-                font-weight: 900 !important;
+                font-size: 1.8vh !important; /* Texto de botones pequeño */
                 padding: 0 !important;
+                font-weight: 700 !important;
             }
 
             body.in-fullscreen-mode .btn-winner {
-                font-size: vh !important;
+                font-size: 2.5vh !important;
             }
             
-            /* Iconos de saque pequeños pero visibles */
-            body.in-fullscreen-mode .w-2 { width: 0.8vh !important; height: 0.8vh !important; }
+            /* Ajustar el icono de saque */
+            body.in-fullscreen-mode .w-2 { width: 0.6vh !important; height: 0.6vh !important; }
         }
     </style>
 </head>
