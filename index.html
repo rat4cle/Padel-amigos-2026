@@ -594,6 +594,71 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(4px);
         }
+        /* ==========================================
+        LÓGICA DE SELECCIÓN DE GANADOR (AJUSTES FINALES)
+        ========================================== */
+
+        /* 1. Botones de selección */
+        .scorer-btn {
+            display: none; 
+            width: 100%;
+            /* Altura 1fr: Ocupa el 100% de la altura del contenedor (igual que 2 botones pequeños apilados) */
+            height: 100%; 
+            font-size: 1.5rem !important; /* Reducido de 2.5rem a 1.5rem para que no parezcan tan grandes */
+            text-transform: uppercase !important; /* Mayúsculas forzadas */
+            font-weight: 900;
+            letter-spacing: 0.05em; /* Espaciado para que se lea mejor en mayúsculas */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-shadow: inset 0 2px 0 rgba(255,255,255,0.2);
+            z-index: 20;
+            padding: 0.5rem; /* Un poco de padding interior */
+        }
+
+        /* 2. Layout al seleccionar */
+        .selecting-scorer {
+            grid-template-rows: 1fr !important; /* Ocupa toda la altura disponible */
+            grid-template-columns: 1fr 1fr !important;
+            gap: 1rem !important;
+        }
+
+        /* 3. Ocultar botones normales y mostrar los de selección */
+        .selecting-scorer .btn-winner,
+        .selecting-scorer button:not(.scorer-btn) {
+            display: none !important;
+        }
+
+        .selecting-scorer .scorer-btn {
+            display: flex !important;
+        }
+
+        /* ==========================================
+        BLOQUEO DE INTERFAZ MIENTRAS SE ELIGE
+        ========================================== */
+
+        /* Cuando el cuerpo tiene esta clase, desactivamos lo que no sea la selección */
+        body.is-selecting button {
+            /* Por defecto, si no es un botón de selección, lo hacemos más tenue y no clicable */
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* PERO, los botones de selección deben seguir activos */
+        body.is-selecting .scorer-btn {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+                /* Estilo del Modal */
+        #save-modal {
+            transition: opacity 0.3s ease;
+        }
+        #save-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #save-modal:not(.hidden) {
+            opacity: 1;
+            pointer-events: all;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -969,9 +1034,12 @@
                                     <span class="text-lg font-bold text-slate-200 tracking-wide">MARCADOR EN VIVO</span>
                                 </div>
                                 <div id="sb-timer" class="bg-slate-950 text-emerald-400 font-mono text-xl px-4 py-2 rounded-lg border border-slate-800 shadow-inner font-bold tracking-widest">00:00</div>
-                                <button onclick="toggleScoreboardFullscreen()" id="fs-btn" class="ml-4 text-emerald-400 hover:text-white transition" title="Pantalla Completa">
-                                    <i class="ri-fullscreen-line text-xl"></i>
-                                </button>
+                                    <button onclick="toggleScoreboardFullscreen()" id="fs-btn" class="ml-4 text-emerald-400 hover:text-white transition" title="Pantalla Completa">
+                                        <i class="ri-fullscreen-line text-xl"></i>
+                                    </button>
+                                    <button onclick="openSaveModal()" class="ml-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded border border-emerald-400 shadow-lg transition" title="Guardar y Asociar Partido">
+                                        💾 GUARDAR
+                                    </button>
                             </div>
 
                             <div class="p-6">
@@ -1033,6 +1101,11 @@
                                             <button onclick="handleScoreboardAction('fault', 1)" id="sb-f1" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
                                             <button onclick="handleScoreboardAction('error', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
                                             <button onclick="handleScoreboardAction('error', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                            <!-- BOTONES DE SELECCIÓN DE JUGADOR (OCULTOS POR DEFECTO) -->
+                                            <!-- Izquierda: REVÉS -->
+                                            <button id="sb-scorer-t1-p2" onclick="confirmWinner(1, 'p2')" class="scorer-btn hidden bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded transition h-full flex items-center justify-center text-2xl">REVÉS</button>
+                                            <!-- Derecha: DRIVE -->
+                                            <button id="sb-scorer-t1-p1" onclick="confirmWinner(1, 'p1')" class="scorer-btn hidden bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded transition h-full flex items-center justify-center text-2xl">DRIVE</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1087,6 +1160,11 @@
                                             <button onclick="handleScoreboardAction('fault', 2)" id="sb-f2" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
                                             <button onclick="handleScoreboardAction('error', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
                                             <button onclick="handleScoreboardAction('error', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                            <!-- BOTONES DE SELECCIÓN DE JUGADOR (OCULTOS POR DEFECTO) -->
+                                            <!-- Izquierda: REVÉS -->
+                                            <button id="sb-scorer-t2-p2" onclick="confirmWinner(2, 'p2')" class="scorer-btn hidden bg-slate-600 hover:bg-slate-500 text-white font-black rounded transition h-full flex items-center justify-center text-2xl">REVÉS</button>
+                                            <!-- Derecha: DRIVE -->
+                                            <button id="sb-scorer-t2-p1" onclick="confirmWinner(2, 'p1')" class="scorer-btn hidden bg-slate-600 hover:bg-slate-500 text-white font-black rounded transition h-full flex items-center justify-center text-2xl">DRIVE</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1126,6 +1204,8 @@
         let tramosData = {}; let globalRankingArray = []; let activeTagFilters = []; let globalJugadoresStats = {};
         let globalFaceOffs = {}; let globalPairFaceOffs = {}; let globalBadges = [];
         let activeDayTypeFilter = null; // 'finde' | 'semana' | null
+        let playByPlayLog = []; // Aquí guardaremos cada punto
+        let matchStartTime = null; // Para calcular el tiempo real
 
         // ===== SIDEBAR & FILTER PANEL =====
         function toggleSidebar() {
@@ -1964,7 +2044,8 @@
             const opponent = team === 1 ? 2 : 1;
 
             if (type === 'winner') {
-                addScoreboardPoint(team);
+                // En lugar de sumar punto directamente, mostramos los botones de selección
+                showScorerSelection(team);
             } else if (type === 'error') {
                 addScoreboardPoint(opponent);
             } else if (type === 'fault') {
@@ -2188,12 +2269,19 @@
         });
         // Función para guardar los nombres de los jugadores
         function updatePlayerName(teamNum, position, value) {
-            // Aseguramos que el estado tenga estas variables
             if (!scoreboardState['t' + teamNum].p1) scoreboardState['t' + teamNum].p1 = "";
             if (!scoreboardState['t' + teamNum].p2) scoreboardState['t' + teamNum].p2 = "";
             
-            // Guardamos el valor
             scoreboardState['t' + teamNum][position] = value;
+
+            // Forzamos MAYÚSCULAS
+            let displayText = value ? value.toUpperCase() : (position === 'p1' ? "DRIVE" : "REVÉS");
+
+            if (position === 'p1') {
+                document.getElementById(`sb-scorer-t${teamNum}-p1`).innerText = displayText;
+            } else {
+                document.getElementById(`sb-scorer-t${teamNum}-p2`).innerText = displayText;
+            }
         }
 
         // Actualizamos el reinicio para que limpie también los nombres
@@ -2217,6 +2305,148 @@
                 document.querySelectorAll('#sb-row2 input').forEach((inp, idx) => inp.value = idx === 0 ? "JUGADOR C" : "JUGADOR D");
             }
         };
+        function showScorerSelection(team) {
+            let container = document.getElementById(`sb-actions-${team}`);
+            container.classList.add('selecting-scorer');
+            
+            // AÑADIR CLASE AL BODY PARA BLOQUEAR EL RESTO
+            document.body.classList.add('is-selecting');
+        }
+
+        function confirmWinner(team, playerPos) {
+            // --- REGISTRAR EL PUNTO ---
+            logAction('winner', team, playerPos);
+            addScoreboardPoint(team);
+            let container = document.getElementById(`sb-actions-${team}`);
+            container.classList.remove('selecting-scorer');
+            document.body.classList.remove('is-selecting');
+            updateScoreboardUI();
+        }
+        function logAction(actionType, teamNum, playerPos) {
+            // Si no hemos empezado a contar el tiempo, iniciamos el reloj
+            if (!matchStartTime) matchStartTime = Date.now();
+            
+            // Obtener nombres
+            let p1Name = scoreboardState['t' + teamNum].p1 || "DRIVE";
+            let p2Name = scoreboardState['t' + teamNum].p2 || "REVÉS";
+            let scorerName = (playerPos === 'p1') ? p1Name : p2Name;
+            
+            // Obtener el tiempo actual (MM:SS)
+            let now = Date.now();
+            let diff = now - matchStartTime;
+            let date = new Date(diff);
+            let timeStr = date.toISOString().substr(14, 5); // Formato 00:00
+
+            // Formatear el marcador actual para guardar
+            let p1ScoreText = scoreboardState.isTieBreak ? scoreboardState.t1.pIdx : sbScoreMap[scoreboardState.t1.pIdx];
+            let p2ScoreText = scoreboardState.isTieBreak ? scoreboardState.t2.pIdx : sbScoreMap[scoreboardState.t2.pIdx];
+
+            // Crear el objeto del evento
+            let event = {
+                time: timeStr,
+                action: actionType, // 'winner', 'error', 'fault'
+                team: teamNum,
+                scorer: scorerName, // Ej: "JUAN"
+                score: `${p1ScoreText}-${p2ScoreText}`,
+                games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
+                sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`
+            };
+
+            // Guardar en el log
+            playByPlayLog.push(event);
+        }
+        function openSaveModal() {
+            // 1. Llenar el selector con los partidos de rawDataGlobal
+            let select = document.getElementById('match-selector');
+            // Limpiamos opciones excepto la primera
+            while (select.options.length > 1) { select.remove(1); }
+
+            // Recorremos el historial (los 50 últimos por ejemplo para no saturar)
+            let recentMatches = filteredDataGlobal.slice().reverse().slice(0, 50);
+            
+            recentMatches.forEach((row, index) => {
+                let date = row.fecha || "Sin fecha";
+                let p1 = (row['p1 - jugador a'] || "") + "/" + (row['p1 - jugador b'] || "");
+                let p2 = (row['p2 - jugador a'] || "") + "/" + (row['p2 - jugador b'] || "");
+                let label = `${date} - ${p1} vs ${p2}`;
+                
+                let opt = document.createElement('option');
+                opt.value = index; // Usamos el índice como ID temporal
+                opt.innerText = label;
+                select.appendChild(opt);
+            });
+
+            // 2. Mostrar marcador actual
+            let currentScore = `${scoreboardState.t1.sets}-${scoreboardState.t2.sets} (Sets) | ${scoreboardState.t1.games}-${scoreboardState.t2.games} (Juegos)`;
+            document.getElementById('final-score-display').value = currentScore;
+
+            // 3. Mostrar modal
+            document.getElementById('save-modal').classList.remove('hidden');
+        }
+
+        function closeSaveModal() {
+            document.getElementById('save-modal').classList.add('hidden');
+        }
+
+        function saveAndDownload() {
+            // Crear el objeto final a guardar
+            let matchData = {
+                timestamp: new Date().toISOString(),
+                teams: {
+                    t1: { p1: scoreboardState.t1.p1, p2: scoreboardState.t1.p2, sets: scoreboardState.t1.sets },
+                    t2: { p1: scoreboardState.t2.p1, p2: scoreboardState.t2.p2, sets: scoreboardState.t2.sets }
+                },
+                finalScore: document.getElementById('final-score-display').value,
+                linkedMatchIndex: document.getElementById('match-selector').value,
+                playByPlay: playByPlayLog // Aquí está todo el historial punto a punto
+            };
+
+            // Convertir a string JSON
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(matchData, null, 2));
+            
+            // Crear enlace de descarga
+            let downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            
+            // Nombre del archivo con fecha y hora
+            let dateStr = new Date().toISOString().slice(0,10);
+            downloadAnchorNode.setAttribute("download", `Partido_Detallado_${dateStr}.json`);
+            
+            document.body.appendChild(downloadAnchorNode); // Requerido para firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+
+            closeSaveModal();
+            alert("Datos descargados correctamente. Puedes subir este archivo a tu base de datos o analizarlo.");
+        }
     </script>
+    <!-- MODAL DE GUARDADO -->
+    <div id="save-modal" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl p-6 w-full max-w-lg shadow-2xl">
+            <h2 class="text-2xl font-black text-white mb-4 flex items-center gap-2">
+                <span class="text-emerald-400">💾</span> Finalizar y Guardar
+            </h2>
+            
+            <p class="text-slate-400 text-sm mb-4">Este partido se ha guardado localmente. Selecciónalo en la lista para descargar el historial detallado.</p>
+
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Asociar a partido existente (Opcional):</label>
+                <select id="match-selector" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 text-sm focus:border-emerald-500 outline-none">
+                    <option value="new">🆕 PARTIDO NUEVO (Manual)</option>
+                    <!-- Aquí se llenarán los partidos con JS -->
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Resultado Final:</label>
+                <input type="text" id="final-score-display" class="w-full bg-slate-900 border border-slate-700 text-emerald-400 font-mono font-bold text-center rounded p-2" readonly>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeSaveModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded">Cancelar</button>
+                <button onclick="saveAndDownload()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded">Descargar Datos (JSON)</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
