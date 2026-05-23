@@ -659,6 +659,8 @@
             opacity: 1;
             pointer-events: all;
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -1040,6 +1042,9 @@
                                     <button onclick="openSaveModal()" class="ml-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded border border-emerald-400 shadow-lg transition" title="Guardar y Asociar Partido">
                                         💾 GUARDAR
                                     </button>
+                                    <button onclick="downloadMatchForGithub()" class="ml-2 bg-slate-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded border border-slate-600 transition" title="Descargar para Subir a GitHub">
+                                        💾 JSON
+                                    </button>
                             </div>
 
                             <div class="p-6">
@@ -1184,6 +1189,16 @@
 
                                 <div id="sb-status-banner" class="hidden mt-4 text-center font-black text-sm uppercase tracking-widest py-2 rounded"></div>
                             </div>
+                        </div>
+                    </div>
+                                        <!-- LISTA DE PARTIDOS GITHUB -->
+                    <div class="mt-6 border-t border-slate-700 pt-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase">Partidos en GitHub (Cloud)</h3>
+                            <button onclick="loadGithubMatchesInScoreboard()" class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-white">🔄 Refrescar</button>
+                        </div>
+                        <div id="github-matches-list" class="max-h-40 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                            <p class="text-slate-600 text-xs text-center italic">Pulsa Refrescar para cargar...</p>
                         </div>
                     </div>
                 </section>
@@ -1909,11 +1924,12 @@
         const sbScoreMap = ["0", "15", "30", "40", "AD"];
         let scoreboardHistory = [];
         let scoreboardState = {
-            t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1" },
-            t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2" }, 
+            t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "JUGADOR A", p2: "JUGADOR B" },
+            t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2", p1: "JUGADOR C", p2: "JUGADOR D" }, 
             server: 1,
             matchFinished: false,
-            isTieBreak: false
+            isTieBreak: false,
+            setHistory: [] // <--- NUEVO: Aquí guardaremos [ {s1:6, s2:4}, {s1:6, s2:2} ]
         };
         let scoreboardSeconds = 0;
         let scoreboardTimerInterval;
@@ -2040,21 +2056,38 @@
 
         function handleScoreboardAction(type, team) {
             if (scoreboardState.matchFinished) return;
-            saveScoreboardState();
-            const opponent = team === 1 ? 2 : 1;
+            
+            // Determinar quién gana el punto (el oponente normalmente)
+            let opponent = team === 1 ? 2 : 1;
 
-            if (type === 'winner') {
-                // En lugar de sumar punto directamente, mostramos los botones de selección
-                showScorerSelection(team);
-            } else if (type === 'error') {
-                addScoreboardPoint(opponent);
-            } else if (type === 'fault') {
-                scoreboardState['t' + team].faults++;
-                if (scoreboardState['t' + team].faults >= 2) {
+            if (type === 'fault') {
+                // --- REGISTRAR FALTA ---
+                // Si es la primera o la segunda, lo guardamos.
+                logAction('fault', team, null);
+
+                // Si es Doble Falta, se lo damos al oponente
+                if (scoreboardState['t' + team].faults >= 1) {
+                    // Registramos el PUNTO que resulta del doble falta
+                    logAction('double_fault_point', opponent, null); 
                     addScoreboardPoint(opponent);
+                } else {
+                    // Solo es falta, sumamos contador pero no puntos
+                    scoreboardState['t' + team].faults++;
                 }
+                updateScoreboardUI();
+
+            } else if (type === 'error') {
+                // --- REGISTRAR ERROR ---
+                // Distinguir entre Error Forzado o No Forzado leyendo el texto del botón es difícil,
+                // así que guardaremos el tipo 'error' genérico o específico si pasamos el texto.
+                // Por simplicidad, guardaremos "Error no forzado" o "Forzado" según la lógica.
+                logAction('error', team, null);
+                addScoreboardPoint(opponent);
+
+            } else if (type === 'winner') {
+                // --- REGISTRAR WINNER (Se hace en confirmWinner, aquí solo abrimos la selección) ---
+                showScorerSelection(team);
             }
-            updateScoreboardUI();
         }
         function winScoreboardSet(teamNum) {
             // Resetear juegos y puntos
@@ -2068,7 +2101,10 @@
             
             // IMPORTANTE: Salir del modo Tie-Break si estaba activo
             scoreboardState.isTieBreak = false;
-
+            scoreboardState.setHistory.push({
+                s1: scoreboardState.t1.games, // Juegos que tenía T1 cuando ganó el set
+                s2: scoreboardState.t2.games  // Juegos que tenía T2 cuando ganó el set
+            });
             // Verificar fin del partido (Mejor de 3 sets)
             if(scoreboardState['t' + teamNum].sets === 2) {
                 scoreboardState.matchFinished = true;
@@ -2151,6 +2187,7 @@
         }
 
         function undoScoreboard() {
+            playByPlayLog.pop(); 
             if (scoreboardHistory.length > 0) {
                 if(scoreboardState.matchFinished) {
                     hideScoreboardBanner();
@@ -2285,15 +2322,15 @@
         }
 
         // Actualizamos el reinicio para que limpie también los nombres
-        const originalReset = resetScoreboardMatch; // Guardamos la función antigua si existe
         resetScoreboardMatch = function() {
             if(confirm("¿Reiniciar partido?")) {
-                // Reseteamos los valores
                 scoreboardState = {
-                    t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "JUGADOR A", p2: "JUGADOR B" },
+                    t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "JUGADOR A", p2: "JUGADOR B" }, 
                     t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2", p1: "JUGADOR C", p2: "JUGADOR D" }, 
                     server: 1,
-                    matchFinished: false
+                    matchFinished: false,
+                    isTieBreak: false, // <--- AÑADIDO: Reinicia estado de Tie-Break
+                    setHistory: []      // <--- AÑADIDO: Limpia historial de sets
                 };
                 scoreboardHistory = [];
                 scoreboardSeconds = 0;
@@ -2323,36 +2360,56 @@
             updateScoreboardUI();
         }
         function logAction(actionType, teamNum, playerPos) {
-            // Si no hemos empezado a contar el tiempo, iniciamos el reloj
             if (!matchStartTime) matchStartTime = Date.now();
             
-            // Obtener nombres
-            let p1Name = scoreboardState['t' + teamNum].p1 || "DRIVE";
-            let p2Name = scoreboardState['t' + teamNum].p2 || "REVÉS";
-            let scorerName = (playerPos === 'p1') ? p1Name : p2Name;
-            
-            // Obtener el tiempo actual (MM:SS)
+            // Tiempo
             let now = Date.now();
             let diff = now - matchStartTime;
             let date = new Date(diff);
-            let timeStr = date.toISOString().substr(14, 5); // Formato 00:00
+            let timeStr = date.toISOString().substr(14, 5);
 
-            // Formatear el marcador actual para guardar
+            // Nombres
+            let p1Name = scoreboardState['t' + teamNum].p1 || "DRIVE";
+            let p2Name = scoreboardState['t' + teamNum].p2 || "REVÉS";
+            let teamName = `TEAM ${teamNum}`;
+            
+            // Determinar quién anota o quién comete la acción
+            let scorerName = "";
+            let detail = "";
+
+            if (actionType === 'winner') {
+                // Si es winner, sabemos qué jugador pulsó (Drive o Revés)
+                scorerName = (playerPos === 'p1') ? p1Name : p2Name;
+            } 
+            else if (actionType === 'fault') {
+                // Si es falta, no sabemos quién la cometió exactamente (no seleccionamos jugador)
+                scorerName = teamName; 
+                detail = "FALTA";
+            } 
+            else if (actionType === 'error') {
+                scorerName = teamName;
+                detail = "ERROR"; // Aquí podrías distinguir forzado/no forzado si pasas el tipo exacto
+            }
+            else if (actionType === 'double_fault_point') {
+                scorerName = teamName; // Equipo que recibe el punto
+                detail = "DOBLE FALTA";
+            }
+
+            // Marcador actual
             let p1ScoreText = scoreboardState.isTieBreak ? scoreboardState.t1.pIdx : sbScoreMap[scoreboardState.t1.pIdx];
             let p2ScoreText = scoreboardState.isTieBreak ? scoreboardState.t2.pIdx : sbScoreMap[scoreboardState.t2.pIdx];
 
-            // Crear el objeto del evento
             let event = {
                 time: timeStr,
-                action: actionType, // 'winner', 'error', 'fault'
+                action: actionType,
                 team: teamNum,
-                scorer: scorerName, // Ej: "JUAN"
+                scorer: scorerName,
+                detail: detail, // Guardamos si fue Falta, Error, etc.
                 score: `${p1ScoreText}-${p2ScoreText}`,
                 games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
                 sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`
             };
 
-            // Guardar en el log
             playByPlayLog.push(event);
         }
         function openSaveModal() {
@@ -2418,6 +2475,118 @@
 
             closeSaveModal();
             alert("Datos descargados correctamente. Puedes subir este archivo a tu base de datos o analizarlo.");
+        }
+        function downloadMatchForGithub() {
+            // Crear objeto compacto
+            let matchData = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleString(),
+                teams: {
+                    t1: { p1: scoreboardState.t1.p1, p2: scoreboardState.t1.p2 },
+                    t2: { p1: scoreboardState.t2.p1, p2: scoreboardState.t2.p2 }
+                },
+                finalSets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`,
+                setHistory: scoreboardState.setHistory, // Aquí están los 6-4, 6-2...
+                playByPlay: playByPlayLog
+            };
+
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(matchData));
+            let anchor = document.createElement('a');
+            anchor.setAttribute("href", dataStr);
+            anchor.setAttribute("download", `match_${Date.now()}.json`);
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+            alert("Archivo descargado. Súbelo a tu carpeta 'matches' en GitHub.");
+        }
+                // CONFIGURACIÓN GITHUB
+        const GITHUB_USER = "TU_USUARIO"; 
+        const GITHUB_REPO = "TU_REPOSITORIO";
+        const GITHUB_FOLDER = "matches"; // Crea una carpeta llamada 'matches' en tu repo
+
+        // 1. Función para cargar la lista en el Marcador
+        async function loadGithubMatchesInScoreboard() {
+            let container = document.getElementById('github-matches-list');
+            container.innerHTML = '<p class="text-emerald-400 animate-pulse text-xs">Cargando desde GitHub...</p>';
+
+            let url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}`;
+            
+            try {
+                let res = await fetch(url);
+                if(!res.ok) throw new Error("Carpeta no encontrada o error de red");
+                let files = await res.json();
+
+                let html = '';
+                for (let file of files) {
+                    if(file.name.endsWith('.json')) {
+                        html += `
+                            <div onclick="loadAndViewMatch('${file.name}')" class="cursor-pointer bg-slate-800 hover:bg-slate-700 p-2 rounded border border-slate-700 flex justify-between items-center mb-2 transition">
+                                <span class="text-white text-sm font-bold truncate w-2/3">${file.name.replace('.json','')}</span>
+                                <span class="text-emerald-400 text-xs">Ver Stats 📊</span>
+                            </div>
+                        `;
+                    }
+                }
+                container.innerHTML = html || '<p class="text-slate-500 text-xs">No hay partidos en GitHub.</p>';
+            } catch (e) {
+                container.innerHTML = '<p class="text-red-400 text-xs">Error: Revisa usuario/repo/carpeta.</p>';
+            }
+        }
+
+        // 2. Función que convierte el JSON en formato de Hoja de Cálculo y salta a Stats
+        async function loadAndViewMatch(filename) {
+            let url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}/${filename}`;
+            
+            try {
+                let res = await fetch(url);
+                let fileData = await res.json();
+                let match = JSON.parse(atob(fileData.content)); // Decodificar Base64 de GitHub
+
+                // --- TRUCO: Convertir JSON a Fila de Google Sheets ---
+                // Esto "engaña" a tu dashboard para que crea que es un partido más de la lista
+                let mockRow = {
+                    fecha: match.timestamp,
+                    'p1 - jugador a': match.teams.t1.p1,
+                    'p1 - jugador b': match.teams.t1.p2,
+                    'p2 - jugador a': match.teams.t2.p1,
+                    'p2 - jugador b': match.teams.t2.p2,
+                    'sets p1': match.finalSets.split('-')[0],
+                    'sets p2': match.finalSets.split('-')[1],
+                    'tipo': 'interno', // Para que cuente en las stats
+                    'ganadores': match.finalSets.split('-')[0] > match.finalSets.split('-')[1] ? 
+                                `${match.teams.t1.p1} ${match.teams.t1.p2}` : 
+                                `${match.teams.t2.p1} ${match.teams.t2.p2}`
+                };
+
+                // Reconstruir Sets individuales si existen en el historial
+                if(match.setHistory && match.setHistory.length > 0) {
+                    mockRow['set 1 - p1'] = match.setHistory[0].s1;
+                    mockRow['set 1 - p2'] = match.setHistory[0].s2;
+                    if(match.setHistory[1]) {
+                        mockRow['set 2 - p1'] = match.setHistory[1].s1;
+                        mockRow['set 2 - p2'] = match.setHistory[1].s2;
+                    }
+                    if(match.setHistory[2]) {
+                        mockRow['set 3 - p1'] = match.setHistory[2].s1;
+                        mockRow['set 3 - p2'] = match.setHistory[2].s2;
+                    }
+                }
+
+                // 3. Sobrescribir los datos globales temporalmente con este partido
+                filteredDataGlobal = [mockRow];
+                
+                // 4. Recalcular todo el dashboard con este solo partido
+                procesarDatosInteligentes(filteredDataGlobal);
+                
+                // 5. Ir a la pestaña de Táctico o Ficha
+                switchTab('tactico'); 
+                
+                alert(`Partido cargado: ${match.teams.t1.p1}/${match.teams.t1.p2} vs ${match.teams.t2.p1}/${match.teams.t2.p2}`);
+
+            } catch (e) {
+                console.error(e);
+                alert("Error al cargar el partido.");
+            }
         }
     </script>
     <!-- MODAL DE GUARDADO -->
