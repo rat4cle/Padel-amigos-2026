@@ -2833,38 +2833,69 @@
         // --- RENDERIZADORES ---
 
         function renderSummaryStats() {
+            // Inicializar stats
             let stats = {
                 t1: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t1.p1 + " / " + scoreboardState.t1.p2 },
                 t2: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t2.p1 + " / " + scoreboardState.t2.p2 }
             };
 
+            // Protección: Si no hay logs, mostrar 0
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                document.getElementById('summary-team-1').innerHTML = '<div class="text-center text-slate-500 mt-4">Sin datos registrados</div>';
+                document.getElementById('summary-team-2').innerHTML = '';
+                return;
+            }
+
             let totalPoints = 0;
             playByPlayLog.forEach(log => {
                 totalPoints++;
-                let winningTeam = log.winner; // Usamos el ganador real (calculado en logAction)
+                
+                // --- COMPATIBILIDAD CON JSONS ANTIGUOS (PROTEGIDA) ---
+                let winningTeam = log.winner;
+                
+                if (winningTeam === undefined) {
+                    // Si falta el dato nuevo, intentamos deducirlo
+                    if (log.action === 'winner') {
+                        winningTeam = log.team; // En old school, 'team' era el ganador
+                    } else if (log.action === 'error' || log.action === 'fault' || log.action.includes('double_fault')) {
+                        // En old school, 'team' era quien perdió/erró. Gana el otro.
+                        if (log.team) winningTeam = (log.team === 1) ? 2 : 1;
+                    }
+                }
+                
+                // Si no podemos determinar el equipo (error grave), saltamos
+                if (!winningTeam) return;
+                // ---------------------------------------------
+
                 let losingTeam = (winningTeam === 1) ? 2 : 1;
                 
                 // Puntos y Errores
-                stats['t' + winningTeam].points++;
-                if (log.action === 'winner') stats['t' + winningTeam].winners++;
-                else if (log.action === 'error') stats['t' + losingTeam].errors++; // El que perdió cometió error
-                else if (log.action.includes('fault')) stats['t' + losingTeam].errors++;
+                if (log.action === 'winner') {
+                    stats['t' + winningTeam].winners++;
+                } else if (log.action === 'error') {
+                    stats['t' + losingTeam].errors++;
+                } else if (log.action.includes('fault')) {
+                    stats['t' + losingTeam].errors++;
+                }
 
-                // Break Points
-                let scoreParts = log.score.split('-');
+                // Break Points (Protegido)
+                let scoreParts = log.score ? log.score.split('-') : ["0", "0"];
                 let sVal = (s) => (s==='40'||s==='AD')?40:(s==='30'?30:(s==='15'?15:0));
                 let s1 = sVal(scoreParts[0]);
                 let s2 = sVal(scoreParts[1]);
                 let isBP = (s2 >= 40 && s1 < 40) || s2 === 'AD';
 
                 if (isBP) {
-                    if (scoreboardState.server === 1) {
+                    // Usamos 'server' del log si existe, sino el actual
+                    let server = log.team || scoreboardState.server;
+                    
+                    if (server === 1) {
                         stats.t2.bpOpportunities++;
-                        if (log.winner === 2) stats.t2.bpConverted++;
+                        if (winningTeam === 2) stats.t2.bpConverted++;
                         else stats.t1.bpSaved++;
                     } else {
                         stats.t1.bpOpportunities++;
-                        if (log.winner === 1) stats.t1.bpConverted++;
+                        if (winningTeam === 1) stats.t1.bpConverted++;
                         else stats.t2.bpSaved++;
                     }
                 }
@@ -2892,11 +2923,7 @@
                 document.getElementById(containerId).innerHTML = html;
             };
 
-            renderTeam(stats.t1, 1, 'summary-team-1');
-            renderTeam(stats.t2, 2, 'summary-team-2');
-            
-            document.getElementById('stats-content').innerHTML = ''; // Limpiamos contenedor viejo si existe
-            document.getElementById('summary-team-1').innerHTML = ""; // Renderizamos manual
+            document.getElementById('summary-team-1').innerHTML = "";
             renderTeam(stats.t1, 1, 'summary-team-1');
             document.getElementById('summary-team-2').innerHTML = "";
             renderTeam(stats.t2, 2, 'summary-team-2');
@@ -2906,18 +2933,38 @@
             let totalBP = 0;
             let savedBP = 0;
             
-            // 1. Calcular Eficiencia de BP Global
+            // Protección si no hay logs
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                document.getElementById('adv-bp-total').innerText = "0";
+                document.getElementById('adv-bp-saved').innerText = "0";
+                document.getElementById('adv-bp-eff').innerText = "0%";
+                document.getElementById('advanced-winners-chart').innerHTML = '<div class="text-center text-slate-500 text-xs">Sin datos</div>';
+                return;
+            }
+
             playByPlayLog.forEach(log => {
-                let scoreParts = log.score.split('-');
+                // --- COMPATIBILIDAD ---
+                let wTeam = log.winner;
+                if (wTeam === undefined) {
+                    if (log.action === 'winner') wTeam = log.team;
+                    else if (log.action === 'error' || log.action === 'fault') wTeam = (log.team === 1) ? 2 : 1;
+                    else wTeam = log.team;
+                }
+                if (!wTeam) return; // Si no podemos deducir equipo, ignoramos este punto
+                // -----------------------
+
+                let scoreParts = log.score ? log.score.split('-') : ["0", "0"];
                 let sVal = (s) => (s==='40'||s==='AD')?40:(s==='30'?30:(s==='15'?15:0));
                 let s1 = sVal(scoreParts[0]), s2 = sVal(scoreParts[1]);
                 let isBP = (s2 >= 40 && s1 < 40) || s2 === 'AD';
-                
-                if(isBP) {
+
+                if (isBP) {
                     totalBP++;
-                    // Si el ganador es el que NO sacaba
-                    let server = scoreboardState.server;
-                    if (log.winner !== server) savedBP++; 
+                    // Lógica de compatibilidad para Break Points
+                    let server = log.team; // En logs viejos, 'team' es quien sacó
+                    if (!server) server = scoreboardState.server; // Fallback al actual
+
+                    if (wTeam !== server) savedBP++; 
                 }
             });
 
@@ -2927,29 +2974,31 @@
             document.getElementById('adv-bp-saved').innerText = savedBP;
             document.getElementById('adv-bp-eff').innerText = bpEff + "%";
             
-            // 2. Distribución de Winners (Gráfico simple de texto)
+            // Distribución de Winners
             let team1Winners = { p1: 0, p2: 0 };
             let team2Winners = { p1: 0, p2: 0 };
             
             playByPlayLog.forEach(log => {
                 if(log.action === 'winner') {
-                    let wTeam = log.winner;
-                    let wPlayer = log.scorer; // Nombre del jugador que hizo winner
+                    let wTeam = log.winner || log.team; // Fallback
+                    let wPlayer = log.scorer || ""; 
                     
-                    if(wTeam === 1) {
+                    // Lógica de mapeo seguro
+                    if (wTeam === 1) {
                         if(wPlayer === scoreboardState.t1.p1) team1Winners.p1++;
-                        else team1Winners.p2++;
+                        else if(wPlayer === scoreboardState.t1.p2) team1Winners.p2++;
+                        else team1Winners.p1++; // Fallback
                     } else {
                         if(wPlayer === scoreboardState.t2.p1) team2Winners.p1++;
-                        else team2Winners.p2++;
+                        else if(wPlayer === scoreboardState.t2.p2) team2Winners.p2++;
+                        else team2Winners.p1++;
                     }
                 }
             });
 
-            const totalT1 = team1Winners.p1 + team1Winners.p2 || 1;
-            const totalT2 = team2Winners.p1 + team2Winners.p2 || 1;
+            const totalT1 = (team1Winners.p1 + team1Winners.p2) || 1;
+            const totalT2 = (team2Winners.p1 + team2Winners.p2) || 1;
 
-            // Render simple bar chart using div widths
             let chartHTML = `
                 <div class="mb-4 text-white">
                     <div class="text-xs text-emerald-400 font-bold mb-1">${scoreboardState.t1.p1} / ${scoreboardState.t1.p2}</div>
@@ -2963,7 +3012,7 @@
                     </div>
                 </div>
                 <div class="text-white">
-                    <div class="text-xs text-slate-400 font-bold mb-1">${scoreboardState.t2.p1} / ${scoreboard.t2.p2}</div>
+                    <div class="text-xs text-slate-400 font-bold mb-1">${scoreboardState.t2.p1} / ${scoreboardState.t2.p2}</div>
                     <div class="h-2 bg-slate-700 rounded overflow-hidden flex">
                         <div class="bg-slate-500 h-full" style="width: ${(team2Winners.p1/totalT2)*100}%"></div>
                         <div class="bg-slate-400 h-full" style="width: ${(team2Winners.p2/totalT2)*100}%"></div>
@@ -2980,26 +3029,49 @@
 
         function renderHistoryStats() {
             const tbody = document.getElementById('history-tbody');
+            if (!tbody) return; // Protección extra
+            
             tbody.innerHTML = '';
             
-            // Recorremos el historial y creamos filas
+            // Protección si no hay logs
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay puntos registrados en este partido.</td></tr>';
+                return;
+            }
+
             playByPlayLog.slice().reverse().forEach(log => {
                 let rowClass = "";
                 let actionText = "";
                 let detailText = "";
                 
-                if (log.action === 'winner') { rowClass = "winner-row"; actionText = "WINNER"; detailText = log.scorer; }
-                else if (log.action === 'error') { rowClass = "error-row"; actionText = "ERROR"; detailText = "No Forzado"; }
-                else if (log.action === 'fault') { rowClass = "fault-row"; actionText = "FALTA"; detailText = ""; }
-                else if (log.action === 'double_fault_point') { rowClass = "fault-row bp-row"; actionText = "DOBLE FALTA"; detailText = "Punto para Rival"; }
-                
-                let tr = document.createElement('tr');
+                // --- FALLBACKS VISUALES ---
+                if (log.action === 'winner') { rowClass = "winner-row"; actionText = "WINNER"; }
+                else if (log.action === 'error') { rowClass = "error-row"; actionText = "ERROR"; }
+                else if (log.action === 'fault') { rowClass = "fault-row"; actionText = "FALTA"; }
+                else if (log.action === 'double_fault_point') { rowClass = "fault-row bp-row"; actionText = "DOBLE FALTA"; detailText = "Punto Rival"; }
+                else { actionText = log.action.toUpperCase(); } // Si es algo desconocido, mostramos el action
+
+                // Fallback para datos de texto
+                let scorerText = log.scorer;
+                if (!scorerText) {
+                    // Si es error/falta viejo, buscar nombre en detalle
+                    if (!log.detail && log.action === 'error') scorerText = "Equipo";
+                    else scorerText = log.detail || "Jugador";
+                    // Si es winner viejo, usar el nombre del equipo o genérico
+                    if (!scorerText && log.action === 'winner') scorerText = "Ganador";
+                }
+
+                let setsText = log.sets || "0-0";
+                let gamesText = log.games || "0-0";
+                let scoreText = log.score || "0-0";
+
+                let tr = document.createElement("tr");
                 tr.className = "border-b border-slate-800/50";
                 tr.innerHTML = `
-                    <td class="p-2 text-slate-500">${log.time}</td>
-                    <td class="p-2 text-white font-bold">${log.sets} (${log.games}) | ${log.score}</td>
+                    <td class="p-2 text-slate-500">${log.time || "--:--"}</td>
+                    <td class="p-2 text-white font-bold">${setsText} (${gamesText}) | ${scoreText}</td>
                     <td class="p-2 ${rowClass} font-bold uppercase">${actionText}</td>
-                    <td class="p-2 text-slate-300 text-right">${detailText}</td>
+                    <td class="p-2 text-slate-300 text-right">${scorerText} ${log.detail ? ' - ' + log.detail : ''}</td>
                 `;
                 tbody.appendChild(tr);
             });
