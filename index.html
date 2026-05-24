@@ -2265,26 +2265,6 @@
             }
         }
 
-        function resetScoreboardMatch() {
-            if(confirm("¿Reiniciar partido?")) {
-                scoreboardState = {
-                    t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1" }, // Restaurado
-                    t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2" }, // Restaurado
-                    server: 1,
-                    matchFinished: false,
-                    isTieBreak: false
-                };
-                scoreboardHistory = [];
-                scoreboardSeconds = 0;
-                hideScoreboardBanner();
-                updateScoreboardUI();
-                
-                // También restaurar visualmente el texto en el HTML por si acaso
-                document.querySelector('#sb-row1 .text-xl').innerText = "Team 1";
-                document.querySelector('#sb-row2 .text-xl').innerText = "Team 2";
-            }
-        }
-
         function toggleScoreboardServe() {
             if(scoreboardState.matchFinished) return;
             saveScoreboardState();
