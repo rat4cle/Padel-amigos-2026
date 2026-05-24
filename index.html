@@ -680,6 +680,17 @@
         }
         .team-1-header { color: #34d399; border-bottom: 2px solid #34d399; }
         .team-2-header { color: #cbd5e1; border-bottom: 2px solid #cbd5e1; }
+        /* Estilos de pestañas dentro del modal */
+        .stats-tab-btn { transition: all 0.3s ease; }
+        .stats-tab-btn.active { color: #34d399 !important; border-color: #34d399 !important; }
+        .stats-tab-btn:hover { color: #e2e8f0 !important; }
+
+        /* Estilos de la tabla de historial */
+        #history-tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .winner-row { color: #34d399; }
+        .error-row { color: #ef4444; }
+        .fault-row { color: #f97316; }
+        .bp-row { color: #fbbf24; font-weight: bold; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -1223,11 +1234,11 @@
                             <p class="text-slate-600 text-xs text-center italic">Pulsa Refrescar para cargar...</p>
                         </div>
                     </div>
-                    <!-- MODAL ESTADÍSTICAS EN VIVO -->
+                    <!-- MODAL ESTADÍSTICAS EN VIVO (ACTUALIZADO) -->
                     <div id="live-stats-modal" class="fixed inset-0 bg-black/90 z-[9999] hidden flex flex-col items-center justify-center p-4">
-                        <div class="bg-slate-800 border border-slate-600 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-fade-in">
+                        <div class="bg-slate-800 border border-slate-600 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-fade-in flex flex-col">
                             
-                            <!-- Header Modal -->
+                            <!-- Header -->
                             <div class="bg-slate-900 p-4 border-b border-slate-700 flex justify-between items-center sticky top-0 z-10">
                                 <h2 class="text-xl font-black text-white flex items-center gap-2">
                                     <span class="text-sky-400">📊</span> ESTADÍSTICAS DEL PARTIDO
@@ -1235,10 +1246,73 @@
                                 <button onclick="closeLiveStats()" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
                             </div>
 
-                            <!-- Contenido Stats -->
-                            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8" id="stats-content">
-                                <!-- Se llenará con JS -->
-                                <div class="text-center text-slate-500 col-span-2">Calculando datos...</div>
+                            <!-- PESTAÑAS DEL MODAL -->
+                            <div class="flex gap-4 border-b border-slate-700 px-6 pt-2 pb-0 bg-slate-900/50">
+                                <button onclick="switchStatsTab('summary')" id="btn-stats-summary" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn active">📊 Resumen</button>
+                                <button onclick="switchStatsTab('advanced')" id="btn-stats-advanced" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">🚀 Avanzado</button>
+                                <button onclick="switchStatsTab('history')" id="btn-stats-history" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">📝 Historial</button>
+                            </div>
+
+                            <!-- CONTENIDO DE LAS PESTAÑAS -->
+                            <div class="p-6 flex-1 min-h-0">
+                                
+                                <!-- PESTAÑA 1: RESUMEN (Tu código actual) -->
+                                <div id="stats-tab-summary" class="stats-tab-content h-full">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <!-- Se rellena con JS -->
+                                        <div id="summary-team-1" class="col-span-1"></div>
+                                        <div id="summary-team-2" class="col-span-1"></div>
+                                    </div>
+                                </div>
+
+                                <!-- PESTAÑA 2: AVANZADO -->
+                                <div id="stats-tab-advanced" class="stats-tab-content hidden h-full">
+                                    <h3 class="text-lg font-bold text-white mb-4 text-center">Análisis Profundo</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Distribución de Ganadores -->
+                                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                                            <h4 class="text-sm font-bold text-emerald-400 mb-3 uppercase">Distribución de Winners</h4>
+                                            <div id="advanced-winners-chart" class="h-40"></div>
+                                        </div>
+                                        <!-- Eficiencia de Break Points -->
+                                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                                            <h4 class="text-sm font-bold text-amber-400 mb-3 uppercase">Eficiencia de Defensa (Break Points)</h4>
+                                            <div class="grid grid-cols-2 gap-4 text-center">
+                                                <div>
+                                                    <div class="text-xs text-slate-500 uppercase">Oportunidades</div>
+                                                    <div id="adv-bp-total" class="text-2xl font-black text-white">0</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs text-slate-500 uppercase">Salvados</div>
+                                                    <div id="adv-bp-saved" class="text-2xl font-black text-emerald-400">0</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-xs text-slate-500 uppercase">%</div>
+                                                    <div id="adv-bp-eff" class="text-xl font-black text-slate-300">0%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- PESTAÑA 3: HISTORIAL -->
+                                <div id="stats-tab-history" class="stats-tab-content hidden h-full overflow-hidden flex flex-col">
+                                    <h3 class="text-lg font-bold text-white mb-4">Registro Punto a Punto</h3>
+                                    <div class="flex-1 overflow-auto bg-slate-900/50 rounded-lg border border-slate-700 custom-scrollbar">
+                                        <table class="w-full text-left border-collapse text-xs font-mono">
+                                            <thead class="bg-slate-800 text-slate-400 sticky top-0">
+                                                <tr>
+                                                    <th class="p-2 text-left border-b border-slate-700">Time</th>
+                                                    <th class="p-2 text-left border-b border-slate-700">Marcador</th>
+                                                    <th class="p-2 text-left border-b border-slate-700">Acción</th>
+                                                    <th class="p-2 text-left border-b border-slate-700">Detalle / Jugador</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="history-tbody" class="text-slate-300 divide-y divide-slate-800"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
                             </div>
                             
                             <!-- Footer -->
@@ -2123,23 +2197,13 @@
 
         function handleScoreboardAction(type, team) {
             if (scoreboardState.matchFinished) return;
-            let opponent = team === 1 ? 2 : 1;
-
-            if (type === 'fault') {
-                // Registramos la acción con el equipo que SACÓ
-                logAction('fault', team, null);
-                
-                if (scoreboardState['t' + team].faults >= 1) {
-                    logAction('double_fault_point', team, null); // El que falla doble gana el punto
-                    addScoreboardPoint(opponent); // El oponente recibe el punto
-                }
-                updateScoreboardUI();
-            } else if (type === 'error') {
-                // Registramos la acción con el equipo que ERRÓ
-                logAction('error', team, null);
-                addScoreboardPoint(opponent);
-            } else if (type === 'winner') {
+            
+            // Lógica para mostrar selección de jugador en TODOS los casos
+            if (type === 'winner' || type === 'error' || type === 'fault') {
+                // Guardamos el tipo de acción para saber qué hacer al confirmar el nombre
+                window.currentActionType = type; 
                 showScorerSelection(team);
+                return; // Detenemos aquí, todo lo demás pasa en confirmWinner
             }
         }
         function winScoreboardSet(teamNum) {
@@ -2385,9 +2449,40 @@
         }
 
         function confirmWinner(team, playerPos) {
-            // --- REGISTRAR EL PUNTO ---
-            logAction('winner', team, playerPos);
-            addScoreboardPoint(team);
+            // Obtenemos qué botón se pulsó primero ('winner', 'error' o 'fault')
+            let action = window.currentActionType || 'winner';
+            let opponent = (team === 1) ? 2 : 1;
+
+            if (action === 'winner') {
+                // 1. Registro de estadística
+                logAction('winner', team, playerPos);
+                // 2. Suma de puntos
+                addScoreboardPoint(team);
+            } 
+            else if (action === 'error') {
+                // 1. Registro de estadística (Quién erró)
+                logAction('error', team, playerPos);
+                // 2. El punto es para el oponente
+                addScoreboardPoint(opponent);
+            } 
+            else if (action === 'fault') {
+                // Incrementamos el contador de faltas del equipo
+                scoreboardState['t' + team].faults++;
+                
+                // Si es DOBLE FALTA (contador llega a 2)
+                if (scoreboardState['t' + team].faults >= 2) {
+                    // Registramos doble falta y damos punto al oponente
+                    logAction('double_fault_point', team, playerPos);
+                    addScoreboardPoint(opponent);
+                    // Reseteamos el contador para el siguiente juego
+                    scoreboardState['t' + team].faults = 0;
+                } else {
+                    // Es la primera falta, la registramos
+                    logAction('fault', team, playerPos);
+                }
+            }
+
+            // Cerramos el modal de selección y actualizamos la UI
             let container = document.getElementById(`sb-actions-${team}`);
             container.classList.remove('selecting-scorer');
             document.body.classList.remove('is-selecting');
@@ -2705,150 +2800,209 @@
             const modal = document.getElementById('live-stats-modal');
             const content = document.getElementById('stats-content');
             
-            // Mostrar modal
+            // Mostrar modal y resetear a Resumen
             modal.classList.remove('hidden');
+            switchStatsTab('summary'); 
+        }
 
-            // --- CÁLCULO DE DATOS ---
+        function closeLiveStats() {
+            document.getElementById('live-stats-modal').classList.add('hidden');
+        }
+
+        // Función para cambiar pestañas en el modal
+        function switchStatsTab(tabName) {
+            // 1. Estilos de botones
+            document.querySelectorAll('.stats-tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-stats-${tabName}`);
+            if(activeBtn) activeBtn.classList.add('active');
+
+            // 2. Mostrar contenido correspondiente
+            document.querySelectorAll('.stats-tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`stats-tab-${tabName}`).classList.remove('hidden');
+
+            // 3. Si vamos a Avanzado o Resumen, calculamos los datos
+            if(tabName === 'summary') {
+                renderSummaryStats();
+            } else if (tabName === 'advanced') {
+                renderAdvancedStats();
+            } else if (tabName === 'history') {
+                renderHistoryStats();
+            }
+        }
+
+        // --- RENDERIZADORES ---
+
+        function renderSummaryStats() {
             let stats = {
                 t1: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t1.p1 + " / " + scoreboardState.t1.p2 },
                 t2: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t2.p1 + " / " + scoreboardState.t2.p2 }
             };
 
             let totalPoints = 0;
-
             playByPlayLog.forEach(log => {
                 totalPoints++;
-                let winningTeam = log.team; // Quién ganó el punto
+                let winningTeam = log.winner; // Usamos el ganador real (calculado en logAction)
                 let losingTeam = (winningTeam === 1) ? 2 : 1;
                 
-                // 1. Puntos Totales
+                // Puntos y Errores
                 stats['t' + winningTeam].points++;
+                if (log.action === 'winner') stats['t' + winningTeam].winners++;
+                else if (log.action === 'error') stats['t' + losingTeam].errors++; // El que perdió cometió error
+                else if (log.action.includes('fault')) stats['t' + losingTeam].errors++;
 
-                // 2. Winners y Errores
-                if (log.action === 'winner') {
-                    stats['t' + winningTeam].winners++;
-                } else if (log.action === 'error') {
-                    // Si T1 comete error, el punto es para T2, pero el error es de T1
-                    stats['t' + losingTeam].errors++;
-                } else if (log.action === 'fault' || log.action === 'double_fault_point') {
-                    // Doble falta cuenta como error no forzado del que saca
-                    stats['t' + losingTeam].errors++;
-                }
-
-                // 3. Lógica de BREAK POINTS
-                // Formato score: "15-30". Izquierda=Saque, Derecha=Resto
+                // Break Points
                 let scoreParts = log.score.split('-');
-                let serverScore = scoreParts[0].trim();
-                let receiverScore = scoreParts[1].trim();
-                
-                // Mapeo simple de puntuación a números (0, 15, 30, 40, Ad)
-                const scoreVal = (s) => {
-                    if(s === '40' || s === 'AD') return 40;
-                    if(s === '30') return 30;
-                    if(s === '15') return 15;
-                    return 0;
-                };
+                let sVal = (s) => (s==='40'||s==='AD')?40:(s==='30'?30:(s==='15'?15:0));
+                let s1 = sVal(scoreParts[0]);
+                let s2 = sVal(scoreParts[1]);
+                let isBP = (s2 >= 40 && s1 < 40) || s2 === 'AD';
 
-                let sVal = scoreVal(serverScore);
-                let rVal = scoreVal(receiverScore);
-
-                // ¿Quién sacaba en este punto? Lo sabemos por 'scoreboardState.server' PERO
-                // para ser exactos necesitamos saber quién sacaba en el MOMENTO de ese log.
-                // Como no guardamos 'who_was_serving' en el log, inferimos por la puntuación si es posible
-                // o asumimos que el servidor actual era el servidor (no es 100% perfecto sin más datos, pero funcional).
-                
-                // Asumimos: Si el log tiene 'team', es quien ganó.
-                // Vamos a simplificar: Break Point opportunity = Si el Receptor tiene 40 y el Saqueador < 40 (o Ad vs 40).
-                
-                let isBreakPoint = false;
-                
-                if (scoreboardState.server === 1) {
-                    // Saca T1, Recibe T2
-                    // Si T2 (Receptor) tiene ventaja
-                    if (rVal >= 40 && sVal < 40) isBreakPoint = true;
-                    if (rVal === 'AD') isBreakPoint = true; // T2 tiene ventaja
-                    
-                    if (isBreakPoint) {
-                        stats.t2.bpOpportunities++; // T2 tiene oportunidad de quitarle el servicio a T1
-                        if (log.team === 2) stats.t2.bpConverted++; // T2 ganó el punto
-                        else stats.t1.bpSaved++; // T1 salvó el punto
-                    }
-
-                } else {
-                    // Saca T2, Recibe T1
-                    if (rVal >= 40 && sVal < 40) isBreakPoint = true;
-                    if (rVal === 'AD') isBreakPoint = true;
-
-                    if (isBreakPoint) {
-                        stats.t1.bpOpportunities++; // T1 tiene oportunidad
-                        if (log.team === 1) stats.t1.bpConverted++; // T1 ganó
-                        else stats.t2.bpSaved++; // T2 salvó
+                if (isBP) {
+                    if (scoreboardState.server === 1) {
+                        stats.t2.bpOpportunities++;
+                        if (log.winner === 2) stats.t2.bpConverted++;
+                        else stats.t1.bpSaved++;
+                    } else {
+                        stats.t1.bpOpportunities++;
+                        if (log.winner === 1) stats.t1.bpConverted++;
+                        else stats.t2.bpSaved++;
                     }
                 }
             });
 
-            // --- RENDERIZADO HTML ---
-            const renderTeamStats = (team, sideColor) => {
+            // Renderizar Tablas
+            const renderTeam = (team, sideColor, containerId) => {
                 let pWin = totalPoints > 0 ? ((team.points / totalPoints) * 100).toFixed(1) : 0;
-                let bpConvEff = team.bpOpportunities > 0 ? ((team.bpConverted / team.bpOpportunities) * 100).toFixed(0) : 0;
-
-                return `
+                let bpEff = team.bpOpportunities > 0 ? ((team.bpSaved / team.bpOpportunities) * 100).toFixed(0) : 0;
+                let html = `
                     <div class="team-header team-${sideColor}-header">${team.name}</div>
-                    
                     <div class="grid grid-cols-2 gap-2 mb-4">
-                        <div class="stat-box">
-                            <div class="stat-label">Puntos Ganados</div>
-                            <div class="stat-value">${team.points}</div>
-                            <div class="stat-sub">${pWin}% del total</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Winners</div>
-                            <div class="stat-value text-emerald-400">${team.winners}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Errores (No Forz.)</div>
-                            <div class="stat-value text-red-400">${team.errors}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Ratio W/E</div>
-                            <div class="stat-value">${team.errors > 0 ? (team.winners/team.errors).toFixed(2) : team.winners}</div>
-                        </div>
+                        <div class="stat-box"><div class="stat-label">Puntos</div><div class="stat-value">${team.points}</div><div class="stat-sub">${pWin}%</div></div>
+                        <div class="stat-box"><div class="stat-label">Winners</div><div class="stat-value text-emerald-400">${team.winners}</div></div>
+                        <div class="stat-box"><div class="stat-label">Errores</div><div class="stat-value text-red-400">${team.errors}</div></div>
+                        <div class="stat-box"><div class="stat-label">Ratio W/E</div><div class="stat-value">${team.errors > 0 ? (team.winners/team.errors).toFixed(2) : team.winners}</div></div>
                     </div>
-
                     <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 border-b border-slate-700 pb-1">Break Points</h4>
                     <div class="grid grid-cols-3 gap-2">
-                        <div class="stat-box">
-                            <div class="stat-label">Oportunidades</div>
-                            <div class="stat-value">${team.bpOpportunities}</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Convertidos</div>
-                            <div class="stat-value text-sky-400">${team.bpConverted}</div>
-                            <div class="stat-sub">${bpConvEff}%</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-label">Salvados</div>
-                            <div class="stat-value text-amber-400">${team.bpSaved}</div>
-                        </div>
+                        <div class="stat-box"><div class="stat-label">Oport.</div><div class="stat-value">${team.bpOpportunities}</div></div>
+                        <div class="stat-box"><div class="stat-label">Conv.</div><div class="stat-value text-sky-400">${team.bpConverted}</div><div class="stat-sub">${(team.bpConverted/team.bpOpportunities*100||0).toFixed(0)}%</div></div>
+                        <div class="stat-box"><div class="stat-label">Salv.</div><div class="stat-value text-amber-400">${team.bpSaved}</div><div class="stat-sub">${bpEff}%</div></div>
                     </div>
                 `;
+                document.getElementById(containerId).innerHTML = html;
             };
 
-            content.innerHTML = `
-                <div class="col-span-1">
-                    ${renderTeamStats(stats.t1, 1)}
-                </div>
-                <div class="col-span-1">
-                    ${renderTeamStats(stats.t2, 2)}
-                </div>
-                <div class="col-span-1 md:col-span-2 text-center text-xs text-slate-500 mt-4 border-t border-slate-700 pt-4">
-                    Basado en ${totalPoints} puntos registrados en el Play-by-Play.
-                </div>
-            `;
+            renderTeam(stats.t1, 1, 'summary-team-1');
+            renderTeam(stats.t2, 2, 'summary-team-2');
+            
+            document.getElementById('stats-content').innerHTML = ''; // Limpiamos contenedor viejo si existe
+            document.getElementById('summary-team-1').innerHTML = ""; // Renderizamos manual
+            renderTeam(stats.t1, 1, 'summary-team-1');
+            document.getElementById('summary-team-2').innerHTML = "";
+            renderTeam(stats.t2, 2, 'summary-team-2');
         }
 
-        function closeLiveStats() {
-            document.getElementById('live-stats-modal').classList.add('hidden');
+        function renderAdvancedStats() {
+            let totalBP = 0;
+            let savedBP = 0;
+            
+            // 1. Calcular Eficiencia de BP Global
+            playByPlayLog.forEach(log => {
+                let scoreParts = log.score.split('-');
+                let sVal = (s) => (s==='40'||s==='AD')?40:(s==='30'?30:(s==='15'?15:0));
+                let s1 = sVal(scoreParts[0]), s2 = sVal(scoreParts[1]);
+                let isBP = (s2 >= 40 && s1 < 40) || s2 === 'AD';
+                
+                if(isBP) {
+                    totalBP++;
+                    // Si el ganador es el que NO sacaba
+                    let server = scoreboardState.server;
+                    if (log.winner !== server) savedBP++; 
+                }
+            });
+
+            let bpEff = totalBP > 0 ? ((savedBP / totalBP) * 100).toFixed(1) : "0.0";
+            
+            document.getElementById('adv-bp-total').innerText = totalBP;
+            document.getElementById('adv-bp-saved').innerText = savedBP;
+            document.getElementById('adv-bp-eff').innerText = bpEff + "%";
+            
+            // 2. Distribución de Winners (Gráfico simple de texto)
+            let team1Winners = { p1: 0, p2: 0 };
+            let team2Winners = { p1: 0, p2: 0 };
+            
+            playByPlayLog.forEach(log => {
+                if(log.action === 'winner') {
+                    let wTeam = log.winner;
+                    let wPlayer = log.scorer; // Nombre del jugador que hizo winner
+                    
+                    if(wTeam === 1) {
+                        if(wPlayer === scoreboardState.t1.p1) team1Winners.p1++;
+                        else team1Winners.p2++;
+                    } else {
+                        if(wPlayer === scoreboardState.t2.p1) team2Winners.p1++;
+                        else team2Winners.p2++;
+                    }
+                }
+            });
+
+            const totalT1 = team1Winners.p1 + team1Winners.p2 || 1;
+            const totalT2 = team2Winners.p1 + team2Winners.p2 || 1;
+
+            // Render simple bar chart using div widths
+            let chartHTML = `
+                <div class="mb-4 text-white">
+                    <div class="text-xs text-emerald-400 font-bold mb-1">${scoreboardState.t1.p1} / ${scoreboardState.t1.p2}</div>
+                    <div class="h-2 bg-slate-700 rounded overflow-hidden flex">
+                        <div class="bg-emerald-500 h-full" style="width: ${(team1Winners.p1/totalT1)*100}%"></div>
+                        <div class="bg-emerald-700 h-full" style="width: ${(team1Winners.p2/totalT1)*100}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                        <span>Drive</span>
+                        <span>Revés</span>
+                    </div>
+                </div>
+                <div class="text-white">
+                    <div class="text-xs text-slate-400 font-bold mb-1">${scoreboardState.t2.p1} / ${scoreboard.t2.p2}</div>
+                    <div class="h-2 bg-slate-700 rounded overflow-hidden flex">
+                        <div class="bg-slate-500 h-full" style="width: ${(team2Winners.p1/totalT2)*100}%"></div>
+                        <div class="bg-slate-400 h-full" style="width: ${(team2Winners.p2/totalT2)*100}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                        <span>Drive</span>
+                        <span>Revés</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('advanced-winners-chart').innerHTML = chartHTML;
+        }
+
+        function renderHistoryStats() {
+            const tbody = document.getElementById('history-tbody');
+            tbody.innerHTML = '';
+            
+            // Recorremos el historial y creamos filas
+            playByPlayLog.slice().reverse().forEach(log => {
+                let rowClass = "";
+                let actionText = "";
+                let detailText = "";
+                
+                if (log.action === 'winner') { rowClass = "winner-row"; actionText = "WINNER"; detailText = log.scorer; }
+                else if (log.action === 'error') { rowClass = "error-row"; actionText = "ERROR"; detailText = "No Forzado"; }
+                else if (log.action === 'fault') { rowClass = "fault-row"; actionText = "FALTA"; detailText = ""; }
+                else if (log.action === 'double_fault_point') { rowClass = "fault-row bp-row"; actionText = "DOBLE FALTA"; detailText = "Punto para Rival"; }
+                
+                let tr = document.createElement('tr');
+                tr.className = "border-b border-slate-800/50";
+                tr.innerHTML = `
+                    <td class="p-2 text-slate-500">${log.time}</td>
+                    <td class="p-2 text-white font-bold">${log.sets} (${log.games}) | ${log.score}</td>
+                    <td class="p-2 ${rowClass} font-bold uppercase">${actionText}</td>
+                    <td class="p-2 text-slate-300 text-right">${detailText}</td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
         // ==========================================
         // LÓGICA DE DESHACER AVANZADA (NECESARIA PARA GITHUB)
