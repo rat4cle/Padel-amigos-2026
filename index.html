@@ -2123,36 +2123,22 @@
 
         function handleScoreboardAction(type, team) {
             if (scoreboardState.matchFinished) return;
-            
-            // Determinar quién gana el punto (el oponente normalmente)
             let opponent = team === 1 ? 2 : 1;
 
             if (type === 'fault') {
-                // --- REGISTRAR FALTA ---
-                // Si es la primera o la segunda, lo guardamos.
+                // Registramos la acción con el equipo que SACÓ
                 logAction('fault', team, null);
-
-                // Si es Doble Falta, se lo damos al oponente
+                
                 if (scoreboardState['t' + team].faults >= 1) {
-                    // Registramos el PUNTO que resulta del doble falta
-                    logAction('double_fault_point', opponent, null); 
-                    addScoreboardPoint(opponent);
-                } else {
-                    // Solo es falta, sumamos contador pero no puntos
-                    scoreboardState['t' + team].faults++;
+                    logAction('double_fault_point', team, null); // El que falla doble gana el punto
+                    addScoreboardPoint(opponent); // El oponente recibe el punto
                 }
                 updateScoreboardUI();
-
             } else if (type === 'error') {
-                // --- REGISTRAR ERROR ---
-                // Distinguir entre Error Forzado o No Forzado leyendo el texto del botón es difícil,
-                // así que guardaremos el tipo 'error' genérico o específico si pasamos el texto.
-                // Por simplicidad, guardaremos "Error no forzado" o "Forzado" según la lógica.
+                // Registramos la acción con el equipo que ERRÓ
                 logAction('error', team, null);
                 addScoreboardPoint(opponent);
-
             } else if (type === 'winner') {
-                // --- REGISTRAR WINNER (Se hace en confirmWinner, aquí solo abrimos la selección) ---
                 showScorerSelection(team);
             }
         }
@@ -2421,25 +2407,26 @@
             let p2Name = scoreboardState['t' + teamNum].p2 || "REVÉS";
             let teamName = `TEAM ${teamNum}`;
             
-            // Determinar quién anota o quién comete la acción
+            // Determinar quién gana realmente (CORRECCIÓN IMPORTANTE)
+            let trueWinner = teamNum; // Por defecto ganador es el que pulsa (Winner)
             let scorerName = "";
             let detail = "";
 
             if (actionType === 'winner') {
-                // Si es winner, sabemos qué jugador pulsó (Drive o Revés)
                 scorerName = (playerPos === 'p1') ? p1Name : p2Name;
             } 
-            else if (actionType === 'fault') {
-                // Si es falta, no sabemos quién la cometió exactamente (no seleccionamos jugador)
-                scorerName = teamName; 
-                detail = "FALTA";
+            else if (actionType === 'fault' || actionType === 'error') {
+                // Si es falta o error, gana el OPONENTE
+                let opponent = (teamNum === 1) ? 2 : 1;
+                trueWinner = opponent; 
+                
+                if (actionType === 'fault') detail = "FALTA";
+                else detail = "ERROR";
             } 
-            else if (actionType === 'error') {
-                scorerName = teamName;
-                detail = "ERROR"; // Aquí podrías distinguir forzado/no forzado si pasas el tipo exacto
-            }
             else if (actionType === 'double_fault_point') {
-                scorerName = teamName; // Equipo que recibe el punto
+                // Doble falta: Punto para el oponente
+                let opponent = (teamNum === 1) ? 2 : 1;
+                trueWinner = opponent;
                 detail = "DOBLE FALTA";
             }
 
@@ -2450,9 +2437,10 @@
             let event = {
                 time: timeStr,
                 action: actionType,
-                team: teamNum,
-                scorer: scorerName,
-                detail: detail, // Guardamos si fue Falta, Error, etc.
+                team: teamNum, // Quién realizó la acción (útil para saber quién sacó)
+                winner: trueWinner, // NUEVO: Quién ganó el punto (Fundamental para Deshacer)
+                scorer: scorerName || teamName,
+                detail: detail, 
                 score: `${p1ScoreText}-${p2ScoreText}`,
                 games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
                 sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`
@@ -2897,7 +2885,7 @@
             scoreboardState.t2.sets = 0;
             scoreboardState.t1.games = 0;
             scoreboardState.t2.games = 0;
-            scoreboardState.t1.pIdx = 0;  // 0=0, 1=15, 2=30, 3=40, 4=AD
+            scoreboardState.t1.pIdx = 0;  
             scoreboardState.t2.pIdx = 0;
             scoreboardState.isTieBreak = false;
             scoreboardState.setHistory = [];
@@ -2905,7 +2893,9 @@
 
             // 2. Simulamos cada punto del log restante
             playByPlayLog.forEach(log => {
-                let winningTeam = log.team; // 1 o 2
+                // CAMBIO AQUÍ: Usamos log.winner en vez de log.team
+                let winningTeam = log.winner; 
+                
                 let losingTeam = (winningTeam === 1) ? 2 : 1;
                 
                 // Lógica simplificada de puntuación para recalcular rápido
@@ -2915,7 +2905,6 @@
                     let p1 = scoreboardState.t1.pIdx;
                     let p2 = scoreboardState.t2.pIdx;
                     
-                    // Gana set si llega a 7 con 2 de diferencia
                     if ((p1 >= 7 || p2 >= 7) && Math.abs(p1 - p2) >= 2) {
                         winSetLogic(winningTeam);
                     }
@@ -2925,15 +2914,16 @@
                     let l = scoreboardState['t' + losingTeam];
 
                     if (w.pIdx === 3 && l.pIdx === 4) { 
-                        l.pIdx = 3; // Deuce -> Vuelta a 40
+                        l.pIdx = 3; 
                     } else if (w.pIdx >= 3 && w.pIdx > l.pIdx) {
-                        winGameLogic(winningTeam); // Gana Juego
+                        winGameLogic(winningTeam);
                     } else {
-                        w.pIdx++; // Avanza punto
+                        w.pIdx++; 
                         if (w.pIdx === 4 && l.pIdx < 3) winGameLogic(winningTeam);
                     }
                 }
             });
+            updateScoreboardUI();
         }
 
         // Funciones auxiliares internas para el cálculo
