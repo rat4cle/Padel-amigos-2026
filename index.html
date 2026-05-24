@@ -724,6 +724,10 @@
                 <span class="icon"><i class="ri-gamepad-line"></i></span>
                 <span class="label">Marcador</span>
             </div>
+            <!-- Añade esto dentro de sidebar-nav -->
+            <div class="sidebar-item" onclick="switchTab('partido-stats')" id="nav-partido-stats">
+                <span class="icon"><i class="ri-bar-chart-grouped-line"></i></span><span class="label">Estadísticas Partido</span>
+            </div>
         </div>
     </nav>
 
@@ -1075,7 +1079,8 @@
                                     <button onclick="downloadMatchForGithub()" class="ml-2 bg-slate-700 hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded border border-slate-600 transition" title="Descargar para Subir a GitHub">
                                         💾 JSON
                                     </button>
-                                    <button onclick="openLiveStats()" class="ml-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded border border-sky-400 shadow-lg transition">
+                                    <!-- Ahora te lleva a la pestaña dedicada en lugar de abrir un pop-up -->
+                                    <button onclick="switchTab('partido-stats')" class="ml-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded border border-sky-400 shadow-lg transition">
                                         📊 ESTADÍSTICAS
                                     </button>
                             </div>
@@ -1224,42 +1229,73 @@
                             </div>
                         </div>
                     </div>
-                                        <!-- LISTA DE PARTIDOS GITHUB -->
-                    <div class="mt-6 border-t border-slate-700 pt-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-xs font-bold text-slate-400 uppercase">Partidos en GitHub (Cloud)</h3>
-                            <button onclick="loadGithubMatchesInScoreboard()" class="text-[10px] bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-white">🔄 Refrescar</button>
+                    <!-- LISTA DE PARTIDOS GITHUB -->
+                    <!-- MODAL ESTADÍSTICAS EN VIVO (ACTUALIZADO) -->
+                    
+                </section>
+                <!-- SECCIÓN ACTUALIZADA: ESTADÍSTICAS DEL PARTIDO -->
+                <section id="tab-partido-stats" class="tab-content hidden h-full flex flex-col">
+                    
+                    <!-- ESTADO 1: SIN DATOS (Muestra el historial de GitHub para seleccionar) -->
+                    <div id="no-match-placeholder" class="flex-1 flex flex-col p-6 animate-fade-in overflow-y-auto custom-scrollbar">
+                        <!-- Mensaje superior -->
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-black text-slate-200 mb-2">Selecciona un Partido</h2>
+                            <p class="text-slate-400 max-w-md mx-auto">
+                                No hay partido en curso. Selecciona uno del historial de abajo para analizarlo o ve al <button onclick="switchTab('scoreboard')" class="text-sky-400 hover:underline font-bold">Marcador</button> para jugar uno nuevo.
+                            </p>
                         </div>
-                        <div id="github-matches-list" class="max-h-40 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-                            <p class="text-slate-600 text-xs text-center italic">Pulsa Refrescar para cargar...</p>
+
+                        <!-- AQUÍ ESTÁ EL LISTADO DE GITHUB MOVIDO -->
+                        <div class="max-w-4xl mx-auto w-full">
+                            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                                <h3 class="text-sm font-bold text-slate-400 uppercase flex items-center gap-2">
+                                    <i class="ri-github-fill"></i> Historial en la Nube (GitHub)
+                                </h3>
+                                <button onclick="loadGithubMatchesInScoreboard()" class="text-[10px] bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-white transition flex items-center gap-1">
+                                    <i class="ri-refresh-line"></i> Refrescar
+                                </button>
+                            </div>
+                            <!-- Este es el ID original del listado, lo movemos aquí -->
+                            <div id="github-matches-list" class="space-y-2 custom-scrollbar max-h-[60vh] overflow-y-auto">
+                                <p class="text-slate-500 text-xs text-center italic py-4">Pulsa Refrescar para cargar los partidos...</p>
+                            </div>
                         </div>
                     </div>
-                    <!-- MODAL ESTADÍSTICAS EN VIVO (ACTUALIZADO) -->
-                    <div id="live-stats-modal" class="fixed inset-0 bg-black/90 z-[9999] hidden flex flex-col items-center justify-center p-4">
-                        <div class="bg-slate-800 border border-slate-600 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-fade-in flex flex-col">
-                            
-                            <!-- Header -->
-                            <div class="bg-slate-900 p-4 border-b border-slate-700 flex justify-between items-center sticky top-0 z-10">
-                                <h2 class="text-xl font-black text-white flex items-center gap-2">
-                                    <span class="text-sky-400">📊</span> ESTADÍSTICAS DEL PARTIDO
-                                </h2>
-                                <button onclick="closeLiveStats()" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
-                            </div>
 
-                            <!-- PESTAÑAS DEL MODAL -->
-                            <div class="flex gap-4 border-b border-slate-700 px-6 pt-2 pb-0 bg-slate-900/50">
+                    <!-- ESTADO 2: HAY DATOS (Muestra las gráficas y análisis) -->
+                    <div id="match-stats-container" class="hidden flex flex-col h-full animate-fade-in">
+                        <!-- Header con botón para cerrar/volver -->
+                        <div class="bg-slate-800 border-b border-slate-700 p-4 rounded-t-2xl flex justify-between items-center">
+                            <div>
+                                <h1 class="text-xl font-black text-white flex items-center gap-2">
+                                    <span class="text-sky-400">📊</span> Análisis del Partido
+                                </h1>
+                                <p class="text-slate-500 text-xs font-mono mt-0.5" id="stats-current-match-info">Partido cargado</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <!-- Botón para cargar otro partido (Resetea la vista al estado 1) -->
+                                <button onclick="resetStatsView()" class="text-xs bg-slate-700 hover:bg-slate-600 text-white py-2 px-3 rounded font-bold transition flex items-center gap-1">
+                                    <i class="ri-folder-open-line"></i> Cambiar Partido
+                                </button>
+                                <button onclick="switchTab('scoreboard')" class="text-xs bg-sky-600 hover:bg-sky-500 text-white py-2 px-3 rounded font-bold transition">Ver Marcador</button>
+                            </div>
+                        </div>
+
+                        <!-- Sub-pestañas de análisis -->
+                        <div class="bg-slate-800 border-b border-slate-700 px-6 pt-0 flex-grow overflow-hidden flex flex-col">
+                            <div class="flex gap-4 border-b border-slate-700 pt-4 mb-0">
                                 <button onclick="switchStatsTab('summary')" id="btn-stats-summary" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn active">📊 Resumen</button>
                                 <button onclick="switchStatsTab('advanced')" id="btn-stats-advanced" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">🚀 Avanzado</button>
                                 <button onclick="switchStatsTab('history')" id="btn-stats-history" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">📝 Historial</button>
                             </div>
 
-                            <!-- CONTENIDO DE LAS PESTAÑAS -->
-                            <div class="p-6 flex-1 min-h-0">
+                            <!-- Contenido Scrollable -->
+                            <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
                                 
-                                <!-- PESTAÑA 1: RESUMEN (Tu código actual) -->
+                                <!-- PESTAÑA 1: RESUMEN -->
                                 <div id="stats-tab-summary" class="stats-tab-content h-full">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <!-- Se rellena con JS -->
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                         <div id="summary-team-1" class="col-span-1"></div>
                                         <div id="summary-team-2" class="col-span-1"></div>
                                     </div>
@@ -1269,12 +1305,10 @@
                                 <div id="stats-tab-advanced" class="stats-tab-content hidden h-full">
                                     <h3 class="text-lg font-bold text-white mb-4 text-center">Análisis Profundo</h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <!-- Distribución de Ganadores -->
                                         <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
                                             <h4 class="text-sm font-bold text-emerald-400 mb-3 uppercase">Distribución de Winners</h4>
                                             <div id="advanced-winners-chart" class="h-40"></div>
                                         </div>
-                                        <!-- Eficiencia de Break Points -->
                                         <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
                                             <h4 class="text-sm font-bold text-amber-400 mb-3 uppercase">Eficiencia de Defensa (Break Points)</h4>
                                             <div class="grid grid-cols-2 gap-4 text-center">
@@ -1296,9 +1330,9 @@
                                 </div>
 
                                 <!-- PESTAÑA 3: HISTORIAL -->
-                                <div id="stats-tab-history" class="stats-tab-content hidden h-full overflow-hidden flex flex-col">
+                                <div id="stats-tab-history" class="stats-tab-content hidden h-full flex flex-col">
                                     <h3 class="text-lg font-bold text-white mb-4">Registro Punto a Punto</h3>
-                                    <div class="flex-1 overflow-auto bg-slate-900/50 rounded-lg border border-slate-700 custom-scrollbar">
+                                    <div class="overflow-auto bg-slate-900/50 rounded-lg border border-slate-700 custom-scrollbar flex-1">
                                         <table class="w-full text-left border-collapse text-xs font-mono">
                                             <thead class="bg-slate-800 text-slate-400 sticky top-0">
                                                 <tr>
@@ -1313,11 +1347,6 @@
                                     </div>
                                 </div>
 
-                            </div>
-                            
-                            <!-- Footer -->
-                            <div class="p-4 bg-slate-900/50 border-t border-slate-700 text-center">
-                                <button onclick="closeLiveStats()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-6 rounded transition">CERRAR</button>
                             </div>
                         </div>
                     </div>
@@ -1402,12 +1431,30 @@
             let navEl = document.getElementById('nav-' + tabId);
             if (navEl) navEl.classList.add('active');
 
+            // --- LÓGICA PARA LA NUEVA PESTAÑA DE ESTADÍSTICAS ---
+            if (tabId === 'partido-stats') {
+                let placeholder = document.getElementById('no-match-placeholder');
+                let container = document.getElementById('match-stats-container');
+
+                if (!playByPlayLog || playByPlayLog.length === 0) {
+                    // Si no hay datos, mostramos el placeholder y ocultamos contenido
+                    placeholder.classList.remove('hidden');
+                    container.classList.add('hidden');
+                } else {
+                    // Si hay datos, mostramos contenido y ocultamos placeholder
+                    placeholder.classList.add('hidden');
+                    container.classList.remove('hidden');
+                    
+                    // Forzamos renderizar la pestaña de Resumen por defecto
+                    switchStatsTab('summary');
+                }
+            }
+
             // --- AÑADE ESTO AQUÍ (SOLUCIÓN GRÁFICOS) ---
             
             // Si vas a la pestaña Ficha, forzamos el redibujado de todos los gráficos
             if (tabId === 'ficha') {
                 setTimeout(() => {
-                    // Le damos 100ms al navegador para renderizar el HTML antes de redimensionar el canvas
                     if(chartRevesInstance) chartRevesInstance.resize();
                     if(chartDriveInstance) chartDriveInstance.resize();
                     if(chartRadarInstance) chartRadarInstance.resize();
@@ -1420,7 +1467,7 @@
             if (tabId === 'tactico') {
                 setTimeout(() => {
                     if(resultChartInstance) resultChartInstance.resize();
-                    renderResultChart(); // Asegura que se calculen los datos de nuevo
+                    renderResultChart(); 
                 }, 100);
             }
         }
@@ -2664,7 +2711,7 @@
             }
         }
 
-        // 2. Función que carga el partido de GitHub, lo mete en el Marcador y abre las Stats
+                // 2. Función que carga el partido de GitHub, lo mete en el Marcador y abre las Stats
         async function loadAndViewMatch(filename) {
             let url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}/${filename}`;
             
@@ -2692,11 +2739,11 @@
                 scoreboardState.t1.sets = parseInt(parts[0]);
                 scoreboardState.t2.sets = parseInt(parts[1]);
 
-                // Si el JSON tiene historial de sets, lo cargamos para mostrar los 6-4, etc.
+                // Si el JSON tiene historial de sets, lo cargamos
                 if(match.setHistory && match.setHistory.length > 0) {
                     scoreboardState.setHistory = match.setHistory;
                 } else {
-                    scoreboardState.setHistory = []; // Si no hay historial, lo dejamos vacío
+                    scoreboardState.setHistory = []; 
                 }
 
                 // --- 2. CARGAR EL HISTORIAL DE PUNTOS (PLAY-BY-PLAY) ---
@@ -2704,20 +2751,14 @@
                 if(match.playByPlay && Array.isArray(match.playByPlay)) {
                     playByPlayLog = match.playByPlay;
                 } else {
-                    playByPlayLog = []; // Si no hay datos detalle, no mostraremos winners/errores
+                    playByPlayLog = []; 
                 }
 
-                // Actualizamos la interfaz del marcador para que se vea el resultado cargado
+                // Actualizamos la interfaz del marcador (por si el usuario quiere verla luego)
                 updateScoreboardUI();
 
-                // --- 3. CAMBIAR A LA PESTAÑA MARCADOR ---
-                switchTab('scoreboard');
-
-                // --- 4. ABRIR AUTOMÁTICAMENTE EL MODAL DE ESTADÍSTICAS ---
-                // Pequeño delay para asegurar que la pestaña ha cargado
-                setTimeout(() => {
-                    openLiveStats();
-                }, 200);
+                // --- 3. IR DIRECTAMENTE A LA PESTAÑA DE ESTADÍSTICAS ---
+                switchTab('partido-stats');
 
             } catch (e) {
                 console.error(e);
@@ -2796,14 +2837,7 @@
             // Opcional: Alerta visual
             // alert("Estadísticas generadas para el partido actual.");
         }
-        function openLiveStats() {
-            const modal = document.getElementById('live-stats-modal');
-            const content = document.getElementById('stats-content');
-            
-            // Mostrar modal y resetear a Resumen
-            modal.classList.remove('hidden');
-            switchStatsTab('summary'); 
-        }
+        
 
         function closeLiveStats() {
             document.getElementById('live-stats-modal').classList.add('hidden');
@@ -2811,7 +2845,7 @@
 
         // Función para cambiar pestañas en el modal
         function switchStatsTab(tabName) {
-            // 1. Estilos de botones
+            // 1. Estilos de botones (Resumen, Avanzado, Historial)
             document.querySelectorAll('.stats-tab-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-stats-${tabName}`);
             if(activeBtn) activeBtn.classList.add('active');
@@ -2820,7 +2854,8 @@
             document.querySelectorAll('.stats-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`stats-tab-${tabName}`).classList.remove('hidden');
 
-            // 3. Si vamos a Avanzado o Resumen, calculamos los datos
+            // 3. Si vamos a una pestaña con datos, renderizamos
+            // Nota: Ahora esto buscará los IDs en la nueva pestaña, ya que el viejo modal ha sido borrado.
             if(tabName === 'summary') {
                 renderSummaryStats();
             } else if (tabName === 'advanced') {
@@ -3209,6 +3244,14 @@
             scoreboardState.isTieBreak = false;
             // Cambio de saque al empezar set
             scoreboardState.server = (scoreboardState.server === 1) ? 2 : 1;
+        }
+        function resetStatsView() {
+            // No borramos el estado del marcador, solo mostramos la vista de selección
+            playByPlayLog = []; // Opcional: limpiar log si quieres que se vea "vacío"
+            
+            // Mostrar el placeholder con la lista
+            document.getElementById('no-match-placeholder').classList.remove('hidden');
+            document.getElementById('match-stats-container').classList.add('hidden');
         }
     </script>
     <!-- MODAL DE GUARDADO -->
