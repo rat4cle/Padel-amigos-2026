@@ -2862,6 +2862,118 @@
         function closeLiveStats() {
             document.getElementById('live-stats-modal').classList.add('hidden');
         }
+        // ==========================================
+        // LÓGICA DE DESHACER AVANZADA (NECESARIA PARA GITHUB)
+        // ==========================================
+
+        function undoScoreboard() {
+            // CASO 1: Partido jugado en vivo (Tenemos historial en memoria)
+            if (scoreboardHistory.length > 0) {
+                playByPlayLog.pop(); 
+                if (scoreboardState.matchFinished) {
+                    hideScoreboardBanner();
+                    scoreboardState.matchFinished = false;
+                }
+                scoreboardState = scoreboardHistory.pop();
+                updateScoreboardUI();
+            } 
+            // CASO 2: Partido cargado de GitHub (No hay historial en memoria, pero sí en el Log)
+            else if (playByPlayLog.length > 0) {
+                // 1. Eliminamos el último punto del registro
+                playByPlayLog.pop();
+                
+                // 2. Recalculamos TODO el estado (Sets, Juegos, Puntos) desde cero usando el log restante
+                recalculateStateFromLog();
+                
+                // 3. Actualizamos la interfaz
+                updateScoreboardUI();
+            }
+        }
+
+        // Función que recorre el historial y reconstruye el marcador
+        function recalculateStateFromLog() {
+            // 1. Reseteamos los contadores a cero
+            scoreboardState.t1.sets = 0;
+            scoreboardState.t2.sets = 0;
+            scoreboardState.t1.games = 0;
+            scoreboardState.t2.games = 0;
+            scoreboardState.t1.pIdx = 0;  // 0=0, 1=15, 2=30, 3=40, 4=AD
+            scoreboardState.t2.pIdx = 0;
+            scoreboardState.isTieBreak = false;
+            scoreboardState.setHistory = [];
+            scoreboardState.matchFinished = false;
+
+            // 2. Simulamos cada punto del log restante
+            playByPlayLog.forEach(log => {
+                let winningTeam = log.team; // 1 o 2
+                let losingTeam = (winningTeam === 1) ? 2 : 1;
+                
+                // Lógica simplificada de puntuación para recalcular rápido
+                if (scoreboardState.isTieBreak) {
+                    // --- LÓGICA TIE BREAK ---
+                    scoreboardState['t' + winningTeam].pIdx++;
+                    let p1 = scoreboardState.t1.pIdx;
+                    let p2 = scoreboardState.t2.pIdx;
+                    
+                    // Gana set si llega a 7 con 2 de diferencia
+                    if ((p1 >= 7 || p2 >= 7) && Math.abs(p1 - p2) >= 2) {
+                        winSetLogic(winningTeam);
+                    }
+                } else {
+                    // --- LÓGICA JUEGO NORMAL (15, 30, 40) ---
+                    let w = scoreboardState['t' + winningTeam];
+                    let l = scoreboardState['t' + losingTeam];
+
+                    if (w.pIdx === 3 && l.pIdx === 4) { 
+                        l.pIdx = 3; // Deuce -> Vuelta a 40
+                    } else if (w.pIdx >= 3 && w.pIdx > l.pIdx) {
+                        winGameLogic(winningTeam); // Gana Juego
+                    } else {
+                        w.pIdx++; // Avanza punto
+                        if (w.pIdx === 4 && l.pIdx < 3) winGameLogic(winningTeam);
+                    }
+                }
+            });
+        }
+
+        // Funciones auxiliares internas para el cálculo
+        function winGameLogic(teamNum) {
+            scoreboardState['t' + teamNum].games++;
+            scoreboardState.t1.pIdx = 0;
+            scoreboardState.t2.pIdx = 0;
+            
+            let g1 = scoreboardState.t1.games;
+            let g2 = scoreboardState.t2.games;
+            let wGames = scoreboardState['t' + teamNum].games;
+            let lGames = scoreboardState['t' + (teamNum===1?2:1)].games;
+
+            // Reglas de Set
+            if ((wGames === 6 && lGames < 5) || (wGames === 7 && lGames <= 5)) {
+                winSetLogic(teamNum);
+            } else if (g1 === 6 && g2 === 6) {
+                scoreboardState.isTieBreak = true;
+                // En tie break saca el que recibía
+                scoreboardState.server = (scoreboardState.server === 1) ? 2 : 1;
+            } else {
+                // Cambio de saque normal
+                scoreboardState.server = (scoreboardState.server === 1) ? 2 : 1;
+            }
+        }
+
+        function winSetLogic(teamNum) {
+            scoreboardState['t' + teamNum].sets++;
+            scoreboardState.setHistory.push({
+                s1: scoreboardState.t1.games,
+                s2: scoreboardState.t2.games
+            });
+            scoreboardState.t1.games = 0;
+            scoreboardState.t2.games = 0;
+            scoreboardState.t1.pIdx = 0;
+            scoreboardState.t2.pIdx = 0;
+            scoreboardState.isTieBreak = false;
+            // Cambio de saque al empezar set
+            scoreboardState.server = (scoreboardState.server === 1) ? 2 : 1;
+        }
     </script>
     <!-- MODAL DE GUARDADO -->
     <div id="save-modal" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-sm">
