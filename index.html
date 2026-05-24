@@ -2833,13 +2833,12 @@
         // --- RENDERIZADORES ---
 
         function renderSummaryStats() {
-            // Inicializar stats
             let stats = {
                 t1: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t1.p1 + " / " + scoreboardState.t1.p2 },
                 t2: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t2.p1 + " / " + scoreboardState.t2.p2 }
             };
 
-            // Protección: Si no hay logs, mostrar 0
+            // Si no hay logs, mostrar mensaje de error y salir
             if (!playByPlayLog || playByPlayLog.length === 0) {
                 document.getElementById('summary-team-1').innerHTML = '<div class="text-center text-slate-500 mt-4">Sin datos registrados</div>';
                 document.getElementById('summary-team-2').innerHTML = '';
@@ -2848,28 +2847,52 @@
 
             let totalPoints = 0;
             playByPlayLog.forEach(log => {
-                totalPoints++;
-                
-                // --- COMPATIBILIDAD CON JSONS ANTIGUOS (PROTEGIDA) ---
+                // 1. DETERMINAR QUIÉN GANÓ (Lógica Inteligente con Fallbacks)
                 let winningTeam = log.winner;
-                
+
+                // CASO A: Tenemos el dato nuevo "winner" (código actual)
                 if (winningTeam === undefined) {
-                    // Si falta el dato nuevo, intentamos deducirlo
-                    if (log.action === 'winner') {
-                        winningTeam = log.team; // En old school, 'team' era el ganador
-                    } else if (log.action === 'error' || log.action === 'fault' || log.action.includes('double_fault')) {
-                        // En old school, 'team' era quien perdió/erró. Gana el otro.
-                        if (log.team) winningTeam = (log.team === 1) ? 2 : 1;
+                    // CASO B: Tenemos el dato antiguo "team" (JSONs viejos)
+                    if (log.team !== undefined) {
+                        // En los JSONs viejos, 'team' era quién PULSÓ el botón.
+                        // Si pulsó Winner, ganó ese equipo.
+                        if (log.action === 'winner') {
+                            winningTeam = log.team;
+                        } 
+                        // Si pulsó Error o Falta, gana el otro
+                        else if (log.action === 'error' || log.action === 'fault' || log.action.includes('double_fault')) {
+                            winningTeam = (log.team === 1) ? 2 : 1;
+                        }
+                    } 
+                    // CASO C: No hay 'team' ni 'winner' (Muy viejo o corrupto)
+                    else if (log.score) {
+                        // ¡ÚLTIMO RECURSO! Inferimos por el MARCADOR
+                        let parts = log.score.split('-');
+                        let s1 = parseInt(parts[0]) || 0;
+                        let s2 = parseInt(parts[1]) || 0;
+                        
+                        // Si uno es mayor, ese equipo ganó el punto
+                        if (s1 > s2) winningTeam = 1;
+                        else if (s2 > s1) winningTeam = 2;
+                        // Si es 0-0, lo ignoramos (probable punto de saque o inicio)
+                        else return; 
+                    } else {
+                        // No hay score ni team, no podemos hacer nada seguro
+                        return; 
                     }
                 }
-                
-                // Si no podemos determinar el equipo (error grave), saltamos
-                if (!winningTeam) return;
-                // ---------------------------------------------
 
+                // Si después de todo sigue sin definir ganador, ignoramos este punto
+                if (!winningTeam) return;
+
+                totalPoints++;
                 let losingTeam = (winningTeam === 1) ? 2 : 1;
                 
-                // Puntos y Errores
+                // --- CORRECCIÓN PRINCIPAL: Sumar Puntos al Ganador ---
+                stats['t' + winningTeam].points++;
+                // ---------------------------------------------------
+
+                // 2. SUMAR ESTADÍSTICAS DETALLADAS
                 if (log.action === 'winner') {
                     stats['t' + winningTeam].winners++;
                 } else if (log.action === 'error') {
@@ -2878,7 +2901,10 @@
                     stats['t' + losingTeam].errors++;
                 }
 
-                // Break Points (Protegido)
+                // 3. CALCULAR BREAK POINTS
+                // Necesitamos saber quién sacaba. En logs viejos, 'team' es quien jugó/sacó.
+                let server = log.team || scoreboardState.server; 
+                
                 let scoreParts = log.score ? log.score.split('-') : ["0", "0"];
                 let sVal = (s) => (s==='40'||s==='AD')?40:(s==='30'?30:(s==='15'?15:0));
                 let s1 = sVal(scoreParts[0]);
@@ -2886,9 +2912,6 @@
                 let isBP = (s2 >= 40 && s1 < 40) || s2 === 'AD';
 
                 if (isBP) {
-                    // Usamos 'server' del log si existe, sino el actual
-                    let server = log.team || scoreboardState.server;
-                    
                     if (server === 1) {
                         stats.t2.bpOpportunities++;
                         if (winningTeam === 2) stats.t2.bpConverted++;
@@ -2901,7 +2924,7 @@
                 }
             });
 
-            // Renderizar Tablas
+            // --- RENDERIZADO FINAL ---
             const renderTeam = (team, sideColor, containerId) => {
                 let pWin = totalPoints > 0 ? ((team.points / totalPoints) * 100).toFixed(1) : 0;
                 let bpEff = team.bpOpportunities > 0 ? ((team.bpSaved / team.bpOpportunities) * 100).toFixed(0) : 0;
@@ -2913,7 +2936,7 @@
                         <div class="stat-box"><div class="stat-label">Errores</div><div class="stat-value text-red-400">${team.errors}</div></div>
                         <div class="stat-box"><div class="stat-label">Ratio W/E</div><div class="stat-value">${team.errors > 0 ? (team.winners/team.errors).toFixed(2) : team.winners}</div></div>
                     </div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 border-b border-slate-700 pb-1">Break Points</h4>
+                    <h4 class="text-xs font-st-700 text-slate-500 uppercase mb-2 border-b border-slate-700 pb-1">Break Points</h4>
                     <div class="grid grid-cols-3 gap-2">
                         <div class="stat-box"><div class="stat-label">Oport.</div><div class="stat-value">${team.bpOpportunities}</div></div>
                         <div class="stat-box"><div class="stat-label">Conv.</div><div class="stat-value text-sky-400">${team.bpConverted}</div><div class="stat-sub">${(team.bpConverted/team.bpOpportunities*100||0).toFixed(0)}%</div></div>
@@ -2950,7 +2973,7 @@
                     else if (log.action === 'error' || log.action === 'fault') wTeam = (log.team === 1) ? 2 : 1;
                     else wTeam = log.team;
                 }
-                if (!wTeam) return; // Si no podemos deducir equipo, ignoramos este punto
+                if (!wTeam) return; 
                 // -----------------------
 
                 let scoreParts = log.score ? log.score.split('-') : ["0", "0"];
@@ -2960,10 +2983,8 @@
 
                 if (isBP) {
                     totalBP++;
-                    // Lógica de compatibilidad para Break Points
-                    let server = log.team; // En logs viejos, 'team' es quien sacó
-                    if (!server) server = scoreboardState.server; // Fallback al actual
-
+                    let server = log.team; 
+                    if (!server) server = scoreboardState.server; 
                     if (wTeam !== server) savedBP++; 
                 }
             });
@@ -2980,14 +3001,13 @@
             
             playByPlayLog.forEach(log => {
                 if(log.action === 'winner') {
-                    let wTeam = log.winner || log.team; // Fallback
+                    let wTeam = log.winner || log.team; 
                     let wPlayer = log.scorer || ""; 
                     
-                    // Lógica de mapeo seguro
                     if (wTeam === 1) {
                         if(wPlayer === scoreboardState.t1.p1) team1Winners.p1++;
                         else if(wPlayer === scoreboardState.t1.p2) team1Winners.p2++;
-                        else team1Winners.p1++; // Fallback
+                        else team1Winners.p1++; 
                     } else {
                         if(wPlayer === scoreboardState.t2.p1) team2Winners.p1++;
                         else if(wPlayer === scoreboardState.t2.p2) team2Winners.p2++;
