@@ -2538,19 +2538,18 @@
         function logAction(actionType, teamNum, playerPos) {
             if (!matchStartTime) matchStartTime = Date.now();
             
-            // Tiempo
+            // ... (código de tiempo existente) ...
             let now = Date.now();
             let diff = now - matchStartTime;
             let date = new Date(diff);
             let timeStr = date.toISOString().substr(14, 5);
 
-            // Nombres
-            let p1Name = scoreboardState['t' + teamNum].p1 || "DRIVE";
+            // ... (código de nombres existente) ...
+            let p1Name = scoreboardState['t' + teamNum].p1 || "DRIVE"; // Usamos Drive/Revés como fallback si está vacío
             let p2Name = scoreboardState['t' + teamNum].p2 || "REVÉS";
             let teamName = `TEAM ${teamNum}`;
             
-            // Determinar quién gana realmente (CORRECCIÓN IMPORTANTE)
-            let trueWinner = teamNum; // Por defecto ganador es el que pulsa (Winner)
+            let trueWinner = teamNum; 
             let scorerName = "";
             let detail = "";
 
@@ -2558,7 +2557,6 @@
                 scorerName = (playerPos === 'p1') ? p1Name : p2Name;
             } 
             else if (actionType === 'fault' || actionType === 'error') {
-                // Si es falta o error, gana el OPONENTE
                 let opponent = (teamNum === 1) ? 2 : 1;
                 trueWinner = opponent; 
                 
@@ -2566,22 +2564,21 @@
                 else detail = "ERROR";
             } 
             else if (actionType === 'double_fault_point') {
-                // Doble falta: Punto para el oponente
                 let opponent = (teamNum === 1) ? 2 : 1;
                 trueWinner = opponent;
                 detail = "DOBLE FALTA";
             }
 
-            // Marcador actual
             let p1ScoreText = scoreboardState.isTieBreak ? scoreboardState.t1.pIdx : sbScoreMap[scoreboardState.t1.pIdx];
             let p2ScoreText = scoreboardState.isTieBreak ? scoreboardState.t2.pIdx : sbScoreMap[scoreboardState.t2.pIdx];
 
             let event = {
                 time: timeStr,
                 action: actionType,
-                team: teamNum, // Quién realizó la acción (útil para saber quién sacó)
-                winner: trueWinner, // NUEVO: Quién ganó el punto (Fundamental para Deshacer)
+                team: teamNum, 
+                winner: trueWinner, 
                 scorer: scorerName || teamName,
+                pos: playerPos, // 🔥 NUEVO: Guardamos si fue p1 (Drive) o p2 (Revés)
                 detail: detail, 
                 score: `${p1ScoreText}-${p2ScoreText}`,
                 games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
@@ -2720,7 +2717,7 @@
                 let fileData = await res.json();
                 let match = JSON.parse(atob(fileData.content)); 
 
-                // --- PONER LOS NOMBRES ---
+                // 1. Configuración de Equipos y Sets
                 scoreboardState.t1.p1 = match.teams.t1.p1;
                 scoreboardState.t1.p2 = match.teams.t1.p2;
                 scoreboardState.t2.p1 = match.teams.t2.p1;
@@ -2731,7 +2728,6 @@
                 document.querySelector('#sb-row2 input[placeholder*="Drive"]').value = match.teams.t2.p1;
                 document.querySelector('#sb-row2 input[placeholder*="Revés"]').value = match.teams.t2.p2;
 
-                // --- PONER EL RESULTADO ---
                 let parts = match.finalSets.split('-');
                 scoreboardState.t1.sets = parseInt(parts[0]);
                 scoreboardState.t2.sets = parseInt(parts[1]);
@@ -2742,30 +2738,81 @@
                     scoreboardState.setHistory = []; 
                 }
 
-                // --- CARGAR HISTORIAL ---
+                // 2. Cargar Historial
                 if(match.playByPlay && Array.isArray(match.playByPlay)) {
-                    playByPlayLog = match.playByPlay;
+                    // 🔥 FIX AQUÍ: Limpiamos el log de datos corruptos o duplicados
+                    playByPlayLog = cleanPlayByPlayLog(match.playByPlay);
                 } else {
                     playByPlayLog = []; 
                 }
 
-                // 🔥 FIX AQUÍ: Forzamos el servidor inicial a 1 (David/Jordi) antes de recalcular
-                // Esto evita que se herede un servidor incorrecto de la sesión anterior
+                // 3. Forzar servidor inicial y recalcular
                 scoreboardState.server = 1; 
-                
-                // Recalculamos el estado del marcador (Sets, Juegos, Puntos) basándonos en el log
                 recalculateStateFromLog();
-                
-                // Actualizamos la UI
                 updateScoreboardUI();
-
-                // --- IR A ESTADÍSTICAS ---
                 switchTab('partido-stats');
 
             } catch (e) {
                 console.error(e);
                 alert("Error al cargar el partido.");
             }
+        }
+
+        // ==========================================
+        // FUNCIÓN NUEVA: LIMPIADOR DE HISTORIAL
+        // ==========================================
+        function cleanPlayByPlayLog(log) {
+            if (!log || log.length === 0) return [];
+
+            let cleanedLog = [];
+            
+            // Paso 1: Eliminar duplicados exactos consecutivos
+            // (Esto soluciona el problema de "pulsar deshacer" y que quede residuo)
+            for (let i = 0; i < log.length; i++) {
+                let current = log[i];
+                let prev = cleanedLog.length > 0 ? cleanedLog[cleanedLog.length - 1] : null;
+
+                // Comprobamos si es duplicado del inmediatamente anterior
+                let isDuplicate = prev && 
+                                prev.games === current.games && 
+                                prev.sets === current.sets && 
+                                prev.score === current.score &&
+                                prev.winner === current.winner;
+
+                if (!isDuplicate) {
+                    cleanedLog.push(current);
+                } else {
+                    console.warn("Punto duplicado eliminado:", current);
+                }
+            }
+
+            // Paso 2: Corrección de bucles de Deuce corruptos
+            // Si detectamos una secuencia imposible como 40-40 -> AD -> 40-40 -> AD -> 40-40 -> AD
+            // y no hay ganador, es basura. La limpiamos.
+            let finalLog = [];
+            let deuceCount = 0;
+            
+            for (let i = 0; i < cleanedLog.length; i++) {
+                let p = cleanedLog[i];
+                let score = p.score || "";
+                
+                // Detectar si estamos en una racha de Deuce/AD excesiva
+                if (score.includes("40-40") || score.includes("AD")) {
+                    deuceCount++;
+                    // Si llevamos más de 6 transiciones de Deuce sin cerrar el juego, paramos de contar para evitar inflar las estadísticas
+                    if (deuceCount <= 6) {
+                        finalLog.push(p);
+                    } else {
+                        console.warn("Exceso de puntos de Deuce detectados, ignorando:", score);
+                    }
+                } else {
+                    // Si el score cambia (ej 0-15, 15-30, Game Point), reseteamos el contador
+                    deuceCount = 0;
+                    finalLog.push(p);
+                }
+            }
+
+            return finalLog;
         }
         function generarStatsDesdeMarcador() {
             // Verificar que se haya jugado algo
@@ -3098,11 +3145,10 @@
 
         function renderHistoryStats() {
             const tbody = document.getElementById('history-tbody');
-            if (!tbody) return; // Protección extra
+            if (!tbody) return; 
             
             tbody.innerHTML = '';
             
-            // Protección si no hay logs
             if (!playByPlayLog || playByPlayLog.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay puntos registrados en este partido.</td></tr>';
                 return;
@@ -3110,37 +3156,65 @@
 
             playByPlayLog.slice().reverse().forEach(log => {
                 let rowClass = "";
-                let actionText = "";
-                let detailText = "";
-                
-                // --- FALLBACKS VISUALES ---
-                if (log.action === 'winner') { rowClass = "winner-row"; actionText = "WINNER"; }
-                else if (log.action === 'error') { rowClass = "error-row"; actionText = "ERROR"; }
-                else if (log.action === 'fault') { rowClass = "fault-row"; actionText = "FALTA"; }
-                else if (log.action === 'double_fault_point') { rowClass = "fault-row bp-row"; actionText = "DOBLE FALTA"; detailText = "Punto Rival"; }
-                else { actionText = log.action.toUpperCase(); } // Si es algo desconocido, mostramos el action
+                let actionDisplay = "";
+                let detailDisplay = "";
 
-                // Fallback para datos de texto
-                let scorerText = log.scorer;
-                if (!scorerText) {
-                    // Si es error/falta viejo, buscar nombre en detalle
-                    if (!log.detail && log.action === 'error') scorerText = "Equipo";
-                    else scorerText = log.detail || "Jugador";
-                    // Si es winner viejo, usar el nombre del equipo o genérico
-                    if (!scorerText && log.action === 'winner') scorerText = "Ganador";
+                // --- 1. ESTILOS ---
+                if (log.action === 'winner') {
+                    rowClass = "winner-row";
+                    actionDisplay = "WINNER";
+                } else if (log.action === 'error') {
+                    rowClass = "error-row";
+                    actionDisplay = "ERROR";
+                } else if (log.action === 'fault') {
+                    rowClass = "fault-row";
+                    actionDisplay = "FALTA";
+                } else if (log.action === 'double_fault_point') {
+                    rowClass = "fault-row bp-row";
+                    actionDisplay = "DOBLE FALTA";
+                } else {
+                    actionDisplay = log.action ? log.action.toUpperCase() : "PUNTO";
                 }
 
-                let setsText = log.sets || "0-0";
-                let gamesText = log.games || "0-0";
-                let scoreText = log.score || "0-0";
+                // --- 2. OBTENER EL NOMBRE (Lógica Inteligente) ---
+                let rawName = log.scorer || "";
+                let nameToDisplay = rawName;
 
+                // Si el nombre es genérico (TEAM 1, TEAM 2, JUGADOR A), intentamos arreglarlo usando la posición (p1/p2)
+                if (!rawName || rawName === "TEAM 1" || rawName === "TEAM 2" || rawName === "JUGADOR A" || rawName === "JUGADOR B") {
+                    if (log.pos === 'p1' || log.pos === 'p2') {
+                        let teamNum = log.team;
+                        let posKey = (log.pos === 'p1') ? 'p1' : 'p2';
+                        
+                        // Intentar obtener el nombre del estado actual
+                        let resolvedName = scoreboardState['t' + teamNum][posKey];
+                        
+                        // Si el estado está vacío, buscarlo directamente en el HTML (inputs visibles)
+                        if (!resolvedName) {
+                            let side = (teamNum === 1) ? '1' : '2';
+                            let type = (log.pos === 'p1') ? 'Drive' : 'Revés';
+                            let input = document.querySelector(`#sb-row${side} input[placeholder*="${type}"]`);
+                            resolvedName = input ? input.value : null;
+                        }
+
+                        // Si encontramos un nombre real, lo usamos. Si no, dejamos el genérico.
+                        if (resolvedName && resolvedName !== "JUGADOR A" && resolvedName !== "JUGADOR B") {
+                            nameToDisplay = resolvedName;
+                        }
+                    }
+                }
+
+                detailDisplay = nameToDisplay;
+
+                // --- 3. RENDERIZADO ---
                 let tr = document.createElement("tr");
-                tr.className = "border-b border-slate-800/50";
+                tr.className = "border-b border-slate-800/50 hover:bg-slate-750/20 transition";
+                
                 tr.innerHTML = `
-                    <td class="p-2 text-slate-500">${log.time || "--:--"}</td>
-                    <td class="p-2 text-white font-bold">${setsText} (${gamesText}) | ${scoreText}</td>
-                    <td class="p-2 ${rowClass} font-bold uppercase">${actionText}</td>
-                    <td class="p-2 text-slate-300 text-right">${scorerText} ${log.detail ? ' - ' + log.detail : ''}</td>
+                    <td class="p-3 text-slate-500 text-xs font-mono whitespace-nowrap">${log.time || "--:--"}</td>
+                    <td class="p-3 text-white font-bold text-xs font-mono whitespace-nowrap">${log.sets || "0-0"} (${log.games || "0-0"}) | ${log.score || "0-0"}</td>
+                    <td class="p-3 font-bold uppercase text-xs tracking-wider whitespace-nowrap ${rowClass}">${actionDisplay}</td>
+                    <td class="p-3 text-slate-300 text-xs text-right">${detailDisplay}</td>
                 `;
                 tbody.appendChild(tr);
             });
