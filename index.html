@@ -2924,15 +2924,29 @@
         // --- RENDERIZADORES ---
 
         function renderSummaryStats() {
-            let stats = {
-                t1: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0 },
-                t2: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0 }
-            };
-
             if (!playByPlayLog || playByPlayLog.length === 0) {
                 document.getElementById('summary-team-1').innerHTML = '<div class="text-center text-slate-500 mt-4">Sin datos registrados</div>';
                 return;
             }
+
+            // --- AGRUPAR LOG EN PUNTOS (una fault no cierra punto) ---
+            let pointGroups = [];
+            let currentGroup = [];
+            playByPlayLog.forEach(log => {
+                currentGroup.push(log);
+                if (log.action !== 'fault') {
+                    pointGroups.push(currentGroup);
+                    currentGroup = [];
+                }
+            });
+
+            let stats = {
+                t1: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, servePoints: 0, servePointsWon: 0, firstServeAttempts: 0, firstServeIn: 0, returnPoints: 0, returnPointsWon: 0 },
+                t2: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, servePoints: 0, servePointsWon: 0, firstServeAttempts: 0, firstServeIn: 0, returnPoints: 0, returnPointsWon: 0 }
+            };
+
+            let server = 1;
+            let currentGames = "0-0";
 
             const getScoreValue = (str) => {
                 if (!str) return 0;
@@ -2944,88 +2958,109 @@
                 return parseInt(s) || 0;
             };
 
-            let currentGames = "0-0";
-            let server = 1;
-            let scoreBeforePoint = { p1: 0, p2: 0 };
+            pointGroups.forEach(group => {
+                let resolvedPoint = group.find(l => l.action !== 'fault');
+                if (!resolvedPoint) return;
 
-            playByPlayLog.forEach((log) => {
-                if (log.games !== currentGames) {
-                    currentGames = log.games;
-                    server = (server === 1) ? 2 : 1;
-                    scoreBeforePoint = { p1: 0, p2: 0 };
+                // Detectar cambio de juego → cambia saque
+                if (resolvedPoint.games !== currentGames) {
+                    currentGames = resolvedPoint.games;
+                    server = server === 1 ? 2 : 1;
                 }
 
-                let receiver = (server === 1) ? 2 : 1;
-                let srvPts = scoreBeforePoint['p' + server];
-                let rcvPts = scoreBeforePoint['p' + receiver];
+                let receiver = server === 1 ? 2 : 1;
+                let hasFault = group.some(l => l.action === 'fault');
+                let pointWinner = resolvedPoint.winner;
 
-                let isBP = (rcvPts >= 3 && rcvPts > srvPts) || (rcvPts === 3 && srvPts === 3);
+                // --- Primer servicio ---
+                stats['t' + server].firstServeAttempts++;
+                if (!hasFault) stats['t' + server].firstServeIn++;
 
-                let pointWinner = log.winner;
+                // --- Saque / Resto ---
+                stats['t' + server].servePoints++;
+                stats['t' + receiver].returnPoints++;
 
-                if (log.action === 'double_fault') {
-                    stats['t' + server].doubleFaults++;
-                    pointWinner = receiver;
-                } else if (log.action === 'fault') {
-                    stats['t' + server].faults++;
-                    // No suma punto
-                } else if (log.action === 'winner') {
-                    stats['t' + pointWinner].winners++;
-                } else if (log.action === 'error_forced') {
-                    stats['t' + pointWinner].forcedErrors++;
-                } else if (log.action === 'error_unforced') {
-                    stats['t' + pointWinner].unforcedErrors++;
-                }
+                // --- Break Points ---
+                let scoreParts = resolvedPoint.score ? resolvedPoint.score.split('-') : ["0", "0"];
+                let srvScore = server === 1 ? getScoreValue(scoreParts[0]) : getScoreValue(scoreParts[1]);
+                let rcvScore = server === 1 ? getScoreValue(scoreParts[1]) : getScoreValue(scoreParts[0]);
+                let isBP = (rcvScore >= 3 && srvScore < 3) || (rcvScore === 4 && srvScore <= 3);
 
+                // --- Procesar acciones del grupo ---
+                group.forEach(log => {
+                    if (log.action === 'fault') {
+                        stats['t' + server].faults++;
+                    } else if (log.action === 'double_fault') {
+                        stats['t' + server].doubleFaults++;
+                        pointWinner = receiver;
+                    } else if (log.action === 'winner') {
+                        stats['t' + (log.winner || log.team)].winners++;
+                    } else if (log.action === 'error_forced') {
+                        if (pointWinner) stats['t' + pointWinner].forcedErrors++;
+                    } else if (log.action === 'error_unforced') {
+                        if (pointWinner) stats['t' + pointWinner].unforcedErrors++;
+                    }
+                });
+
+                // --- Asignar punto ---
                 if (pointWinner) {
                     stats['t' + pointWinner].points++;
-
-                    if (isBP) {
-                        stats['t' + receiver].bpOpportunities++;
-                        if (pointWinner === receiver) {
-                            stats['t' + receiver].bpConverted++;
-                        } else {
-                            stats['t' + server].bpSaved++;
-                        }
-                    }
+                    if (pointWinner === server) stats['t' + server].servePointsWon++;
+                    else stats['t' + receiver].returnPointsWon++;
                 }
 
-                // Actualizar score para siguiente punto
-                if (log.score) {
-                    let parts = log.score.split('-');
-                    scoreBeforePoint.p1 = getScoreValue(parts[0]);
-                    scoreBeforePoint.p2 = getScoreValue(parts[1]);
+                // --- Resolver BP ---
+                if (isBP) {
+                    stats['t' + receiver].bpOpportunities++;
+                    if (pointWinner === receiver) stats['t' + receiver].bpConverted++;
+                    else stats['t' + server].bpSaved++;
                 }
             });
 
-            renderVisuals(stats, document.getElementById('summary-team-1'));
+            // --- Porcentajes derivados ---
+            let derived = {
+                t1FirstServe: stats.t1.firstServeAttempts > 0 ? ((stats.t1.firstServeIn / stats.t1.firstServeAttempts) * 100).toFixed(0) : 0,
+                t2FirstServe: stats.t2.firstServeAttempts > 0 ? ((stats.t2.firstServeIn / stats.t2.firstServeAttempts) * 100).toFixed(0) : 0,
+                t1ServeWon: stats.t1.servePoints > 0 ? ((stats.t1.servePointsWon / stats.t1.servePoints) * 100).toFixed(0) : 0,
+                t2ServeWon: stats.t2.servePoints > 0 ? ((stats.t2.servePointsWon / stats.t2.servePoints) * 100).toFixed(0) : 0,
+                t1ReturnWon: stats.t1.returnPoints > 0 ? ((stats.t1.returnPointsWon / stats.t1.returnPoints) * 100).toFixed(0) : 0,
+                t2ReturnWon: stats.t2.returnPoints > 0 ? ((stats.t2.returnPointsWon / stats.t2.returnPoints) * 100).toFixed(0) : 0,
+                t1WUE: stats.t1.unforcedErrors > 0 ? (stats.t1.winners / stats.t1.unforcedErrors).toFixed(1) : (stats.t1.winners > 0 ? '∞' : '0.0'),
+                t2WUE: stats.t2.unforcedErrors > 0 ? (stats.t2.winners / stats.t2.unforcedErrors).toFixed(1) : (stats.t2.winners > 0 ? '∞' : '0.0'),
+                t1WinnerPct: ((stats.t1.winners / (stats.t1.points || 1)) * 100).toFixed(1),
+                t2WinnerPct: ((stats.t2.winners / (stats.t2.points || 1)) * 100).toFixed(1),
+                t1BPEff: stats.t1.bpOpportunities > 0 ? ((stats.t1.bpConverted / stats.t1.bpOpportunities) * 100).toFixed(0) : 0,
+                t2BPEff: stats.t2.bpOpportunities > 0 ? ((stats.t2.bpConverted / stats.t2.bpOpportunities) * 100).toFixed(0) : 0
+            };
+
+            renderVisuals(stats, derived, document.getElementById('summary-team-1'));
         }
 
-        // Función auxiliar para el HTML (Asegúrate de que esté o intégrala dentro)
-        function renderVisuals(stats, container) {
+        function renderVisuals(stats, d, container) {
             const t1TotalErrors = stats.t1.forcedErrors + stats.t1.unforcedErrors;
             const t2TotalErrors = stats.t2.forcedErrors + stats.t2.unforcedErrors;
-            const t1TotalPoints = stats.t1.points || 1;
-            const t2TotalPoints = stats.t2.points || 1;
-            const t1WinnerPct = ((stats.t1.winners / t1TotalPoints) * 100).toFixed(1);
-            const t2WinnerPct = ((stats.t2.winners / t2TotalPoints) * 100).toFixed(1);
-            const t1BPEff = stats.t1.bpOpportunities > 0 ? ((stats.t1.bpConverted / stats.t1.bpOpportunities) * 100).toFixed(0) : 0;
-            const t2BPEff = stats.t2.bpOpportunities > 0 ? ((stats.t2.bpConverted / stats.t2.bpOpportunities) * 100).toFixed(0) : 0;
+            const totalPoints = stats.t1.points + stats.t2.points;
+            const totalFirstServe = stats.t1.firstServeIn + stats.t2.firstServeIn;
+            const totalFirstServeAttempts = stats.t1.firstServeAttempts + stats.t2.firstServeAttempts;
+            const avgFirstServe = totalFirstServeAttempts > 0 ? ((totalFirstServe / totalFirstServeAttempts) * 100).toFixed(0) : 0;
+            const avgWUE = (() => {
+                let t1ue = stats.t1.unforcedErrors || 1, t2ue = stats.t2.unforcedErrors || 1;
+                return ((stats.t1.winners / t1ue + stats.t2.winners / t2ue) / 2).toFixed(1);
+            })();
 
             const renderBar = (label, val1, val2, extra = "", color2 = "bg-slate-500") => {
                 let total = val1 + val2;
                 let pct1 = total > 0 ? ((val1 / total) * 100).toFixed(1) : 0;
                 let pct2 = total > 0 ? ((val2 / total) * 100).toFixed(1) : 0;
-                
                 return `
-                    <div class="mb-5">
-                        <div class="flex justify-between items-center mb-1.5 px-0.5">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${label}</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm font-mono font-bold text-emerald-400">${val1}</span>
-                                <span class="text-[10px] text-slate-600">—</span>
-                                <span class="text-sm font-mono font-bold text-slate-300">${val2}</span>
-                                ${extra ? `<span class="text-[10px] text-slate-500 ml-1">${extra}</span>` : ''}
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-1 px-0.5">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">${label}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-mono font-bold text-emerald-400">${val1}</span>
+                                <span class="text-[9px] text-slate-700">—</span>
+                                <span class="text-xs font-mono font-bold text-slate-300">${val2}</span>
+                                ${extra ? `<span class="text-[9px] text-slate-600 ml-1">${extra}</span>` : ''}
                             </div>
                         </div>
                         <div class="max-w-md mx-auto h-1.5 bg-slate-800 rounded-full overflow-hidden flex">
@@ -3040,37 +3075,47 @@
                     <div class="text-center mb-8">
                         <h3 class="text-lg font-black text-white tracking-tight uppercase">Resumen del Partido</h3>
                         <div class="flex items-center justify-center gap-3 mt-2">
-                            <span class="text-xs font-bold text-emerald-400">${scoreboardState.t1.p1} / ${scoreboardState.t1.p2}</span>
-                            <span class="text-slate-600 text-xs">vs</span>
-                            <span class="text-xs font-bold text-slate-300">${scoreboardState.t2.p1} / ${scoreboardState.t2.p2}</span>
+                            <span class="text-[11px] font-bold text-emerald-400 tracking-wider">${scoreboardState.t1.p1} / ${scoreboardState.t1.p2}</span>
+                            <span class="text-slate-700 text-[10px]">vs</span>
+                            <span class="text-[11px] font-bold text-slate-300 tracking-wider">${scoreboardState.t2.p1} / ${scoreboardState.t2.p2}</span>
                         </div>
                     </div>
 
                     <div class="space-y-0">
                         ${renderBar('Puntos Totales', stats.t1.points, stats.t2.points)}
-                        ${renderBar('Winners', stats.t1.winners, stats.t2.winners, `(${t1WinnerPct}% / ${t2WinnerPct}%)`)}
+                        ${renderBar('Winners', stats.t1.winners, stats.t2.winners, `(${d.t1WinnerPct}% / ${d.t2WinnerPct}%)`)}
                         ${renderBar('Errores Forzados', stats.t1.forcedErrors, stats.t2.forcedErrors)}
                         ${renderBar('Errores No Forzados', stats.t1.unforcedErrors, stats.t2.unforcedErrors, "", "bg-red-500/60")}
                         ${renderBar('Total Errores', t1TotalErrors, t2TotalErrors, "", "bg-red-500")}
                         ${renderBar('Dobles Faltas', stats.t1.doubleFaults, stats.t2.doubleFaults, "", "bg-orange-500")}
                         ${renderBar('Faltas Simples', stats.t1.faults, stats.t2.faults, "", "bg-orange-500/60")}
-                        ${renderBar('Oportunidades Break', stats.t1.bpOpportunities, stats.t2.bpOpportunities)}
-                        ${renderBar('Breaks Convertidos', stats.t1.bpConverted, stats.t2.bpConverted, "", "bg-sky-500")}
-                        ${renderBar('Eficiencia Break', parseInt(t1BPEff), parseInt(t2BPEff), "%")}
+                        
+                        <div class="my-5 border-t border-slate-800"></div>
+                        <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest text-center mb-4">Saque y Resto</p>
+
+                        ${renderBar('% Primer Servicio', parseInt(d.t1FirstServe), parseInt(d.t2FirstServe), "%", "bg-sky-500/60")}
+                        ${renderBar('Puntos Ganados Saca.', stats.t1.servePointsWon, stats.t2.servePointsWon, `(${d.t1ServeWon}% / ${d.t2ServeWon}%)`, "bg-sky-500")}
+                        ${renderBar('Puntos Ganados Resto', stats.t1.returnPointsWon, stats.t2.returnPointsWon, `(${d.t1ReturnWon}% / ${d.t2ReturnWon}%)`, "bg-violet-500")}
+                        ${renderBar('Oport. Break Point', stats.t1.bpOpportunities, stats.t2.bpOpportunities)}
+                        ${renderBar('Breaks Convertidos', stats.t1.bpConverted, stats.t2.bpConverted, `(${d.t1BPEff}% / ${d.t2BPEff}%)`, "bg-sky-500")}
                     </div>
 
-                    <div class="mt-10 pt-6 border-t border-slate-700/50 grid grid-cols-3 gap-4 text-center">
+                    <div class="mt-8 pt-5 border-t border-slate-700/50 grid grid-cols-4 gap-3 text-center">
                         <div>
-                            <div class="text-2xl font-black text-emerald-400">${stats.t1.points}</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Puntos T1</div>
+                            <div class="text-xl font-black text-white">${totalPoints}</div>
+                            <div class="text-[9px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Puntos Totales</div>
                         </div>
                         <div>
-                            <div class="text-2xl font-black text-white">${stats.t1.winners + stats.t2.winners}</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Winners</div>
+                            <div class="text-xl font-black text-sky-400">${avgFirstServe}%</div>
+                            <div class="text-[9px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">1er Servicio</div>
                         </div>
                         <div>
-                            <div class="text-2xl font-black text-red-400">${t1TotalErrors + t2TotalErrors}</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Errores</div>
+                            <div class="text-xl font-black text-emerald-400">${stats.t1.winners + stats.t2.winners}</div>
+                            <div class="text-[9px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Winners</div>
+                        </div>
+                        <div>
+                            <div class="text-xl font-black text-amber-400">${avgWUE}</div>
+                            <div class="text-[9px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Ratio W/UE</div>
                         </div>
                     </div>
                 </div>`;
