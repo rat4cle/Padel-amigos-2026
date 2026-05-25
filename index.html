@@ -2659,7 +2659,8 @@
                 detail: detail,
                 score: `${p1ScoreText}-${p2ScoreText}`,
                 games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
-                sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`
+                sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`,
+                server: scoreboardState.server
             };
 
             playByPlayLog.push(event);
@@ -2841,56 +2842,27 @@
         // ==========================================
         function cleanPlayByPlayLog(log) {
             if (!log || log.length === 0) return [];
-
-            let cleanedLog = [];
-            
-            // Paso 1: Eliminar duplicados exactos consecutivos
-            // (Esto soluciona el problema de "pulsar deshacer" y que quede residuo)
+            let cleaned = [];
             for (let i = 0; i < log.length; i++) {
                 let current = log[i];
-                let prev = cleanedLog.length > 0 ? cleanedLog[cleanedLog.length - 1] : null;
-
-                // Comprobamos si es duplicado del inmediatamente anterior
-                let isDuplicate = prev && 
-                                prev.games === current.games && 
-                                prev.sets === current.sets && 
-                                prev.score === current.score &&
-                                prev.winner === current.winner;
-
-                if (!isDuplicate) {
-                    cleanedLog.push(current);
-                } else {
-                    console.warn("Punto duplicado eliminado:", current);
-                }
-            }
-
-            // Paso 2: Corrección de bucles de Deuce corruptos
-            // Si detectamos una secuencia imposible como 40-40 -> AD -> 40-40 -> AD -> 40-40 -> AD
-            // y no hay ganador, es basura. La limpiamos.
-            let finalLog = [];
-            let deuceCount = 0;
-            
-            for (let i = 0; i < cleanedLog.length; i++) {
-                let p = cleanedLog[i];
-                let score = p.score || "";
+                let prev = cleaned.length > 0 ? cleaned[cleaned.length - 1] : null;
                 
-                // Detectar si estamos en una racha de Deuce/AD excesiva
-                if (score.includes("40-40") || score.includes("AD")) {
-                    deuceCount++;
-                    // Si llevamos más de 6 transiciones de Deuce sin cerrar el juego, paramos de contar para evitar inflar las estadísticas
-                    if (deuceCount <= 6) {
-                        finalLog.push(p);
-                    } else {
-                        console.warn("Exceso de puntos de Deuce detectados, ignorando:", score);
-                    }
-                } else {
-                    // Si el score cambia (ej 0-15, 15-30, Game Point), reseteamos el contador
-                    deuceCount = 0;
-                    finalLog.push(p);
+                // Solo eliminar si es 100% idéntico en TODOS los campos
+                let isExactDuplicate = prev &&
+                    prev.action === current.action &&
+                    prev.team === current.team &&
+                    prev.pos === current.pos &&
+                    prev.score === current.score &&
+                    prev.games === current.games &&
+                    prev.sets === current.sets &&
+                    prev.winner === current.winner &&
+                    prev.scorer === current.scorer;
+                
+                if (!isExactDuplicate) {
+                    cleaned.push(current);
                 }
             }
-
-            return finalLog;
+            return cleaned;
         }
         function generarStatsDesdeMarcador() {
             // Verificar que se haya jugado algo
@@ -3016,9 +2988,6 @@
                 t2: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, servePoints: 0, servePointsWon: 0, firstServeAttempts: 0, firstServeIn: 0, returnPoints: 0, returnPointsWon: 0 }
             };
 
-            let server = 1;
-            let currentGames = "0-0";
-
             const getScoreValue = (str) => {
                 if (!str) return 0;
                 let s = str.trim().toUpperCase();
@@ -3029,14 +2998,22 @@
                 return parseInt(s) || 0;
             };
 
+            let server = 1;
+            let currentGames = "0-0";
+            let hasServerInLog = playByPlayLog[0] && playByPlayLog[0].server !== undefined;
+
             pointGroups.forEach(group => {
                 let resolvedPoint = group.find(l => l.action !== 'fault');
                 if (!resolvedPoint) return;
 
-                // Detectar cambio de juego → cambia saque
-                if (resolvedPoint.games !== currentGames) {
-                    currentGames = resolvedPoint.games;
-                    server = server === 1 ? 2 : 1;
+                // --- Detectar servidor ---
+                if (hasServerInLog) {
+                    server = resolvedPoint.server || server;
+                } else {
+                    if (resolvedPoint.games !== currentGames) {
+                        currentGames = resolvedPoint.games;
+                        server = server === 1 ? 2 : 1;
+                    }
                 }
 
                 let receiver = server === 1 ? 2 : 1;
@@ -3051,11 +3028,11 @@
                 stats['t' + server].servePoints++;
                 stats['t' + receiver].returnPoints++;
 
-                // --- Break Points ---
+                // --- Break Points (CORREGIDO: comparación numérica) ---
                 let scoreParts = resolvedPoint.score ? resolvedPoint.score.split('-') : ["0", "0"];
                 let srvScore = server === 1 ? getScoreValue(scoreParts[0]) : getScoreValue(scoreParts[1]);
                 let rcvScore = server === 1 ? getScoreValue(scoreParts[1]) : getScoreValue(scoreParts[0]);
-                let isBP = (rcvScore >= 3 && srvScore < 3) || (rcvScore === 4 && srvScore <= 3);
+                let isBP = rcvScore === 4 || (rcvScore === 3 && srvScore <= 2);
 
                 // --- Procesar acciones del grupo ---
                 group.forEach(log => {
@@ -3067,10 +3044,8 @@
                     } else if (log.action === 'winner') {
                         stats['t' + (log.winner || log.team)].winners++;
                     } else if (log.action === 'error_forced') {
-                        // log.team = quien tocó el botón = quien cometió el error
                         stats['t' + log.team].forcedErrors++;
                     } else if (log.action === 'error_unforced') {
-                        // log.team = quien tocó el botón = quien cometió el error
                         stats['t' + log.team].unforcedErrors++;
                     }
                 });
