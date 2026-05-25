@@ -3065,9 +3065,11 @@
                     } else if (log.action === 'winner') {
                         stats['t' + (log.winner || log.team)].winners++;
                     } else if (log.action === 'error_forced') {
-                        if (pointWinner) stats['t' + pointWinner].forcedErrors++;
+                        // log.team = quien tocó el botón = quien cometió el error
+                        stats['t' + log.team].forcedErrors++;
                     } else if (log.action === 'error_unforced') {
-                        if (pointWinner) stats['t' + pointWinner].unforcedErrors++;
+                        // log.team = quien tocó el botón = quien cometió el error
+                        stats['t' + log.team].unforcedErrors++;
                     }
                 });
 
