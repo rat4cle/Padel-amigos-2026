@@ -1142,8 +1142,8 @@
                                         <div id="sb-actions-1" class="grid grid-cols-2 gap-2 h-full content-center">
                                             <button onclick="handleScoreboardAction('winner', 1)" class="btn-winner bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
                                             <button onclick="handleScoreboardAction('fault', 1)" id="sb-f1" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
-                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
-                                            <button onclick="handleScoreboardAction('error', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error_forced', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error_unforced', 1)" class="bg-emerald-600 hover:bg-sky-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
                                             <!-- BOTONES DE SELECCIÓN DE JUGADOR (OCULTOS POR DEFECTO) -->
                                             <!-- Izquierda: REVÉS -->
                                             <button id="sb-scorer-t1-p2" onclick="confirmWinner(1, 'p2')" class="scorer-btn hidden bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded transition h-full flex items-center justify-center text-2xl">REVÉS</button>
@@ -1201,8 +1201,8 @@
                                         <div id="sb-actions-2" class="grid grid-cols-2 gap-2 h-full content-center">
                                             <button onclick="handleScoreboardAction('winner', 2)" class="btn-winner bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-sm h-full flex items-center justify-center">WINNER</button>
                                             <button onclick="handleScoreboardAction('fault', 2)" id="sb-f2" class="hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded transition text-sm h-full">FALTA</button>
-                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
-                                            <button onclick="handleScoreboardAction('error', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error_forced', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>FORZADO</button>
+                                            <button onclick="handleScoreboardAction('error_unforced', 2)" class="bg-slate-600 hover:bg-red-500 text-white font-bold py-3 rounded transition text-[10px] leading-tight h-full">ERROR<br>NO<br>FORZADO</button>
                                             <!-- BOTONES DE SELECCIÓN DE JUGADOR (OCULTOS POR DEFECTO) -->
                                             <!-- Izquierda: REVÉS -->
                                             <button id="sb-scorer-t2-p2" onclick="confirmWinner(2, 'p2')" class="scorer-btn hidden bg-slate-600 hover:bg-slate-500 text-white font-black rounded transition h-full flex items-center justify-center text-2xl">REVÉS</button>
@@ -2245,12 +2245,11 @@
         function handleScoreboardAction(type, team) {
             if (scoreboardState.matchFinished) return;
             
-            // Lógica para mostrar selección de jugador en TODOS los casos
-            if (type === 'winner' || type === 'error' || type === 'fault') {
-                // Guardamos el tipo de acción para saber qué hacer al confirmar el nombre
+            // Permitimos nuevos tipos de error y los antiguos
+            if (type === 'winner' || type === 'fault' || type === 'error' || type === 'error_forced' || type === 'error_unforced') {
                 window.currentActionType = type; 
                 showScorerSelection(team);
-                return; // Detenemos aquí, todo lo demás pasa en confirmWinner
+                return; 
             }
         }
         function winScoreboardSet(teamNum) {
@@ -2495,42 +2494,49 @@
             document.body.classList.add('is-selecting');
         }
 
+        <!-- Reemplaza la función confirmWinner completa (líneas ~2497 a ~2550) -->
         function confirmWinner(team, playerPos) {
-            // Obtenemos qué botón se pulsó primero ('winner', 'error' o 'fault')
             let action = window.currentActionType || 'winner';
             let opponent = (team === 1) ? 2 : 1;
+            let container = document.getElementById(`sb-actions-${team}`);
 
-            if (action === 'winner') {
-                // 1. Registro de estadística
-                logAction('winner', team, playerPos);
-                // 2. Suma de puntos
-                addScoreboardPoint(team);
-            } 
-            else if (action === 'error') {
-                // 1. Registro de estadística (Quién erró)
-                logAction('error', team, playerPos);
-                // 2. El punto es para el oponente
-                addScoreboardPoint(opponent);
-            } 
-            else if (action === 'fault') {
-                // Incrementamos el contador de faltas del equipo
+            saveScoreboardState();
+
+            // 1. LÓGICA DE FALTAS
+            if (action === 'fault') {
                 scoreboardState['t' + team].faults++;
-                
-                // Si es DOBLE FALTA (contador llega a 2)
+
                 if (scoreboardState['t' + team].faults >= 2) {
-                    // Registramos doble falta y damos punto al oponente
-                    logAction('double_fault_point', team, playerPos);
-                    addScoreboardPoint(opponent);
-                    // Reseteamos el contador para el siguiente juego
+                    // DOBLE FALTA → gana el rival
+                    logAction('double_fault', team, playerPos);
                     scoreboardState['t' + team].faults = 0;
+                    addScoreboardPoint(opponent);   // ← Punto para el rival
                 } else {
-                    // Es la primera falta, la registramos
+                    // Falta simple (solo registro)
                     logAction('fault', team, playerPos);
                 }
+
+                container.classList.remove('selecting-scorer');
+                document.body.classList.remove('is-selecting');
+                updateScoreboardUI();
+                return;
             }
 
-            // Cerramos el modal de selección y actualizamos la UI
-            let container = document.getElementById(`sb-actions-${team}`);
+            // 2. WINNER o ERRORES
+            let scoringTeam = team;
+            if (action === 'error' || action === 'error_forced' || action === 'error_unforced') {
+                scoringTeam = opponent;   // El error hace ganar al rival
+            }
+
+            addScoreboardPoint(scoringTeam);
+
+            // Log correcto
+            if (action === 'winner') {
+                logAction('winner', scoringTeam, playerPos);
+            } else {
+                logAction(action, team, playerPos); // team = quien cometió el error
+            }
+
             container.classList.remove('selecting-scorer');
             document.body.classList.remove('is-selecting');
             updateScoreboardUI();
@@ -2538,35 +2544,35 @@
         function logAction(actionType, teamNum, playerPos) {
             if (!matchStartTime) matchStartTime = Date.now();
             
-            // ... (código de tiempo existente) ...
             let now = Date.now();
             let diff = now - matchStartTime;
-            let date = new Date(diff);
-            let timeStr = date.toISOString().substr(14, 5);
+            let timeStr = new Date(diff).toISOString().substr(14, 5);
 
-            // ... (código de nombres existente) ...
-            let p1Name = scoreboardState['t' + teamNum].p1 || "DRIVE"; // Usamos Drive/Revés como fallback si está vacío
+            let p1Name = scoreboardState['t' + teamNum].p1 || "DRIVE";
             let p2Name = scoreboardState['t' + teamNum].p2 || "REVÉS";
-            let teamName = `TEAM ${teamNum}`;
-            
-            let trueWinner = teamNum; 
+
+            let trueWinner = null;
             let scorerName = "";
             let detail = "";
 
             if (actionType === 'winner') {
+                trueWinner = teamNum;
                 scorerName = (playerPos === 'p1') ? p1Name : p2Name;
             } 
-            else if (actionType === 'fault' || actionType === 'error') {
-                let opponent = (teamNum === 1) ? 2 : 1;
-                trueWinner = opponent; 
-                
-                if (actionType === 'fault') detail = "FALTA";
-                else detail = "ERROR";
+            else if (actionType === 'error_forced' || actionType === 'error_unforced' || actionType === 'error') {
+                trueWinner = (teamNum === 1) ? 2 : 1;
+                detail = actionType.toUpperCase().replace('_', ' ');
+                scorerName = (playerPos === 'p1') ? p1Name : p2Name; // quien cometió el error
             } 
-            else if (actionType === 'double_fault_point') {
-                let opponent = (teamNum === 1) ? 2 : 1;
-                trueWinner = opponent;
+            else if (actionType === 'fault') {
+                trueWinner = null;
+                detail = "FALTA";
+                scorerName = (playerPos === 'p1') ? p1Name : p2Name;
+            } 
+            else if (actionType === 'double_fault') {
+                trueWinner = (teamNum === 1) ? 2 : 1;
                 detail = "DOBLE FALTA";
+                scorerName = (playerPos === 'p1') ? p1Name : p2Name;
             }
 
             let p1ScoreText = scoreboardState.isTieBreak ? scoreboardState.t1.pIdx : sbScoreMap[scoreboardState.t1.pIdx];
@@ -2575,11 +2581,11 @@
             let event = {
                 time: timeStr,
                 action: actionType,
-                team: teamNum, 
-                winner: trueWinner, 
-                scorer: scorerName || teamName,
-                pos: playerPos, // 🔥 NUEVO: Guardamos si fue p1 (Drive) o p2 (Revés)
-                detail: detail, 
+                team: teamNum,
+                winner: trueWinner,
+                scorer: scorerName,
+                pos: playerPos,
+                detail: detail,
                 score: `${p1ScoreText}-${p2ScoreText}`,
                 games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
                 sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`
@@ -2918,134 +2924,133 @@
 
         function renderSummaryStats() {
             let stats = {
-                t1: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t1.p1 + " / " + scoreboardState.t1.p2 },
-                t2: { points: 0, winners: 0, errors: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, name: scoreboardState.t2.p1 + " / " + scoreboardState.t2.p2 }
+                t1: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0 },
+                t2: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0 }
             };
 
             if (!playByPlayLog || playByPlayLog.length === 0) {
                 document.getElementById('summary-team-1').innerHTML = '<div class="text-center text-slate-500 mt-4">Sin datos registrados</div>';
-                document.getElementById('summary-team-2').innerHTML = '';
                 return;
             }
 
-            // ─── 1. AGRUPAR PUNTOS POR JUEGO ────────────────────────────────────────
-            let gameGroups = [];
-            let tempGamePoints = [];
-            let lastGames = null;
-
-            playByPlayLog.forEach((log) => {
-                let currentGames = log.games || "0-0"; 
-                if (lastGames === null) lastGames = currentGames;
-
-                if (currentGames !== lastGames) {
-                    if (tempGamePoints.length > 0) {
-                        gameGroups.push({ games: lastGames, points: tempGamePoints });
-                    }
-                    tempGamePoints = [];
-                    lastGames = currentGames;
-                }
-                tempGamePoints.push(log);
-            });
-            if (tempGamePoints.length > 0) {
-                gameGroups.push({ games: lastGames, points: tempGamePoints });
-            }
-
-            // ─── 2. LÓGICA PUNTO A PUNTO ───────────────────────────────────────────
-            
             const getScoreValue = (str) => {
                 if (!str) return 0;
-                str = str.trim().toUpperCase();
-                if (str === 'AD') return 4; // Ventaja
-                if (str === '40') return 3;
-                if (str === '30') return 2;
-                if (str === '15') return 1;
-                return parseInt(str) || 0;
+                let s = str.trim().toUpperCase();
+                if (s === 'AD') return 4;
+                if (s === '40') return 3;
+                if (s === '30') return 2;
+                if (s === '15') return 1;
+                return parseInt(s) || 0;
             };
 
-            let totalPoints = 0;
+            let currentGames = "0-0";
+            let server = 1;
+            let scoreBeforePoint = { p1: 0, p2: 0 };
 
-            gameGroups.forEach((group, index) => {
-                // Determinista: Juego impar (0, 2, 4) -> Saca T1. Juego par (1, 3, 5) -> Saca T2.
-                let server = (index % 2 === 0) ? 1 : 2;
+            playByPlayLog.forEach((log) => {
+                if (log.games !== currentGames) {
+                    currentGames = log.games;
+                    server = (server === 1) ? 2 : 1;
+                    scoreBeforePoint = { p1: 0, p2: 0 };
+                }
+
                 let receiver = (server === 1) ? 2 : 1;
+                let srvPts = scoreBeforePoint['p' + server];
+                let rcvPts = scoreBeforePoint['p' + receiver];
 
-                group.points.forEach(log => {
-                    let pointWinner = log.winner;
-                    if (!pointWinner) return;
+                let isBP = (rcvPts >= 3 && rcvPts > srvPts) || (rcvPts === 3 && srvPts === 3);
 
-                    totalPoints++;
+                let pointWinner = log.winner;
 
-                    // --- A. ESTADÍSTICAS GENERALES ---
+                if (log.action === 'double_fault') {
+                    stats['t' + server].doubleFaults++;
+                    pointWinner = receiver;
+                } else if (log.action === 'fault') {
+                    stats['t' + server].faults++;
+                    // No suma punto
+                } else if (log.action === 'winner') {
+                    stats['t' + pointWinner].winners++;
+                } else if (log.action === 'error_forced') {
+                    stats['t' + pointWinner].forcedErrors++;
+                } else if (log.action === 'error_unforced') {
+                    stats['t' + pointWinner].unforcedErrors++;
+                }
+
+                if (pointWinner) {
                     stats['t' + pointWinner].points++;
-                    if (log.action === 'winner') {
-                        stats['t' + pointWinner].winners++;
-                    } else if (log.action === 'error' || log.action.includes('fault')) {
-                        let losingTeam = (pointWinner === 1) ? 2 : 1;
-                        stats['t' + losingTeam].errors++;
-                    }
 
-                    // --- B. DETECCIÓN DE BREAK POINT (Lógica Corregida) ---
-                    let scoreParts = (log.score || "0-0").split('-');
-                    let p1 = getScoreValue(scoreParts[0]);
-                    let p2 = getScoreValue(scoreParts[1]);
-
-                    let serverPoints = (server === 1) ? p1 : p2;
-                    let receiverPoints = (server === 1) ? p2 : p1;
-
-                    // 🔥 CORRECCIÓN CRÍTICA AQUÍ:
-                    // Solo contamos Break Point si el RECEPTOR tiene VENTAJA (AD = 4 puntos).
-                    // 40-40 no cuenta como BP, es Deuce.
-                    // Esto evita el doble conteo al pasar de 40-40 a AD.
-                    let isBreakPoint = (receiverPoints >= 3) && (receiverPoints > serverPoints);
-
-                    if (isBreakPoint) {
+                    if (isBP) {
                         stats['t' + receiver].bpOpportunities++;
-
                         if (pointWinner === receiver) {
-                            stats['t' + receiver].bpConverted++; // Rompió
+                            stats['t' + receiver].bpConverted++;
                         } else {
-                            stats['t' + server].bpSaved++; // Salvó
+                            stats['t' + server].bpSaved++;
                         }
                     }
-                });
+                }
+
+                // Actualizar score para siguiente punto
+                if (log.score) {
+                    let parts = log.score.split('-');
+                    scoreBeforePoint.p1 = getScoreValue(parts[0]);
+                    scoreBeforePoint.p2 = getScoreValue(parts[1]);
+                }
             });
 
-            // ─── 3. RENDERIZADO ─────────────────────────────────────────────────────
-            const renderTeam = (team, sideNum, containerId) => {
-                let pWin = totalPoints > 0 ? ((team.points / totalPoints) * 100).toFixed(1) : 0;
-                
-                let bpSaveEff = team.bpOpportunities > 0
-                    ? ((team.bpSaved / team.bpOpportunities) * 100).toFixed(0)
-                    : 0;
-                let bpConvEff = team.bpOpportunities > 0
-                    ? ((team.bpConverted / team.bpOpportunities) * 100).toFixed(0)
-                    : 0;
-                
-                let isWinner = (sideNum === 1 && scoreboardState.t1.sets > scoreboardState.t2.sets) ||
-                               (sideNum === 2 && scoreboardState.t2.sets > scoreboardState.t1.sets);
-                
-                let headerClass = isWinner ? 'team-1-header' : 'team-2-header';
+            renderVisuals(stats, document.getElementById('summary-team-1'));
+        }
 
-                let html = `
-                    <div class="team-header ${headerClass}">${team.name}</div>
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        <div class="stat-box"><div class="stat-label">Puntos</div><div class="stat-value">${team.points}</div><div class="stat-sub">${pWin}%</div></div>
-                        <div class="stat-box"><div class="stat-label">Winners</div><div class="stat-value text-emerald-400">${team.winners}</div></div>
-                        <div class="stat-box"><div class="stat-label">Errores</div><div class="stat-value text-red-400">${team.errors}</div></div>
-                        <div class="stat-box"><div class="stat-label">Ratio W/E</div><div class="stat-value">${team.errors > 0 ? (team.winners / team.errors).toFixed(2) : team.winners}</div></div>
-                    </div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 border-b border-slate-700 pb-1">Break Points</h4>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="stat-box"><div class="stat-label">Oport.</div><div class="stat-value">${team.bpOpportunities}</div></div>
-                        <div class="stat-box"><div class="stat-label">Conv.</div><div class="stat-value text-sky-400">${team.bpConverted}</div><div class="stat-sub">${bpConvEff}%</div></div>
-                        <div class="stat-box"><div class="stat-label">Salv.</div><div class="stat-value text-amber-400">${team.bpSaved}</div><div class="stat-sub">${bpSaveEff}%</div></div>
-                    </div>
-                `;
-                document.getElementById(containerId).innerHTML = html;
+        // Función auxiliar para el HTML (Asegúrate de que esté o intégrala dentro)
+        function renderVisuals(stats, container) {
+            const renderBar = (label, val1, val2, color1, color2) => {
+                let total = val1 + val2;
+                let pct1 = total > 0 ? ((val1 / total) * 100).toFixed(1) : 0;
+                let pct2 = total > 0 ? ((val2 / total) * 100).toFixed(1) : 0;
+                return `
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm mb-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${label}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-10 text-right text-sm font-bold ${color1.replace('bg-', 'text-')}">${val1}</span>
+                            <div class="flex-1 h-6 bg-slate-900 rounded-full overflow-hidden flex shadow-inner relative">
+                                <div class="${color1} h-full transition-all duration-500" style="width: ${pct1}%"></div>
+                                <div class="${color2} h-full transition-all duration-500" style="width: ${pct2}%"></div>
+                            </div>
+                            <span class="w-10 text-left text-sm font-bold ${color2.replace('bg-', 'text-')}">${val2}</span>
+                        </div>
+                    </div>`;
             };
 
-            renderTeam(stats.t1, 1, 'summary-team-1');
-            renderTeam(stats.t2, 2, 'summary-team-2');
+            container.innerHTML = `
+                <div class="max-w-3xl mx-auto space-y-6">
+                    <h3 class="text-xl font-black text-white text-center uppercase tracking-widest border-b border-slate-700 pb-4">Resumen Estadístico</h3>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Juego Ofensivo</h4>
+                        ${renderBar('Winners', stats.t1.winners, stats.t2.winners, 'bg-emerald-500', 'bg-slate-400')}
+                        ${renderBar('Err. No Forzados', stats.t1.unforcedErrors, stats.t2.unforcedErrors, 'bg-red-500', 'bg-red-300')}
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Servicio</h4>
+                        ${renderBar('Dobles Faltas', stats.t1.doubleFaults, stats.t2.doubleFaults, 'bg-purple-500', 'bg-fuchsia-400')}
+                        ${renderBar('Faltas Simples', stats.t1.faults, stats.t2.faults, 'bg-slate-600', 'bg-slate-500')}
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Momentos Clave</h4>
+                        ${renderBar('Oportunidades Break', stats.t1.bpOpportunities, stats.t2.bpOpportunities, 'bg-emerald-600', 'bg-slate-500')}
+                        ${renderBar('Breaks Convertidos', stats.t1.bpConverted, stats.t2.bpConverted, 'bg-emerald-400', 'bg-slate-300')}
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-700">
+                        <div class="bg-emerald-900/20 p-4 rounded-xl border border-emerald-900/50 text-center">
+                            <div class="text-[10px] text-emerald-400/70 uppercase font-bold mb-1">T1 Puntos</div>
+                            <div class="text-4xl font-black text-emerald-400">${stats.t1.points}</div>
+                        </div>
+                        <div class="bg-slate-700/30 p-4 rounded-xl border border-slate-600 text-center">
+                            <div class="text-[10px] text-slate-400/70 uppercase font-bold mb-1">T2 Puntos</div>
+                            <div class="text-4xl font-black text-slate-200">${stats.t2.points}</div>
+                        </div>
+                    </div>
+                </div>`;
         }
 
         function renderAdvancedStats() {
@@ -3163,44 +3168,60 @@
                 if (log.action === 'winner') {
                     rowClass = "winner-row";
                     actionDisplay = "WINNER";
-                } else if (log.action === 'error') {
+                } 
+                else if (log.action === 'error_forced') {
                     rowClass = "error-row";
-                    actionDisplay = "ERROR";
-                } else if (log.action === 'fault') {
+                    actionDisplay = "ERROR FORZADO";
+                } 
+                else if (log.action === 'error_unforced') {
+                    rowClass = "error-row";
+                    actionDisplay = "ERROR NO FORZADO";
+                }
+                else if (log.action === 'error') {
+                    rowClass = "error-row";
+                    actionDisplay = log.detail || "ERROR";
+                } 
+                else if (log.action === 'fault') {
                     rowClass = "fault-row";
                     actionDisplay = "FALTA";
-                } else if (log.action === 'double_fault_point') {
+                } 
+                else if (log.action === 'double_fault_point') {
                     rowClass = "fault-row bp-row";
                     actionDisplay = "DOBLE FALTA";
-                } else {
+                } 
+                else {
                     actionDisplay = log.action ? log.action.toUpperCase() : "PUNTO";
                 }
 
-                // --- 2. OBTENER EL NOMBRE (Lógica Inteligente) ---
-                let rawName = log.scorer || "";
-                let nameToDisplay = rawName;
+                // --- 2. RESOLUCIÓN DE NOMBRES (Lógica Robusta) ---
+                
+                // Determinar a qué equipo pertenece el evento.
+                // Prioridad: log.team (quién pulsó) > log.winner (quién ganó).
+                let teamNum = log.team || log.winner;
+                
+                // Determinar posición (p1 o p2)
+                let posKey = log.pos || 'p1'; 
 
-                // Si el nombre es genérico (TEAM 1, TEAM 2, JUGADOR A), intentamos arreglarlo usando la posición (p1/p2)
-                if (!rawName || rawName === "TEAM 1" || rawName === "TEAM 2" || rawName === "JUGADOR A" || rawName === "JUGADOR B") {
-                    if (log.pos === 'p1' || log.pos === 'p2') {
-                        let teamNum = log.team;
-                        let posKey = (log.pos === 'p1') ? 'p1' : 'p2';
-                        
-                        // Intentar obtener el nombre del estado actual
-                        let resolvedName = scoreboardState['t' + teamNum][posKey];
-                        
-                        // Si el estado está vacío, buscarlo directamente en el HTML (inputs visibles)
-                        if (!resolvedName) {
-                            let side = (teamNum === 1) ? '1' : '2';
-                            let type = (log.pos === 'p1') ? 'Drive' : 'Revés';
-                            let input = document.querySelector(`#sb-row${side} input[placeholder*="${type}"]`);
-                            resolvedName = input ? input.value : null;
-                        }
+                // Buscamos el nombre directamente en el HTML del marcador
+                let nameToDisplay = `Equipo ${teamNum}`; // Fallback por defecto
 
-                        // Si encontramos un nombre real, lo usamos. Si no, dejamos el genérico.
-                        if (resolvedName && resolvedName !== "JUGADOR A" && resolvedName !== "JUGADOR B") {
-                            nameToDisplay = resolvedName;
-                        }
+                if (teamNum === 1 || teamNum === 2) {
+                    let side = (teamNum === 1) ? '1' : '2';
+                    
+                    // Definimos qué buscar basado en si es p1 (Drive) o p2 (Revés)
+                    let searchType = (posKey === 'p1') ? 'Drive' : 'Revés';
+                    
+                    // Intentar 1: Buscar en la posición indicada (p1 o p2)
+                    let input = document.querySelector(`#sb-row${side} input[placeholder*="${searchType}"]`);
+                    
+                    // Intento 2: Si el input está vacío o no existe, probar el otro (por si hay error en el dato)
+                    if (!input || !input.value) {
+                        let altType = (posKey === 'p1') ? 'Revés' : 'Drive';
+                        input = document.querySelector(`#sb-row${side} input[placeholder*="${altType}"]`);
+                    }
+
+                    if (input && input.value && input.value !== "JUGADOR A" && input.value !== "JUGADOR B") {
+                        nameToDisplay = input.value;
                     }
                 }
 
