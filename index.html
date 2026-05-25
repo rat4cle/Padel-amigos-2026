@@ -1314,10 +1314,8 @@
                                 
                                 <!-- PESTAÑA 1: RESUMEN -->
                                 <div id="stats-tab-summary" class="stats-tab-content h-full">
-                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        <div id="summary-team-1" class="col-span-1"></div>
-                                        <div id="summary-team-2" class="col-span-1"></div>
-                                    </div>
+                                    <div id="summary-team-1" class="col-span-1 lg:col-span-2"></div>
+                                    <!-- Elimina summary-team-2 -->
                                 </div>
 
                                 <!-- PESTAÑA 2: AVANZADO -->
@@ -1389,6 +1387,7 @@
         let activeDayTypeFilter = null; // 'finde' | 'semana' | null
         let playByPlayLog = []; // Aquí guardaremos cada punto
         let matchStartTime = null; // Para calcular el tiempo real
+        let isRecalculating = false;
 
         // ===== SIDEBAR & FILTER PANEL =====
         function toggleSidebar() {
@@ -2300,6 +2299,8 @@
             scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
         }
         function addScoreboardPoint(teamNum) {
+            if (!isRecalculating) saveScoreboardState();
+            
             let winner = scoreboardState['t' + teamNum];
             let loser = scoreboardState['t' + (teamNum === 1 ? 2 : 1)];
 
@@ -2307,22 +2308,15 @@
             scoreboardState.t2.faults = 0;
 
             if (scoreboardState.isTieBreak) {
-                // --- LÓGICA DE TIE-BREAK ---
-                // Conteo lineal: 0, 1, 2, 3...
                 winner.pIdx++;
-
-                // Condición de victoria en Tie-Break: Llegar a 7 y diferencia de 2
                 if (winner.pIdx >= 7 && (winner.pIdx - loser.pIdx) >= 2) {
-                    winScoreboardSet(teamNum); // ¡Gana el Set directamente!
+                    winScoreboardSet(teamNum);
                 } else {
-                    // En Tie-Break se cambia de sacador CADA PUNTO
-                    // (Suma total de puntos impar = cambio de saque)
                     if ((winner.pIdx + loser.pIdx) % 2 !== 0) {
-                        toggleScoreboardServe();
+                        scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
                     }
                 }
             } else {
-                // --- LÓGICA DE JUEGO NORMAL (15, 30, 40) ---
                 if (winner.pIdx === 3 && loser.pIdx === 4) {
                     loser.pIdx = 3;
                 } else if (winner.pIdx >= 3 && winner.pIdx > loser.pIdx) {
@@ -2332,7 +2326,6 @@
                     if (winner.pIdx === 4 && loser.pIdx < 3) winScoreboardGame(teamNum);
                 }
             }
-            updateScoreboardUI();
         }
 
         function winScoreboardGame(teamNum) {
@@ -2368,23 +2361,11 @@
             }
         }
 
-        function undoScoreboard() {
-            playByPlayLog.pop(); 
-            if (scoreboardHistory.length > 0) {
-                if(scoreboardState.matchFinished) {
-                    hideScoreboardBanner();
-                    scoreboardState.matchFinished = false;
-                }
-                scoreboardState = scoreboardHistory.pop();
-                updateScoreboardUI();
-            }
-        }
-
         function toggleScoreboardServe() {
-            if(scoreboardState.matchFinished) return;
-            saveScoreboardState();
+            if (scoreboardState.matchFinished) return;
+            if (!isRecalculating) saveScoreboardState();
             scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
-            updateScoreboardUI();
+            // NO llames a updateScoreboardUI() aquí — ya se llama después de addScoreboardPoint
         }
 
         function showScoreboardBanner(msg, colorClass) {
@@ -2484,7 +2465,8 @@
         }
 
         // Actualizamos el reinicio para que limpie también los nombres
-        resetScoreboardMatch = function() {
+        function resetScoreboardMatch() {
+            matchStartTime = null;
             if(confirm("¿Reiniciar partido?")) {
                 scoreboardState = {
                     t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "JUGADOR A", p2: "JUGADOR B" }, 
@@ -2513,7 +2495,6 @@
             document.body.classList.add('is-selecting');
         }
 
-        <!-- Reemplaza la función confirmWinner completa (líneas ~2497 a ~2550) -->
         function confirmWinner(team, playerPos) {
             let action = window.currentActionType || 'winner';
             let opponent = (team === 1) ? 2 : 1;
@@ -2735,6 +2716,7 @@
 
                 // 2. Función que carga el partido de GitHub, lo mete en el Marcador y abre las Stats
         async function loadAndViewMatch(filename) {
+            matchStartTime = Date.now();
             let url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FOLDER}/${filename}`;
             
             try {
@@ -3021,79 +3003,74 @@
 
         // Función auxiliar para el HTML (Asegúrate de que esté o intégrala dentro)
         function renderVisuals(stats, container) {
-            // Calcular estadísticas derivadas
             const t1TotalErrors = stats.t1.forcedErrors + stats.t1.unforcedErrors;
             const t2TotalErrors = stats.t2.forcedErrors + stats.t2.unforcedErrors;
-            
             const t1TotalPoints = stats.t1.points || 1;
             const t2TotalPoints = stats.t2.points || 1;
-            
             const t1WinnerPct = ((stats.t1.winners / t1TotalPoints) * 100).toFixed(1);
             const t2WinnerPct = ((stats.t2.winners / t2TotalPoints) * 100).toFixed(1);
+            const t1BPEff = stats.t1.bpOpportunities > 0 ? ((stats.t1.bpConverted / stats.t1.bpOpportunities) * 100).toFixed(0) : 0;
+            const t2BPEff = stats.t2.bpOpportunities > 0 ? ((stats.t2.bpConverted / stats.t2.bpOpportunities) * 100).toFixed(0) : 0;
 
-            const t1BPEff = stats.t1.bpOpportunities > 0 
-                ? ((stats.t1.bpConverted / stats.t1.bpOpportunities) * 100).toFixed(0) 
-                : 0;
-            const t2BPEff = stats.t2.bpOpportunities > 0 
-                ? ((stats.t2.bpConverted / stats.t2.bpOpportunities) * 100).toFixed(0) 
-                : 0;
-
-            const renderBar = (label, val1, val2, extra = "") => {
+            const renderBar = (label, val1, val2, extra = "", color2 = "bg-slate-500") => {
                 let total = val1 + val2;
                 let pct1 = total > 0 ? ((val1 / total) * 100).toFixed(1) : 0;
                 let pct2 = total > 0 ? ((val2 / total) * 100).toFixed(1) : 0;
                 
                 return `
-                    <div class="mb-6">
-                        <div class="flex justify-between items-center mb-2 px-1">
-                            <span class="text-sm font-bold text-slate-300">${label}</span>
-                            <span class="text-xs font-mono text-slate-400">${val1} — ${val2} ${extra}</span>
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-1.5 px-0.5">
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${label}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-mono font-bold text-emerald-400">${val1}</span>
+                                <span class="text-[10px] text-slate-600">—</span>
+                                <span class="text-sm font-mono font-bold text-slate-300">${val2}</span>
+                                ${extra ? `<span class="text-[10px] text-slate-500 ml-1">${extra}</span>` : ''}
+                            </div>
                         </div>
-                        <div class="max-w-md mx-auto h-6 bg-slate-800 rounded-2xl overflow-hidden flex shadow-inner relative">
-                            <div class="bg-emerald-500 h-full transition-all duration-700 shadow-sm flex items-center justify-center text-xs font-bold text-emerald-950" 
-                            style="width: ${pct1}%">
-                                ${val1 > 4 ? val1 : ''}
-                            </div>
-                            <div class="bg-slate-400 h-full transition-all duration-700 flex items-center justify-center text-xs font-bold text-slate-900" 
-                            style="width: ${pct2}%">
-                                ${val2 > 4 ? val2 : ''}
-                            </div>
+                        <div class="max-w-md mx-auto h-1.5 bg-slate-800 rounded-full overflow-hidden flex">
+                            <div class="bg-emerald-500 h-full transition-all duration-700 rounded-l-full" style="width: ${pct1}%"></div>
+                            <div class="${color2} h-full transition-all duration-700 rounded-r-full" style="width: ${pct2}%"></div>
                         </div>
                     </div>`;
             };
 
             container.innerHTML = `
-                <div class="max-w-2xl mx-auto pt-4 px-4">
-                    <div class="text-center mb-10">
-                        <h3 class="text-2xl font-black text-white tracking-tight">RESUMEN DEL PARTIDO</h3>
+                <div class="max-w-lg mx-auto pt-6 px-2">
+                    <div class="text-center mb-8">
+                        <h3 class="text-lg font-black text-white tracking-tight uppercase">Resumen del Partido</h3>
+                        <div class="flex items-center justify-center gap-3 mt-2">
+                            <span class="text-xs font-bold text-emerald-400">${scoreboardState.t1.p1} / ${scoreboardState.t1.p2}</span>
+                            <span class="text-slate-600 text-xs">vs</span>
+                            <span class="text-xs font-bold text-slate-300">${scoreboardState.t2.p1} / ${scoreboardState.t2.p2}</span>
+                        </div>
                     </div>
 
-                    <div class="space-y-1">
+                    <div class="space-y-0">
                         ${renderBar('Puntos Totales', stats.t1.points, stats.t2.points)}
-                        ${renderBar('Winners', stats.t1.winners, stats.t2.winners, `<span class="text-emerald-400">(${t1WinnerPct}% / ${t2WinnerPct}%)</span>`)}
+                        ${renderBar('Winners', stats.t1.winners, stats.t2.winners, `(${t1WinnerPct}% / ${t2WinnerPct}%)`)}
                         ${renderBar('Errores Forzados', stats.t1.forcedErrors, stats.t2.forcedErrors)}
-                        ${renderBar('Errores No Forzados', stats.t1.unforcedErrors, stats.t2.unforcedErrors)}
-                        ${renderBar('Total Errores', t1TotalErrors, t2TotalErrors)}
-                        ${renderBar('Dobles Faltas', stats.t1.doubleFaults, stats.t2.doubleFaults)}
-                        ${renderBar('Faltas Simples', stats.t1.faults, stats.t2.faults)}
-                        ${renderBar('Oportunidades de Break', stats.t1.bpOpportunities, stats.t2.bpOpportunities)}
-                        ${renderBar('Breaks Convertidos', stats.t1.bpConverted, stats.t2.bpConverted)}
-                        ${renderBar('Eficiencia Break Points', t1BPEff + '%', t2BPEff + '%')}
+                        ${renderBar('Errores No Forzados', stats.t1.unforcedErrors, stats.t2.unforcedErrors, "", "bg-red-500/60")}
+                        ${renderBar('Total Errores', t1TotalErrors, t2TotalErrors, "", "bg-red-500")}
+                        ${renderBar('Dobles Faltas', stats.t1.doubleFaults, stats.t2.doubleFaults, "", "bg-orange-500")}
+                        ${renderBar('Faltas Simples', stats.t1.faults, stats.t2.faults, "", "bg-orange-500/60")}
+                        ${renderBar('Oportunidades Break', stats.t1.bpOpportunities, stats.t2.bpOpportunities)}
+                        ${renderBar('Breaks Convertidos', stats.t1.bpConverted, stats.t2.bpConverted, "", "bg-sky-500")}
+                        ${renderBar('Eficiencia Break', parseInt(t1BPEff), parseInt(t2BPEff), "%")}
                     </div>
 
-                    <!-- Resumen final centrado -->
-                    <div class="mt-10 pt-8 border-t border-slate-700 grid grid-cols-3 gap-6 text-center">
+                    <div class="mt-10 pt-6 border-t border-slate-700/50 grid grid-cols-3 gap-4 text-center">
                         <div>
-                            <div class="text-4xl font-black text-emerald-400">${stats.t1.points}</div>
-                            <div class="text-xs text-slate-500 mt-1">PUNTOS T1</div>
+                            <div class="text-2xl font-black text-emerald-400">${stats.t1.points}</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Puntos T1</div>
                         </div>
                         <div>
-                            <div class="text-4xl font-black text-slate-300">${stats.t1.winners + stats.t2.winners}</div>
-                            <div class="text-xs text-slate-500 mt-1">WINNERS TOTAL</div>
+                            <div class="text-2xl font-black text-white">${stats.t1.winners + stats.t2.winners}</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Winners</div>
                         </div>
                         <div>
-                            <div class="text-4xl font-black text-red-400">${t1TotalErrors + t2TotalErrors}</div>
-                            <div class="text-xs text-slate-500 mt-1">ERRORES TOTAL</div>
+                            <div class="text-2xl font-black text-red-400">${t1TotalErrors + t2TotalErrors}</div>
+                            <div class="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-bold">Errores</div>
                         </div>
                     </div>
                 </div>`;
@@ -3278,79 +3255,84 @@
         // ==========================================
 
         function undoScoreboard() {
-            // CASO 1: Partido jugado en vivo (Tenemos historial en memoria)
+            if (isRecalculating) return; // Ignorar durante recálculo
+
+            // CASO 1: Partido en vivo (historial en memoria)
             if (scoreboardHistory.length > 0) {
-                playByPlayLog.pop(); 
+                playByPlayLog.pop();
                 if (scoreboardState.matchFinished) {
                     hideScoreboardBanner();
                     scoreboardState.matchFinished = false;
                 }
                 scoreboardState = scoreboardHistory.pop();
                 updateScoreboardUI();
-            } 
-            // CASO 2: Partido cargado de GitHub (No hay historial en memoria, pero sí en el Log)
+            }
+            // CASO 2: Partido cargado de GitHub
             else if (playByPlayLog.length > 0) {
-                // 1. Eliminamos el último punto del registro
                 playByPlayLog.pop();
-                
-                // 2. Recalculamos TODO el estado (Sets, Juegos, Puntos) desde cero usando el log restante
                 recalculateStateFromLog();
-                
-                // 3. Actualizamos la interfaz
                 updateScoreboardUI();
             }
         }
 
         // Función que recorre el historial y reconstruye el marcador
         function recalculateStateFromLog() {
-            // 1. Reseteamos a cero
+            isRecalculating = true;
+            
             scoreboardState.t1.sets = 0;
             scoreboardState.t2.sets = 0;
             scoreboardState.t1.games = 0;
             scoreboardState.t2.games = 0;
-            scoreboardState.t1.pIdx = 0;  
+            scoreboardState.t1.pIdx = 0;
             scoreboardState.t2.pIdx = 0;
+            scoreboardState.t1.faults = 0;
+            scoreboardState.t2.faults = 0;
             scoreboardState.isTieBreak = false;
             scoreboardState.setHistory = [];
             scoreboardState.matchFinished = false;
-
-            // 🔥 FIX AQUÍ: Forzamos servidor 1 antes de simular los puntos
-            // Esto garantiza que el Juego 1 se calcule como Saca T1.
             scoreboardState.server = 1;
 
-            // 2. Simulamos cada punto
             playByPlayLog.forEach(log => {
-                let winningTeam = log.winner; 
-                let losingTeam = (winningTeam === 1) ? 2 : 1;
-                
-                // Lógica simplificada de puntos (igual que tenías antes)
+                let winningTeam = log.winner;
+                if (!winningTeam) {
+                    // Inferir ganador del tipo de acción
+                    if (log.action === 'fault') return; // Falta simple no da punto
+                    if (log.action === 'double_fault') {
+                        winningTeam = (log.team === 1) ? 2 : 1;
+                    } else if (log.action === 'winner') {
+                        winningTeam = log.team;
+                    } else if (log.action.includes('error')) {
+                        winningTeam = (log.team === 1) ? 2 : 1;
+                    }
+                }
+                if (!winningTeam) return;
+
                 if (scoreboardState.isTieBreak) {
                     scoreboardState['t' + winningTeam].pIdx++;
-                    let p1 = scoreboardState.t1.pIdx;
-                    let p2 = scoreboardState.t2.pIdx;
-                    
+                    let p1 = scoreboardState.t1.pIdx, p2 = scoreboardState.t2.pIdx;
                     if ((p1 >= 7 || p2 >= 7) && Math.abs(p1 - p2) >= 2) {
                         winSetLogic(winningTeam);
                     } else {
                         if ((p1 + p2) % 2 !== 0) {
-                            toggleScoreboardServe();
+                            scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
                         }
                     }
                 } else {
                     let w = scoreboardState['t' + winningTeam];
-                    let l = scoreboardState['t' + losingTeam];
+                    let l = scoreboardState['t' + (winningTeam === 1 ? 2 : 1)];
 
-                    if (w.pIdx === 3 && l.pIdx === 4) { 
-                        l.pIdx = 3; 
+                    if (w.pIdx === 3 && l.pIdx === 4) {
+                        l.pIdx = 3;
                     } else if (w.pIdx >= 3 && w.pIdx > l.pIdx) {
                         winGameLogic(winningTeam);
                     } else {
-                        w.pIdx++; 
+                        w.pIdx++;
                         if (w.pIdx === 4 && l.pIdx < 3) winGameLogic(winningTeam);
                     }
                 }
             });
-            updateScoreboardUI();
+            
+            isRecalculating = false;
         }
 
         // Funciones auxiliares internas para el cálculo
@@ -3359,37 +3341,36 @@
             scoreboardState.t1.pIdx = 0;
             scoreboardState.t2.pIdx = 0;
             
-            let g1 = scoreboardState.t1.games;
-            let g2 = scoreboardState.t2.games;
             let wGames = scoreboardState['t' + teamNum].games;
-            let lGames = scoreboardState['t' + (teamNum===1?2:1)].games;
+            let lGames = scoreboardState['t' + (teamNum === 1 ? 2 : 1)].games;
 
-            // Reglas de Set
             if ((wGames === 6 && lGames < 5) || (wGames === 7 && lGames <= 5)) {
+                // ✅ Guardar ANTES de resetear
+                scoreboardState.setHistory.push({
+                    s1: scoreboardState.t1.games,
+                    s2: scoreboardState.t2.games
+                });
                 winSetLogic(teamNum);
-            } else if (g1 === 6 && g2 === 6) {
+            } else if (scoreboardState.t1.games === 6 && scoreboardState.t2.games === 6) {
                 scoreboardState.isTieBreak = true;
-                // En tie break saca el que recibía
-                scoreboardState.server = (scoreboardState.server === 1) ? 2 : 1;
+                scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
             } else {
-                // Cambio de saque normal
-                scoreboardState.server = (scoreboardState.server === 1) ? 2 : 1;
+                scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
             }
         }
 
         function winSetLogic(teamNum) {
             scoreboardState['t' + teamNum].sets++;
-            scoreboardState.setHistory.push({
-                s1: scoreboardState.t1.games,
-                s2: scoreboardState.t2.games
-            });
             scoreboardState.t1.games = 0;
             scoreboardState.t2.games = 0;
             scoreboardState.t1.pIdx = 0;
             scoreboardState.t2.pIdx = 0;
             scoreboardState.isTieBreak = false;
-            // Cambio de saque al empezar set
-            scoreboardState.server = (scoreboardState.server === 1) ? 2 : 1;
+            scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+            
+            if (scoreboardState['t' + teamNum].sets === 2) {
+                scoreboardState.matchFinished = true;
+            }
         }
         function resetStatsView() {
             // No borramos el estado del marcador, solo mostramos la vista de selección
