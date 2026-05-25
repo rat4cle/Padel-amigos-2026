@@ -1242,6 +1242,9 @@
                                         <button onclick="toggleScoreboardServe()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Cambiar Saque">
                                             <i class="ri-swap-line text-xl"></i>
                                         </button>
+                                        <button onclick="toggleTimerPause()" id="sb-pause-btn" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Pausar">
+                                            <i class="ri-pause-line text-xl"></i>
+                                        </button>
                                     </div>
 
                                 <div id="sb-status-banner" class="hidden mt-4 text-center font-black text-sm uppercase tracking-widest py-2 rounded"></div>
@@ -2138,22 +2141,77 @@
             setHistory: [] // <--- NUEVO: Aquí guardaremos [ {s1:6, s2:4}, {s1:6, s2:2} ]
         };
         let scoreboardSeconds = 0;
-        let scoreboardTimerInterval;
+        let scoreboardTimerInterval = null;
+        let timerIsRunning = false;
+        let timerHasStarted = false;
         function saveTeamName(team, newName) {
             scoreboardState['t' + team].name = newName;
         }
         function initScoreboard() {
-            // Iniciar timer si no está corriendo
-            if(!scoreboardTimerInterval) {
-                scoreboardTimerInterval = setInterval(() => {
-                    scoreboardSeconds++;
-                    let m = Math.floor(scoreboardSeconds/60).toString().padStart(2,'0');
-                    let s = (scoreboardSeconds%60).toString().padStart(2,'0');
-                    let timerEl = document.getElementById('sb-timer');
-                    if(timerEl) timerEl.innerText = `${m}:${s}`;
-                }, 1000);
-            }
+            // Ya NO arranca el timer solo
             updateScoreboardUI();
+        }
+
+        function startTimer() {
+            if (timerIsRunning) return;
+            timerHasStarted = true;
+            timerIsRunning = true;
+            updatePauseButtonUI();
+
+            scoreboardTimerInterval = setInterval(() => {
+                scoreboardSeconds++;
+                let m = Math.floor(scoreboardSeconds / 60).toString().padStart(2, '0');
+                let s = (scoreboardSeconds % 60).toString().padStart(2, '0');
+                let timerEl = document.getElementById('sb-timer');
+                if (timerEl) timerEl.innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            if (!timerIsRunning) return;
+            timerIsRunning = false;
+            clearInterval(scoreboardTimerInterval);
+            scoreboardTimerInterval = null;
+            updatePauseButtonUI();
+        }
+
+        function toggleTimerPause() {
+            if (!timerHasStarted) return;
+            if (timerIsRunning) pauseTimer();
+            else startTimer();
+        }
+
+        function updatePauseButtonUI() {
+            let btn = document.getElementById('sb-pause-btn');
+            if (!btn) return;
+            let icon = btn.querySelector('i');
+            let timerEl = document.getElementById('sb-timer');
+
+            if (timerIsRunning) {
+                icon.className = 'ri-pause-line text-xl';
+                btn.title = 'Pausar';
+                btn.classList.remove('text-amber-400');
+                btn.classList.add('text-slate-300');
+                if (timerEl) {
+                    timerEl.classList.remove('text-amber-400');
+                    timerEl.classList.add('text-emerald-400');
+                }
+            } else if (timerHasStarted) {
+                icon.className = 'ri-play-line text-xl';
+                btn.title = 'Reanudar';
+                btn.classList.add('text-amber-400');
+                btn.classList.remove('text-slate-300');
+                if (timerEl) {
+                    timerEl.classList.add('text-amber-400');
+                    timerEl.classList.remove('text-emerald-400');
+                }
+            } else {
+                // Antes de empezar: botón gris apagado
+                icon.className = 'ri-pause-line text-xl';
+                btn.title = 'Pausar';
+                btn.classList.remove('text-amber-400');
+                btn.classList.add('text-slate-600');
+            }
         }
 
         function saveScoreboardState() { 
@@ -2263,7 +2321,9 @@
         function handleScoreboardAction(type, team) {
             if (scoreboardState.matchFinished) return;
             
-            // Permitimos nuevos tipos de error y los antiguos
+            // Arrancar timer al primer toque
+            if (!timerHasStarted) startTimer();
+            
             if (type === 'winner' || type === 'fault' || type === 'error' || type === 'error_forced' || type === 'error_unforced') {
                 window.currentActionType = type; 
                 showScorerSelection(team);
@@ -2363,9 +2423,9 @@
 
         function toggleScoreboardServe() {
             if (scoreboardState.matchFinished) return;
+            if (!timerHasStarted) startTimer();
             if (!isRecalculating) saveScoreboardState();
             scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
-            // NO llames a updateScoreboardUI() aquí — ya se llama después de addScoreboardPoint
         }
 
         function showScoreboardBanner(msg, colorClass) {
@@ -2465,24 +2525,33 @@
         }
 
         // Actualizamos el reinicio para que limpie también los nombres
-        function resetScoreboardMatch() {
-            matchStartTime = null;
+        resetScoreboardMatch = function() {
             if(confirm("¿Reiniciar partido?")) {
+                // Resetear timer
+                pauseTimer();
+                scoreboardSeconds = 0;
+                timerHasStarted = false;
+                let timerEl = document.getElementById('sb-timer');
+                if (timerEl) {
+                    timerEl.innerText = "00:00";
+                    timerEl.classList.remove('text-amber-400');
+                    timerEl.classList.add('text-emerald-400');
+                }
+                updatePauseButtonUI();
+
                 scoreboardState = {
                     t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "JUGADOR A", p2: "JUGADOR B" }, 
                     t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2", p1: "JUGADOR C", p2: "JUGADOR D" }, 
-                    server: 1, // Aseguramos que empiece sacando el Equipo 1
+                    server: 1,
                     matchFinished: false,
                     isTieBreak: false,
                     setHistory: []
                 };
                 scoreboardHistory = [];
-                scoreboardSeconds = 0;
-                playByPlayLog = []; 
+                playByPlayLog = [];
                 hideScoreboardBanner();
                 updateScoreboardUI();
                 
-                // Limpiar inputs
                 document.querySelectorAll('#sb-row1 input').forEach((inp, idx) => inp.value = idx === 0 ? "JUGADOR A" : "JUGADOR B");
                 document.querySelectorAll('#sb-row2 input').forEach((inp, idx) => inp.value = idx === 0 ? "JUGADOR C" : "JUGADOR D");
             }
