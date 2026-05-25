@@ -691,6 +691,25 @@
         .error-row { color: #ef4444; }
         .fault-row { color: #f97316; }
         .bp-row { color: #fbbf24; font-weight: bold; }
+        .team-1-header {
+            text-align: center; 
+            font-size: 1.1rem; 
+            font-weight: 900; 
+            color: #34d399; 
+            border-bottom: 2px solid #10b981;
+            padding-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+
+        .team-2-header {
+            text-align: center; 
+            font-size: 1.1rem; 
+            font-weight: 900; 
+            color: #cbd5e1; 
+            border-bottom: 2px solid #94a3b8;
+            padding-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -3002,57 +3021,83 @@
 
         // Función auxiliar para el HTML (Asegúrate de que esté o intégrala dentro)
         function renderVisuals(stats, container) {
-            const renderBar = (label, val1, val2, color1, color2) => {
+            // Calcular estadísticas derivadas
+            const t1TotalErrors = stats.t1.forcedErrors + stats.t1.unforcedErrors;
+            const t2TotalErrors = stats.t2.forcedErrors + stats.t2.unforcedErrors;
+            
+            const t1TotalPoints = stats.t1.points || 1;
+            const t2TotalPoints = stats.t2.points || 1;
+            
+            const t1WinnerPct = ((stats.t1.winners / t1TotalPoints) * 100).toFixed(1);
+            const t2WinnerPct = ((stats.t2.winners / t2TotalPoints) * 100).toFixed(1);
+
+            const t1BPEff = stats.t1.bpOpportunities > 0 
+                ? ((stats.t1.bpConverted / stats.t1.bpOpportunities) * 100).toFixed(0) 
+                : 0;
+            const t2BPEff = stats.t2.bpOpportunities > 0 
+                ? ((stats.t2.bpConverted / stats.t2.bpOpportunities) * 100).toFixed(0) 
+                : 0;
+
+            const renderBar = (label, val1, val2, extra = "") => {
                 let total = val1 + val2;
                 let pct1 = total > 0 ? ((val1 / total) * 100).toFixed(1) : 0;
                 let pct2 = total > 0 ? ((val2 / total) * 100).toFixed(1) : 0;
+                
                 return `
-                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm mb-3">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${label}</span>
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2 px-1">
+                            <span class="text-sm font-bold text-slate-300">${label}</span>
+                            <span class="text-xs font-mono text-slate-400">${val1} — ${val2} ${extra}</span>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="w-10 text-right text-sm font-bold ${color1.replace('bg-', 'text-')}">${val1}</span>
-                            <div class="flex-1 h-6 bg-slate-900 rounded-full overflow-hidden flex shadow-inner relative">
-                                <div class="${color1} h-full transition-all duration-500" style="width: ${pct1}%"></div>
-                                <div class="${color2} h-full transition-all duration-500" style="width: ${pct2}%"></div>
+                        <div class="max-w-md mx-auto h-6 bg-slate-800 rounded-2xl overflow-hidden flex shadow-inner relative">
+                            <div class="bg-emerald-500 h-full transition-all duration-700 shadow-sm flex items-center justify-center text-xs font-bold text-emerald-950" 
+                            style="width: ${pct1}%">
+                                ${val1 > 4 ? val1 : ''}
                             </div>
-                            <span class="w-10 text-left text-sm font-bold ${color2.replace('bg-', 'text-')}">${val2}</span>
+                            <div class="bg-slate-400 h-full transition-all duration-700 flex items-center justify-center text-xs font-bold text-slate-900" 
+                            style="width: ${pct2}%">
+                                ${val2 > 4 ? val2 : ''}
+                            </div>
                         </div>
                     </div>`;
             };
 
             container.innerHTML = `
-                <div class="max-w-3xl mx-auto space-y-6">
-                    <h3 class="text-xl font-black text-white text-center uppercase tracking-widest border-b border-slate-700 pb-4">Resumen Estadístico</h3>
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Juego Ofensivo</h4>
-                        ${renderBar('Winners', stats.t1.winners, stats.t2.winners, 'bg-emerald-500', 'bg-slate-400')}
-                        ${renderBar('Err. No Forzados', stats.t1.unforcedErrors, stats.t2.unforcedErrors, 'bg-red-500', 'bg-red-300')}
+                <div class="max-w-2xl mx-auto pt-4 px-4">
+                    <div class="text-center mb-10">
+                        <h3 class="text-2xl font-black text-white tracking-tight">RESUMEN DEL PARTIDO</h3>
                     </div>
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Servicio</h4>
-                        ${renderBar('Dobles Faltas', stats.t1.doubleFaults, stats.t2.doubleFaults, 'bg-purple-500', 'bg-fuchsia-400')}
-                        ${renderBar('Faltas Simples', stats.t1.faults, stats.t2.faults, 'bg-slate-600', 'bg-slate-500')}
+
+                    <div class="space-y-1">
+                        ${renderBar('Puntos Totales', stats.t1.points, stats.t2.points)}
+                        ${renderBar('Winners', stats.t1.winners, stats.t2.winners, `<span class="text-emerald-400">(${t1WinnerPct}% / ${t2WinnerPct}%)</span>`)}
+                        ${renderBar('Errores Forzados', stats.t1.forcedErrors, stats.t2.forcedErrors)}
+                        ${renderBar('Errores No Forzados', stats.t1.unforcedErrors, stats.t2.unforcedErrors)}
+                        ${renderBar('Total Errores', t1TotalErrors, t2TotalErrors)}
+                        ${renderBar('Dobles Faltas', stats.t1.doubleFaults, stats.t2.doubleFaults)}
+                        ${renderBar('Faltas Simples', stats.t1.faults, stats.t2.faults)}
+                        ${renderBar('Oportunidades de Break', stats.t1.bpOpportunities, stats.t2.bpOpportunities)}
+                        ${renderBar('Breaks Convertidos', stats.t1.bpConverted, stats.t2.bpConverted)}
+                        ${renderBar('Eficiencia Break Points', t1BPEff + '%', t2BPEff + '%')}
                     </div>
-                    <div>
-                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Momentos Clave</h4>
-                        ${renderBar('Oportunidades Break', stats.t1.bpOpportunities, stats.t2.bpOpportunities, 'bg-emerald-600', 'bg-slate-500')}
-                        ${renderBar('Breaks Convertidos', stats.t1.bpConverted, stats.t2.bpConverted, 'bg-emerald-400', 'bg-slate-300')}
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-700">
-                        <div class="bg-emerald-900/20 p-4 rounded-xl border border-emerald-900/50 text-center">
-                            <div class="text-[10px] text-emerald-400/70 uppercase font-bold mb-1">T1 Puntos</div>
+
+                    <!-- Resumen final centrado -->
+                    <div class="mt-10 pt-8 border-t border-slate-700 grid grid-cols-3 gap-6 text-center">
+                        <div>
                             <div class="text-4xl font-black text-emerald-400">${stats.t1.points}</div>
+                            <div class="text-xs text-slate-500 mt-1">PUNTOS T1</div>
                         </div>
-                        <div class="bg-slate-700/30 p-4 rounded-xl border border-slate-600 text-center">
-                            <div class="text-[10px] text-slate-400/70 uppercase font-bold mb-1">T2 Puntos</div>
-                            <div class="text-4xl font-black text-slate-200">${stats.t2.points}</div>
+                        <div>
+                            <div class="text-4xl font-black text-slate-300">${stats.t1.winners + stats.t2.winners}</div>
+                            <div class="text-xs text-slate-500 mt-1">WINNERS TOTAL</div>
+                        </div>
+                        <div>
+                            <div class="text-4xl font-black text-red-400">${t1TotalErrors + t2TotalErrors}</div>
+                            <div class="text-xs text-slate-500 mt-1">ERRORES TOTAL</div>
                         </div>
                     </div>
                 </div>`;
         }
-
         function renderAdvancedStats() {
             let totalBP = 0;
             let savedBP = 0;
@@ -3150,7 +3195,7 @@
 
         function renderHistoryStats() {
             const tbody = document.getElementById('history-tbody');
-            if (!tbody) return; 
+            if (!tbody) return;
             
             tbody.innerHTML = '';
             
@@ -3164,70 +3209,58 @@
                 let actionDisplay = "";
                 let detailDisplay = "";
 
-                // --- 1. ESTILOS ---
+                // Estilos según acción
                 if (log.action === 'winner') {
                     rowClass = "winner-row";
                     actionDisplay = "WINNER";
                 } 
-                else if (log.action === 'error_forced') {
+                else if (log.action === 'error_forced' || log.action === 'error_unforced' || log.action === 'error') {
                     rowClass = "error-row";
-                    actionDisplay = "ERROR FORZADO";
-                } 
-                else if (log.action === 'error_unforced') {
-                    rowClass = "error-row";
-                    actionDisplay = "ERROR NO FORZADO";
-                }
-                else if (log.action === 'error') {
-                    rowClass = "error-row";
-                    actionDisplay = log.detail || "ERROR";
+                    actionDisplay = log.action === 'error_forced' ? "ERROR FORZADO" : 
+                                (log.action === 'error_unforced' ? "ERROR NO FORZADO" : "ERROR");
                 } 
                 else if (log.action === 'fault') {
                     rowClass = "fault-row";
                     actionDisplay = "FALTA";
                 } 
-                else if (log.action === 'double_fault_point') {
+                else if (log.action === 'double_fault') {
                     rowClass = "fault-row bp-row";
                     actionDisplay = "DOBLE FALTA";
                 } 
                 else {
-                    actionDisplay = log.action ? log.action.toUpperCase() : "PUNTO";
+                    actionDisplay = (log.action || "PUNTO").toUpperCase();
                 }
 
-                // --- 2. RESOLUCIÓN DE NOMBRES (Lógica Robusta) ---
-                
-                // Determinar a qué equipo pertenece el evento.
-                // Prioridad: log.team (quién pulsó) > log.winner (quién ganó).
-                let teamNum = log.team || log.winner;
-                
-                // Determinar posición (p1 o p2)
-                let posKey = log.pos || 'p1'; 
+                // ==================== CORRECCIÓN PRINCIPAL ====================
+                let playerName = log.scorer || "";
 
-                // Buscamos el nombre directamente en el HTML del marcador
-                let nameToDisplay = `Equipo ${teamNum}`; // Fallback por defecto
+                // Si no tenemos el nombre guardado en el log, lo resolvemos de nuevo
+                if (!playerName || playerName.includes("Equipo") || playerName === "DRIVE" || playerName === "REVÉS") {
+                    const teamNum = log.team || log.winner;
+                    const pos = log.pos || 'p1';
 
-                if (teamNum === 1 || teamNum === 2) {
-                    let side = (teamNum === 1) ? '1' : '2';
-                    
-                    // Definimos qué buscar basado en si es p1 (Drive) o p2 (Revés)
-                    let searchType = (posKey === 'p1') ? 'Drive' : 'Revés';
-                    
-                    // Intentar 1: Buscar en la posición indicada (p1 o p2)
-                    let input = document.querySelector(`#sb-row${side} input[placeholder*="${searchType}"]`);
-                    
-                    // Intento 2: Si el input está vacío o no existe, probar el otro (por si hay error en el dato)
-                    if (!input || !input.value) {
-                        let altType = (posKey === 'p1') ? 'Revés' : 'Drive';
-                        input = document.querySelector(`#sb-row${side} input[placeholder*="${altType}"]`);
-                    }
-
-                    if (input && input.value && input.value !== "JUGADOR A" && input.value !== "JUGADOR B") {
-                        nameToDisplay = input.value;
+                    if (teamNum === 1 || teamNum === 2) {
+                        const side = teamNum;
+                        const inputSelector = `#sb-row${side} input`;
+                        const inputs = document.querySelectorAll(inputSelector);
+                        
+                        if (inputs.length >= 2) {
+                            // p1 = Drive, p2 = Revés
+                            playerName = (pos === 'p1') ? 
+                                (inputs[0].value || "DRIVE") : 
+                                (inputs[1].value || "REVÉS");
+                        }
                     }
                 }
 
-                detailDisplay = nameToDisplay;
+                // Fallback final
+                if (!playerName || playerName.trim() === "") {
+                    playerName = `Equipo ${log.team || '?'}`;
+                }
 
-                // --- 3. RENDERIZADO ---
+                detailDisplay = playerName;
+                // ============================================================
+
                 let tr = document.createElement("tr");
                 tr.className = "border-b border-slate-800/50 hover:bg-slate-750/20 transition";
                 
