@@ -3001,46 +3001,51 @@
             let server = 1;
             let currentGames = "0-0";
             let hasServerInLog = playByPlayLog[0] && playByPlayLog[0].server !== undefined;
+            let lastScore = "0-0";
 
             pointGroups.forEach(group => {
                 let resolvedPoint = group.find(l => l.action !== 'fault');
                 if (!resolvedPoint) return;
 
-                // --- Detectar servidor ---
-                if (hasServerInLog) {
-                    server = resolvedPoint.server || server;
-                } else {
-                    if (resolvedPoint.games !== currentGames) {
-                        currentGames = resolvedPoint.games;
-                        server = server === 1 ? 2 : 1;
-                    }
+                let receiver = server === 1 ? 2 : 1;
+                let pointWinner = (resolvedPoint.action === 'double_fault') 
+                                  ? receiver 
+                                  : resolvedPoint.winner;
+
+                // --- 1. DETECTAR BREAK POINT (Basado en el marcador inicial) ---
+                let scoreParts = lastScore.split('-');
+                let srvScoreStart = server === 1 ? getScoreValue(scoreParts[0]) : getScoreValue(scoreParts[1]);
+                let rcvScoreStart = server === 1 ? getScoreValue(scoreParts[1]) : getScoreValue(scoreParts[0]);
+
+                // Es BP si el restador tiene 40 y el sacador < 40, o si el restador tiene AD (4)
+                let isBP = (rcvScoreStart === 3 && srvScoreStart < 3) || (rcvScoreStart === 4);
+
+                if (isBP) {
+                    stats['t' + receiver].bpOpportunities++;
+                    if (pointWinner === receiver) stats['t' + receiver].bpConverted++;
+                    else stats['t' + server].bpSaved++;
                 }
 
-                let receiver = server === 1 ? 2 : 1;
-                let hasFault = group.some(l => l.action === 'fault');
-                let pointWinner = resolvedPoint.winner;
-
-                // --- Primer servicio ---
+                // --- 2. PROCESAR ACCIONES DEL GRUPO (Saque, Winners, Errores) ---
                 stats['t' + server].firstServeAttempts++;
-                if (!hasFault) stats['t' + server].firstServeIn++;
-
-                // --- Saque / Resto ---
+                if (!group.some(l => l.action === 'fault')) stats['t' + server].firstServeIn++;
+                
                 stats['t' + server].servePoints++;
                 stats['t' + receiver].returnPoints++;
 
-                // --- Break Points (CORREGIDO: comparación numérica) ---
-                let scoreParts = resolvedPoint.score ? resolvedPoint.score.split('-') : ["0", "0"];
-                let srvScore = server === 1 ? getScoreValue(scoreParts[0]) : getScoreValue(scoreParts[1]);
-                let rcvScore = server === 1 ? getScoreValue(scoreParts[1]) : getScoreValue(scoreParts[0]);
-                let isBP = rcvScore === 4 || (rcvScore === 3 && srvScore <= 2);
+                if (pointWinner) {
+                    stats['t' + pointWinner].points++;
+                    if (pointWinner === server) stats['t' + server].servePointsWon++;
+                    else stats['t' + receiver].returnPointsWon++;
+                }
 
-                // --- Procesar acciones del grupo ---
+                // Procesar acciones de cada log en el grupo
                 group.forEach(log => {
                     if (log.action === 'fault') {
                         stats['t' + server].faults++;
                     } else if (log.action === 'double_fault') {
                         stats['t' + server].doubleFaults++;
-                        pointWinner = receiver;
+                        // El pointWinner ya lo definimos arriba para el BP
                     } else if (log.action === 'winner') {
                         stats['t' + (log.winner || log.team)].winners++;
                     } else if (log.action === 'error_forced') {
@@ -3050,18 +3055,14 @@
                     }
                 });
 
-                // --- Asignar punto ---
-                if (pointWinner) {
-                    stats['t' + pointWinner].points++;
-                    if (pointWinner === server) stats['t' + server].servePointsWon++;
-                    else stats['t' + receiver].returnPointsWon++;
-                }
-
-                // --- Resolver BP ---
-                if (isBP) {
-                    stats['t' + receiver].bpOpportunities++;
-                    if (pointWinner === receiver) stats['t' + receiver].bpConverted++;
-                    else stats['t' + server].bpSaved++;
+                // --- 3. ACTUALIZACIÓN PARA EL SIGUIENTE PUNTO ---
+                // Si el juego ha cambiado, el servidor cambia y el marcador vuelve a 0-0
+                if (resolvedPoint.games !== currentGames) {
+                    currentGames = resolvedPoint.games;
+                    server = server === 1 ? 2 : 1; // <--- CLAVE 2: El cambio de servidor es DESPUÉS del punto
+                    lastScore = "0-0";
+                } else {
+                    lastScore = resolvedPoint.score; // El marcador actual será el inicial del próximo punto
                 }
             });
 
