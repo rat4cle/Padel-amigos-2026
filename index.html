@@ -2332,23 +2332,22 @@
                 return; 
             }
         }
+        // ✅ CORREGIDO
         function winScoreboardSet(teamNum) {
-            // Resetear juegos y puntos
+            // 1. GUARDAR PRIMERO
+            scoreboardState.setHistory.push({
+                s1: scoreboardState.t1.games,
+                s2: scoreboardState.t2.games
+            });
+            // 2. SUMAR SET
+            scoreboardState['t' + teamNum].sets++;
+            // 3. DESPUÉS resetear
             scoreboardState.t1.pIdx = 0;
             scoreboardState.t2.pIdx = 0;
             scoreboardState.t1.games = 0;
             scoreboardState.t2.games = 0;
-            
-            // Sumar set
-            scoreboardState['t' + teamNum].sets++;
-            
-            // IMPORTANTE: Salir del modo Tie-Break si estaba activo
             scoreboardState.isTieBreak = false;
-            scoreboardState.setHistory.push({
-                s1: scoreboardState.t1.games, // Juegos que tenía T1 cuando ganó el set
-                s2: scoreboardState.t2.games  // Juegos que tenía T2 cuando ganó el set
-            });
-            // Verificar fin del partido (Mejor de 3 sets)
+            
             if(scoreboardState['t' + teamNum].sets === 2) {
                 scoreboardState.matchFinished = true;
                 showScoreboardBanner(`PARTIDO TERMINADO - TEAM ${teamNum} GANA`, 'bg-red-600');
@@ -2356,8 +2355,6 @@
                 showScoreboardBanner(`SET PARA TEAM ${teamNum}`, 'bg-emerald-600');
                 setTimeout(() => hideScoreboardBanner(), 2000);
             }
-            
-            // Cambio de saque normal al empezar nuevo set
             scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
         }
         function addScoreboardPoint(teamNum) {
@@ -2579,11 +2576,12 @@
 
                 if (scoreboardState['t' + team].faults >= 2) {
                     // DOBLE FALTA → gana el rival
+                    // Log ANTES de sumar (aquí ya estaba correcto)
                     logAction('double_fault', team, playerPos);
                     scoreboardState['t' + team].faults = 0;
-                    addScoreboardPoint(opponent);   // ← Punto para el rival
+                    addScoreboardPoint(opponent);   
                 } else {
-                    // Falta simple (solo registro)
+                    // Falta simple (no cambia el score, orden da igual)
                     logAction('fault', team, playerPos);
                 }
 
@@ -2596,17 +2594,19 @@
             // 2. WINNER o ERRORES
             let scoringTeam = team;
             if (action === 'error' || action === 'error_forced' || action === 'error_unforced') {
-                scoringTeam = opponent;   // El error hace ganar al rival
+                scoringTeam = opponent;   
             }
 
-            addScoreboardPoint(scoringTeam);
-
-            // Log correcto
+            // ✅ CORRECCIÓN: Log ANTES de sumar el punto
+            // Así se captura el score PREVIO (el estado real al jugar el punto)
             if (action === 'winner') {
                 logAction('winner', scoringTeam, playerPos);
             } else {
                 logAction(action, team, playerPos); // team = quien cometió el error
             }
+
+            // Sumar punto DESPUÉS del log
+            addScoreboardPoint(scoringTeam);
 
             container.classList.remove('selecting-scorer');
             document.body.classList.remove('is-selecting');
@@ -2796,7 +2796,7 @@
                 let fileData = await res.json();
                 let match = JSON.parse(atob(fileData.content)); 
 
-                // 1. Configuración de Equipos y Sets
+                // 1. Nombres de equipos
                 scoreboardState.t1.p1 = match.teams.t1.p1;
                 scoreboardState.t1.p2 = match.teams.t1.p2;
                 scoreboardState.t2.p1 = match.teams.t2.p1;
@@ -2807,27 +2807,60 @@
                 document.querySelector('#sb-row2 input[placeholder*="Drive"]').value = match.teams.t2.p1;
                 document.querySelector('#sb-row2 input[placeholder*="Revés"]').value = match.teams.t2.p2;
 
-                let parts = match.finalSets.split('-');
-                scoreboardState.t1.sets = parseInt(parts[0]);
-                scoreboardState.t2.sets = parseInt(parts[1]);
-
-                if(match.setHistory && match.setHistory.length > 0) {
-                    scoreboardState.setHistory = match.setHistory;
-                } else {
-                    scoreboardState.setHistory = []; 
-                }
-
-                // 2. Cargar Historial
-                if(match.playByPlay && Array.isArray(match.playByPlay)) {
-                    // 🔥 FIX AQUÍ: Limpiamos el log de datos corruptos o duplicados
+                // 2. Log de puntos
+                if (match.playByPlay && Array.isArray(match.playByPlay)) {
                     playByPlayLog = cleanPlayByPlayLog(match.playByPlay);
                 } else {
                     playByPlayLog = []; 
                 }
 
-                // 3. Forzar servidor inicial y recalcular
-                scoreboardState.server = 1; 
+                // 3. Guardar los valores CORRECTOS del JSON antes de recalcular
+                let jsonT1Sets = 0, jsonT2Sets = 0;
+                if (match.finalSets) {
+                    let parts = match.finalSets.split('-');
+                    jsonT1Sets = parseInt(parts[0]) || 0;
+                    jsonT2Sets = parseInt(parts[1]) || 0;
+                }
+                let jsonSetHistory = (match.setHistory && Array.isArray(match.setHistory)) ? match.setHistory : [];
+
+                // 4. Intentar reconstruir desde el log
                 recalculateStateFromLog();
+
+                // ✅ VERIFICACIÓN: ¿Coinciden los sets reconstruidos con los del JSON?
+                let rebuiltT1Sets = scoreboardState.t1.sets;
+                let rebuiltT2Sets = scoreboardState.t2.sets;
+                let totalJsonSets = jsonT1Sets + jsonT2Sets;
+                let totalRebuiltSets = rebuiltT1Sets + rebuiltT2Sets;
+
+                if (totalRebuiltSets !== totalJsonSets) {
+                    // La reconstrucción falló → usar datos directos del JSON
+                    console.warn(`Recalculation mismatch: JSON has ${totalJsonSets} sets, rebuilt ${totalRebuiltSets}. Using JSON data.`);
+
+                    scoreboardState.t1.sets = jsonT1Sets;
+                    scoreboardState.t2.sets = jsonT2Sets;
+                    scoreboardState.setHistory = jsonSetHistory.map(s => ({ s1: s.s1, s2: s.s2 }));
+
+                    // Si el partido terminó, resetear juegos y puntos
+                    if (jsonT1Sets === 2 || jsonT2Sets === 2) {
+                        scoreboardState.t1.games = 0;
+                        scoreboardState.t2.games = 0;
+                        scoreboardState.t1.pIdx = 0;
+                        scoreboardState.t2.pIdx = 0;
+                        scoreboardState.isTieBreak = false;
+                        scoreboardState.matchFinished = true;
+                    } else if (jsonSetHistory.length > 0) {
+                        // Partido no terminado: el set actual está en curso
+                        // Los juegos del set en curso no se guardan en el JSON → los dejamos a 0
+                        scoreboardState.t1.games = 0;
+                        scoreboardState.t2.games = 0;
+                        scoreboardState.t1.pIdx = 0;
+                        scoreboardState.t2.pIdx = 0;
+                        scoreboardState.isTieBreak = false;
+                        scoreboardState.matchFinished = false;
+                    }
+                }
+
+                // 5. Actualizar UI y navegar
                 updateScoreboardUI();
                 switchTab('partido-stats');
 
@@ -2842,27 +2875,16 @@
         // ==========================================
         function cleanPlayByPlayLog(log) {
             if (!log || log.length === 0) return [];
-            let cleaned = [];
-            for (let i = 0; i < log.length; i++) {
-                let current = log[i];
-                let prev = cleaned.length > 0 ? cleaned[cleaned.length - 1] : null;
-                
-                // Solo eliminar si es 100% idéntico en TODOS los campos
-                let isExactDuplicate = prev &&
-                    prev.action === current.action &&
-                    prev.team === current.team &&
-                    prev.pos === current.pos &&
-                    prev.score === current.score &&
-                    prev.games === current.games &&
-                    prev.sets === current.sets &&
-                    prev.winner === current.winner &&
-                    prev.scorer === current.scorer;
-                
-                if (!isExactDuplicate) {
-                    cleaned.push(current);
-                }
-            }
-            return cleaned;
+            
+            // Solo eliminar entradas rotas (sin acción o sin equipo)
+            // NO intentar detectar "duplicados" — el double-save bug
+            // afectaba a scoreboardHistory, no a playByPlayLog
+            return log.filter(entry => 
+                entry && 
+                entry.action && 
+                entry.team !== undefined && 
+                entry.team !== null
+            );
         }
         function generarStatsDesdeMarcador() {
             // Verificar que se haya jugado algo
@@ -2938,10 +2960,6 @@
         }
         
 
-        function closeLiveStats() {
-            document.getElementById('live-stats-modal').classList.add('hidden');
-        }
-
         // Función para cambiar pestañas en el modal
         function switchStatsTab(tabName) {
             // 1. Estilos de botones (Resumen, Avanzado, Historial)
@@ -2982,6 +3000,12 @@
                     currentGroup = [];
                 }
             });
+            
+            // SOLUCIÓN: Forzar el cierre del último grupo si quedó abierto 
+            // (Ej: si el último punto del partido fue una falta/doble falta)
+            if (currentGroup.length > 0) {
+                pointGroups.push(currentGroup);
+            }
 
             let stats = {
                 t1: { points: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0, doubleFaults: 0, faults: 0, bpOpportunities: 0, bpConverted: 0, bpSaved: 0, servePoints: 0, servePointsWon: 0, firstServeAttempts: 0, firstServeIn: 0, returnPoints: 0, returnPointsWon: 0 },
@@ -3005,6 +3029,14 @@
 
             pointGroups.forEach(group => {
                 let resolvedPoint = group.find(l => l.action !== 'fault');
+                
+                // Contar faltas simples SIEMPRE (aunque el punto no se haya resuelto aún)
+                group.forEach(log => {
+                    if (log.action === 'fault') {
+                        stats['t' + server].faults++;
+                    }
+                });
+
                 if (!resolvedPoint) return;
 
                 let receiver = server === 1 ? 2 : 1;
@@ -3012,8 +3044,8 @@
                                   ? receiver 
                                   : resolvedPoint.winner;
 
-                // --- 1. DETECTAR BREAK POINT (Basado en el marcador inicial) ---
-                let scoreParts = lastScore.split('-');
+                // --- 1. DETECTAR BREAK POINT (Basado en el marcador DEL PUNTO ACTUAL) ---
+                let scoreParts = resolvedPoint.score.split('-');
                 let srvScoreStart = server === 1 ? getScoreValue(scoreParts[0]) : getScoreValue(scoreParts[1]);
                 let rcvScoreStart = server === 1 ? getScoreValue(scoreParts[1]) : getScoreValue(scoreParts[0]);
 
@@ -3041,9 +3073,7 @@
 
                 // Procesar acciones de cada log en el grupo
                 group.forEach(log => {
-                    if (log.action === 'fault') {
-                        stats['t' + server].faults++;
-                    } else if (log.action === 'double_fault') {
+                    if (log.action === 'double_fault') {
                         stats['t' + server].doubleFaults++;
                         // El pointWinner ya lo definimos arriba para el BP
                     } else if (log.action === 'winner') {
@@ -3081,10 +3111,21 @@
                 t1BPEff: stats.t1.bpOpportunities > 0 ? ((stats.t1.bpConverted / stats.t1.bpOpportunities) * 100).toFixed(0) : 0,
                 t2BPEff: stats.t2.bpOpportunities > 0 ? ((stats.t2.bpConverted / stats.t2.bpOpportunities) * 100).toFixed(0) : 0
             };
+                // ✅ VERIFICACIÓN DE CONSISTENCIA
+            let totalPoints = stats.t1.points + stats.t2.points;
+            let totalWinners = stats.t1.winners + stats.t2.winners;
+            let totalForced = stats.t1.forcedErrors + stats.t2.forcedErrors;
+            let totalUnforced = stats.t1.unforcedErrors + stats.t2.unforcedErrors;
+            let totalDF = stats.t1.doubleFaults + stats.t2.doubleFaults;
+            let expectedPoints = totalWinners + totalForced + totalUnforced + totalDF;
+            
+            if (totalPoints !== expectedPoints) {
+                console.warn(`⚠️ Inconsistencia: ${totalPoints} puntos totales vs ${expectedPoints} esperados (W:${totalWinners}+FE:${totalForced}+UE:${totalUnforced}+DF:${totalDF})`);
+            }
 
             renderVisuals(stats, derived, document.getElementById('summary-team-1'));
         }
-
+        
         function renderVisuals(stats, d, container) {
             const t1TotalErrors = stats.t1.forcedErrors + stats.t1.unforcedErrors;
             const t2TotalErrors = stats.t2.forcedErrors + stats.t2.unforcedErrors;
