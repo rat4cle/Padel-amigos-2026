@@ -1309,6 +1309,7 @@
                             <div class="flex gap-4 border-b border-slate-700 pt-4 mb-0">
                                 <button onclick="switchStatsTab('summary')" id="btn-stats-summary" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn active">📊 Resumen</button>
                                 <button onclick="switchStatsTab('advanced')" id="btn-stats-advanced" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">🚀 Avanzado</button>
+                                <button onclick="switchStatsTab('notas')" id="btn-stats-notas" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">📝 Notas</button>
                                 <button onclick="switchStatsTab('history')" id="btn-stats-history" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">📝 Historial</button>
                             </div>
 
@@ -1364,6 +1365,14 @@
                                             </thead>
                                             <tbody id="history-tbody" class="text-slate-300 divide-y divide-slate-800"></tbody>
                                         </table>
+                                    </div>
+                                </div>
+                                <div id="stats-tab-notas" class="stats-tab-content hidden h-full">
+                                    <div class="max-w-5xl mx-auto py-8">
+                                        <h3 class="text-2xl font-black text-white text-center mb-8 tracking-wide">Evaluación de Rendimiento</h3>
+                                        <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <!-- Las tarjetas se generan aquí con JS -->
+                                        </div>
                                     </div>
                                 </div>
 
@@ -2963,24 +2972,20 @@
 
         // Función para cambiar pestañas en el modal
         function switchStatsTab(tabName) {
-            // 1. Estilos de botones (Resumen, Avanzado, Historial)
+            // 1. Estilos de botones
             document.querySelectorAll('.stats-tab-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-stats-${tabName}`);
             if(activeBtn) activeBtn.classList.add('active');
 
-            // 2. Mostrar contenido correspondiente
+            // 2. Mostrar contenido
             document.querySelectorAll('.stats-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`stats-tab-${tabName}`).classList.remove('hidden');
 
-            // 3. Si vamos a una pestaña con datos, renderizamos
-            // Nota: Ahora esto buscará los IDs en la nueva pestaña, ya que el viejo modal ha sido borrado.
-            if(tabName === 'summary') {
-                renderSummaryStats();
-            } else if (tabName === 'advanced') {
-                renderAdvancedStats();
-            } else if (tabName === 'history') {
-                renderHistoryStats();
-            }
+            // 3. Renderizado
+            if(tabName === 'summary') renderSummaryStats();
+            else if (tabName === 'advanced') renderAdvancedStats();
+            else if (tabName === 'notas') renderNotesStats(); // <--- NUEVO
+            else if (tabName === 'history') renderHistoryStats();
         }
 
         // --- RENDERIZADORES ---
@@ -3632,7 +3637,7 @@
         }
 
         // ==========================================
-        // 🔥 RACHAS DE PUNTOS
+        // 🔥 RACHAS DE PUNTOS Y JUEGOS (CORREGIDO)
         // ==========================================
         function renderStreaks() {
             let el = document.getElementById('adv-streaks-content');
@@ -3641,6 +3646,7 @@
                 return;
             }
 
+            // --- 1. CÁLCULO DE RACHAS DE PUNTOS ---
             let resolvedPoints = playByPlayLog.filter(e => e.action !== 'fault' && e.winner);
             let allStreaks = { 1: [], 2: [] };
             let currentLeader = null;
@@ -3662,40 +3668,115 @@
                 2: allStreaks[2].length > 0 ? Math.max(...allStreaks[2]) : 0
             };
 
+            // --- 2. CÁLCULO DE JUEGOS (GANADORES Y JUEGOS BLANCOS) ---
+            // Un juego termina cuando el score de 'games' cambia respecto al punto anterior
+            let gameWinners = []; 
+            let loveGames = { 1: 0, 2: 0 };
+
+            for (let i = 0; i < playByPlayLog.length; i++) {
+                let current = playByPlayLog[i];
+                let prev = i > 0 ? playByPlayLog[i-1] : null;
+
+                // Si cambió el marcador de juegos, significa que el punto ANTERIOR cerró el juego
+                if (prev && current.games && current.games !== prev.games) {
+                    let gameWinner = prev.winner;
+                    let gameScore = prev.score || "";
+
+                    if (gameWinner) {
+                        gameWinners.push(gameWinner);
+                        
+                        // Comprobar si fue JUEGO BLANCO (40-0 / 7-0)
+                        let isLove = false;
+                        // Equipo 1 gana 40-0 o 7-0
+                        if (gameWinner === 1 && (gameScore === '40-0' || gameScore === '7-0')) isLove = true;
+                        // Equipo 2 gana 0-40 o 0-7
+                        if (gameWinner === 2 && (gameScore === '0-40' || gameScore === '0-7')) isLove = true;
+                        
+                        if (isLove) loveGames[gameWinner]++;
+                    }
+                }
+            }
+
+            // --- 3. VERIFICACIÓN EN TIEMPO REAL (PARTIDO EN CURSO) ---
+            // Si el último punto del log cerró un juego pero no hemos entrado en el siguiente punto, 
+            // comparamos el último log con el estado actual del marcador (scoreboardState).
+            let lastLogEntry = playByPlayLog[playByPlayLog.length - 1];
+            if (lastLogEntry && lastLogEntry.games) {
+                let lastLogGames = lastLogEntry.games;
+                let currentGames = `${scoreboardState.t1.games}-${scoreboardState.t2.games}`;
+                
+                if (lastLogGames !== currentGames) {
+                    // El juego terminó en el último punto registrado
+                    let gameWinner = lastLogEntry.winner;
+                    let gameScore = lastLogEntry.score || "";
+
+                    if (gameWinner) {
+                        gameWinners.push(gameWinner);
+                        
+                        let isLove = false;
+                        if (gameWinner === 1 && (gameScore === '40-0' || gameScore === '7-0')) isLove = true;
+                        if (gameWinner === 2 && (gameScore === '0-40' || gameScore === '0-7')) isLove = true;
+                        
+                        if (isLove) loveGames[gameWinner]++;
+                    }
+                }
+            }
+
+            // --- 4. CÁLCULO DE RACHAS DE JUEGOS ---
+            let gameStreaks = { 1: [], 2: [] };
+            let gCurrentLeader = null;
+            let gCurrentLen = 0;
+
+            gameWinners.forEach(w => {
+                if (w === gCurrentLeader) {
+                    gCurrentLen++;
+                } else {
+                    if (gCurrentLeader) gameStreaks[gCurrentLeader].push(gCurrentLen);
+                    gCurrentLeader = w;
+                    gCurrentLen = 1;
+                }
+            });
+            if (gCurrentLeader) gameStreaks[gCurrentLeader].push(gCurrentLen);
+
             let t1Label = getPlayerLabel(1, 'p1').split(' ')[0] + '/' + getPlayerLabel(1, 'p2').split(' ')[0];
             let t2Label = getPlayerLabel(2, 'p1').split(' ')[0] + '/' + getPlayerLabel(2, 'p2').split(' ')[0];
 
-            // === NUEVA SECCIÓN DENTRO DEL MISMO RECUADRO ===
-            let serveStats = calculateServeStats(); // Función auxiliar
-
             el.innerHTML = `
-                <div class="grid grid-cols-2 gap-6">
-                    <!-- Rachas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- COLUMNA 1: FLUJO DE PUNTOS -->
                     <div>
-                        <div class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">RACHAS DE PUNTOS</div>
+                        <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3">Flujo de Puntos</div>
                         ${createStreakBar(t1Label, allStreaks[1], maxS[1], '#34d399')}
                         ${createStreakBar(t2Label, allStreaks[2], maxS[1], '#cbd5e1')}
                     </div>
 
-                    <!-- Nueva estadística: Eficiencia Saque/Resto -->
+                    <!-- COLUMNA 2: DOMINIO ESTRUCTURAL -->
                     <div>
-                        <div class="text-purple-400 text-xs font-bold uppercase tracking-widest mb-3">EFICIENCIA SAQUE</div>
-                        ${createEfficiencyBar(t1Label, serveStats.t1.serveWonPct, '#34d399')}
-                        ${createEfficiencyBar(t2Label, serveStats.t2.serveWonPct, '#cbd5e1')}
+                        <div class="text-purple-400 text-xs font-bold uppercase tracking-widest mb-3">Dominio Estructural</div>
                         
-                        <div class="mt-4 pt-4 border-t border-slate-700">
-                            <div class="text-[10px] text-slate-400 mb-2">PUNTOS GANADOS AL RESTO</div>
+                        <!-- RACHAS DE JUEGOS -->
+                        <div class="mb-4">
+                            <div class="text-[10px] text-slate-400 mb-1 font-bold">Rachas de Juegos (Servicios Rotos)</div>
+                            ${createStreakBar(t1Label, gameStreaks[1], Math.max(...(gameStreaks[1].length ? gameStreaks[1] : [0]), 1), '#a78bfa')}
+                            ${createStreakBar(t2Label, gameStreaks[2], Math.max(...(gameStreaks[2].length ? gameStreaks[2] : [0]), 1), '#94a3b8')}
+                        </div>
+
+                        <!-- JUEGOS BLANCOS -->
+                        <div class="pt-4 border-t border-slate-700/50">
+                            <div class="text-[10px] text-slate-400 mb-2 font-bold">Juegos a Cero ("Juegos Blancos")</div>
                             <div class="flex gap-3">
-                                <div class="flex-1 bg-emerald-900/30 rounded p-2 text-center">
-                                    <div class="text-emerald-400 text-lg font-black">${serveStats.t1.returnWonPct}%</div>
-                                    <div class="text-[10px] text-slate-500">${t1Label}</div>
+                                <div class="flex-1 bg-purple-900/20 rounded p-2 text-center border border-purple-800/30">
+                                    <div class="text-purple-300 text-lg font-black">${loveGames[1]}</div>
+                                    <div class="text-[10px] text-slate-500 font-bold">${t1Label}</div>
                                 </div>
-                                <div class="flex-1 bg-slate-700/50 rounded p-2 text-center">
-                                    <div class="text-slate-300 text-lg font-black">${serveStats.t2.returnWonPct}%</div>
-                                    <div class="text-[10px] text-slate-500">${t2Label}</div>
+                                <div class="flex-1 bg-slate-800 rounded p-2 text-center border border-slate-700">
+                                    <div class="text-slate-300 text-lg font-black">${loveGames[2]}</div>
+                                    <div class="text-[10px] text-slate-500 font-bold">${t2Label}</div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             `;
@@ -4319,6 +4400,148 @@
                     </div>
                 </div>
             `;
+        }
+        // ==========================================
+        // 📝 NOTAS Y EVALUACIÓN (NUEVO)
+        // ==========================================
+        function renderNotesStats() {
+            let container = document.getElementById('notes-grid');
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-slate-500 py-10">Juega algunos puntos para generar notas.</div>';
+                return;
+            }
+
+            // 1. Definir jugadores y acumular stats básicos
+            let players = [
+                { key: 't1p1', name: getPlayerLabel(1, 'p1'), team: 1, color: '#34d399' },
+                { key: 't1p2', name: getPlayerLabel(1, 'p2'), team: 1, color: '#6ee7b7' },
+                { key: 't2p1', name: getPlayerLabel(2, 'p1'), team: 2, color: '#94a3b8' },
+                { key: 't2p2', name: getPlayerLabel(2, 'p2'), team: 2, color: '#cbd5e1' }
+            ];
+
+            let stats = {};
+            players.forEach(p => {
+                stats[p.key] = { 
+                    w: 0, fe: 0, ue: 0, df: 0, 
+                    rawScore: 0, 
+                    netPoints: 0,
+                    details: []
+                };
+            });
+
+            // 2. Calcular "Puntuación Bruta" (Lógica similar a MVP pero ajustada)
+            // Sistema: Winner(+3), Forced Error(-1), Unforced Error(-2), Double Fault(-2)
+            playByPlayLog.forEach(entry => {
+                if (!entry.team || !entry.pos) return;
+                let key = 't' + entry.team + entry.pos;
+                if (!stats[key]) return;
+
+                let action = entry.action;
+                
+                // Contribution
+                if (action === 'winner') {
+                    stats[key].w++;
+                    stats[key].rawScore += 3;
+                    stats[key].netPoints++;
+                } else if (action === 'error_forced') {
+                    stats[key].fe++;
+                    stats[key].rawScore -= 1;
+                    stats[key].netPoints++; // Cuenta como punto para el equipo, pero penaliza al jugador
+                } else if (action === 'error_unforced') {
+                    stats[key].ue++;
+                    stats[key].rawScore -= 2;
+                } else if (action === 'double_fault') {
+                    stats[key].df++;
+                    stats[key].rawScore -= 2;
+                }
+            });
+
+            // 3. Normalizar Nota (Curva: 1 a 10)
+            let scores = players.map(p => stats[p.key].rawScore);
+            let minS = Math.min(...scores);
+            let maxS = Math.max(...scores);
+            let range = maxS - minS;
+
+            let evaluations = players.map(p => {
+                let s = stats[p.key];
+                let note = 5.0; // Base
+
+                // Si hubo dispersión, aplicamos curva. Si todos igual, todos aprueban con 7.5
+                if (range > 0) {
+                    // Mapear [min, max] a [1, 10]
+                    let normalized = ((s.rawScore - minS) / range) * 9 + 1;
+                    note = normalized;
+                } else {
+                    note = 7.5; // Empate técnico
+                }
+
+                // Ajustes finos (Clamp 0-10)
+                note = Math.max(0, Math.min(10, note));
+                
+                // Generar texto explicativo
+                let text = "";
+                
+                // Análisis de impacto
+                if (note >= 9.0) text = "Jugador estelar. Llevó el peso del partido.";
+                else if (note >= 7.5) text = "Muy sólido. Complemento perfecto.";
+                else if (note >= 5.0) text = "Cumplidor. Tuvo altibajos.";
+                else text = "Partido complicado. Costó caro.";
+
+                // Matices específicos
+                if (s.w > 3) text += " Machine de golpes.";
+                if (s.ue > s.w && s.ue > 2) text = "Demasiados errores no forzados."; // Corrección de lógica de comparación
+                if (s.df >= 2) text += " El saque le falló.";
+                if (s.netPoints < 0) text = " Balance negativo de puntos.";
+
+                // Formatear nota
+                let displayNote = note % 1 === 0 ? note.toFixed(1) : note.toFixed(1);
+
+                return { ...p, note: displayNote, stats: s, text: text };
+            });
+
+            // Ordenar por nota
+            evaluations.sort((a, b) => b.note - a.note);
+
+            // 4. Renderizar HTML
+            let html = '';
+            evaluations.forEach((ev, idx) => {
+                let borderColor = ev.note >= 7 ? 'border-emerald-500/50' : (ev.note >= 5 ? 'border-slate-600' : 'border-red-500/50');
+                let bgColor = ev.note >= 7 ? 'bg-gradient-to-br from-slate-800 to-emerald-900/20' : (ev.note >= 5 ? 'bg-slate-800' : 'bg-gradient-to-br from-slate-800 to-red-900/20');
+                let noteColor = ev.note >= 7 ? 'text-emerald-400' : (ev.note >= 5 ? 'text-white' : 'text-red-400');
+
+                html += `
+                <div class="${bgColor} rounded-xl p-6 border ${borderColor} shadow-lg flex flex-col items-center text-center relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                    
+                    <div class="mb-3 relative z-10">
+                        <div class="w-16 h-16 rounded-full bg-slate-900 border-2 border-slate-700 flex items-center justify-center mb-2 mx-auto shadow-inner">
+                            <span class="text-2xl font-black ${noteColor}">${ev.note}</span>
+                        </div>
+                        <h4 class="text-lg font-black text-white uppercase tracking-wider">${ev.name}</h4>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Puntuación Global</div>
+                    </div>
+
+                    <div class="flex gap-4 mb-4 text-xs font-mono z-10">
+                        <div class="flex flex-col">
+                            <span class="text-slate-400">W</span>
+                            <span class="text-emerald-400 font-bold text-lg">${ev.stats.w}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-400">UE</span>
+                            <span class="text-red-400 font-bold text-lg">${ev.stats.ue}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-400">DF</span>
+                            <span class="text-orange-400 font-bold text-lg">${ev.stats.df}</span>
+                        </div>
+                    </div>
+
+                    <p class="text-sm text-slate-300 italic z-10 leading-relaxed px-2">"${ev.text}"</p>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
     </script>
     <!-- MODAL DE GUARDADO -->
