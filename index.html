@@ -4402,7 +4402,7 @@
             `;
         }
         // ==========================================
-        // 📝 NOTAS Y EVALUACIÓN (NUEVO)
+        // 📝 NOTAS Y EVALUACIÓN (EQUILIBRADA)
         // ==========================================
         function renderNotesStats() {
             let container = document.getElementById('notes-grid');
@@ -4411,7 +4411,7 @@
                 return;
             }
 
-            // 1. Definir jugadores y acumular stats básicos
+            // 1. Definir jugadores
             let players = [
                 { key: 't1p1', name: getPlayerLabel(1, 'p1'), team: 1, color: '#34d399' },
                 { key: 't1p2', name: getPlayerLabel(1, 'p2'), team: 1, color: '#6ee7b7' },
@@ -4419,18 +4419,15 @@
                 { key: 't2p2', name: getPlayerLabel(2, 'p2'), team: 2, color: '#cbd5e1' }
             ];
 
+            // 2. Acumular Stats
             let stats = {};
             players.forEach(p => {
                 stats[p.key] = { 
                     w: 0, fe: 0, ue: 0, df: 0, 
-                    rawScore: 0, 
-                    netPoints: 0,
-                    details: []
+                    rawScore: 0
                 };
             });
 
-            // 2. Calcular "Puntuación Bruta" (Lógica similar a MVP pero ajustada)
-            // Sistema: Winner(+3), Forced Error(-1), Unforced Error(-2), Double Fault(-2)
             playByPlayLog.forEach(entry => {
                 if (!entry.team || !entry.pos) return;
                 let key = 't' + entry.team + entry.pos;
@@ -4438,76 +4435,77 @@
 
                 let action = entry.action;
                 
-                // Contribution
+                // --- FÓRMULA EQUILIBRADA ---
+                // Winner: (+2.5) - Buena jugada
+                // Error Forzado: (0) - Neutral, el rival lo puso bien
+                // Error No Forzado: (-2.0) - Penalización media
+                // Doble Falta: (-2.5) - Penalización alta pero no fatal
+                
                 if (action === 'winner') {
                     stats[key].w++;
                     stats[key].rawScore += 3;
-                    stats[key].netPoints++;
                 } else if (action === 'error_forced') {
                     stats[key].fe++;
-                    stats[key].rawScore -= 1;
-                    stats[key].netPoints++; // Cuenta como punto para el equipo, pero penaliza al jugador
+                    stats[key].rawScore -= 0.0;
                 } else if (action === 'error_unforced') {
                     stats[key].ue++;
-                    stats[key].rawScore -= 2;
+                    stats[key].rawScore -= 2.0;
                 } else if (action === 'double_fault') {
                     stats[key].df++;
-                    stats[key].rawScore -= 2;
+                    stats[key].rawScore -= 2.5;
                 }
             });
 
-            // 3. Normalizar Nota (Curva: 1 a 10)
-            let scores = players.map(p => stats[p.key].rawScore);
-            let minS = Math.min(...scores);
-            let maxS = Math.max(...scores);
-            let range = maxS - minS;
-
+            // 3. Bonus mínimo por equipo
+            let winningTeam = (scoreboardState.t1.sets > scoreboardState.t2.sets) ? 1 : 2;
             let evaluations = players.map(p => {
                 let s = stats[p.key];
-                let note = 5.0; // Base
+                
+                let teamBonus = (p.team === winningTeam) ? 0.5 : 0;
+                let finalRaw = s.rawScore + teamBonus;
 
-                // Si hubo dispersión, aplicamos curva. Si todos igual, todos aprueban con 7.5
+                // --- TECHO DE NOTA AJUSTADO (Más permisivo que la anterior) ---
+                // No puedes tener 10 si cometes demasiados errores, pero los límites son más altos
+                let totalErrors = s.ue + s.df;
+                let hardCap = 10;
+                
+                if (totalErrors > 6) hardCap = 9.5;   // Más de 6 errores -> Max 9.5
+                if (totalErrors > 12) hardCap = 8.5;  // Más de 12 errores -> Max 8.5
+                if (totalErrors > 18) hardCap = 6.5;  // Más de 18 errores -> Max 6.5
+                if (totalErrors > 24) hardCap = 5.0;  // Más de 24 errores -> Suspenso automático
+
+                // 4. Normalizar Nota
+                let allScores = players.map(pl => stats[pl.key].rawScore + ((pl.team === winningTeam) ? 0.5 : 0));
+                let minS = Math.min(...allScores);
+                let maxS = Math.max(...allScores);
+                let range = maxS - minS;
+
+                let note = 5.0;
                 if (range > 0) {
-                    // Mapear [min, max] a [1, 10]
-                    let normalized = ((s.rawScore - minS) / range) * 9 + 1;
-                    note = normalized;
+                    note = ((finalRaw - minS) / range) * 9 + 1;
                 } else {
-                    note = 7.5; // Empate técnico
+                    if (totalErrors <= 2) note = 8.0;
+                    else note = 5.0;
                 }
 
-                // Ajustes finos (Clamp 0-10)
-                note = Math.max(0, Math.min(10, note));
+                // Aplicar TECHO y SUELO
+                note = Math.min(note, hardCap);
+                note = Math.max(1, Math.min(10, note));
                 
-                // Generar texto explicativo
-                let text = "";
-                
-                // Análisis de impacto
-                if (note >= 9.0) text = "Jugador estelar. Llevó el peso del partido.";
-                else if (note >= 7.5) text = "Muy sólido. Complemento perfecto.";
-                else if (note >= 5.0) text = "Cumplidor. Tuvo altibajos.";
-                else text = "Partido complicado. Costó caro.";
+                let text = generateStrictComment(note, s, stats);
 
-                // Matices específicos
-                if (s.w > 3) text += " Machine de golpes.";
-                if (s.ue > s.w && s.ue > 2) text = "Demasiados errores no forzados."; // Corrección de lógica de comparación
-                if (s.df >= 2) text += " El saque le falló.";
-                if (s.netPoints < 0) text = " Balance negativo de puntos.";
-
-                // Formatear nota
                 let displayNote = note % 1 === 0 ? note.toFixed(1) : note.toFixed(1);
 
                 return { ...p, note: displayNote, stats: s, text: text };
             });
 
-            // Ordenar por nota
             evaluations.sort((a, b) => b.note - a.note);
 
-            // 4. Renderizar HTML
             let html = '';
             evaluations.forEach((ev, idx) => {
-                let borderColor = ev.note >= 7 ? 'border-emerald-500/50' : (ev.note >= 5 ? 'border-slate-600' : 'border-red-500/50');
-                let bgColor = ev.note >= 7 ? 'bg-gradient-to-br from-slate-800 to-emerald-900/20' : (ev.note >= 5 ? 'bg-slate-800' : 'bg-gradient-to-br from-slate-800 to-red-900/20');
-                let noteColor = ev.note >= 7 ? 'text-emerald-400' : (ev.note >= 5 ? 'text-white' : 'text-red-400');
+                let borderColor = ev.note >= 8 ? 'border-emerald-500/50' : (ev.note >= 6 ? 'border-slate-600' : 'border-red-500/50');
+                let bgColor = ev.note >= 8 ? 'bg-gradient-to-br from-slate-800 to-emerald-900/20' : (ev.note >= 6 ? 'bg-slate-800' : 'bg-gradient-to-br from-slate-800 to-red-900/20');
+                let noteColor = ev.note >= 8 ? 'text-emerald-400' : (ev.note >= 6 ? 'text-white' : 'text-red-400');
 
                 html += `
                 <div class="${bgColor} rounded-xl p-6 border ${borderColor} shadow-lg flex flex-col items-center text-center relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
@@ -4518,7 +4516,7 @@
                             <span class="text-2xl font-black ${noteColor}">${ev.note}</span>
                         </div>
                         <h4 class="text-lg font-black text-white uppercase tracking-wider">${ev.name}</h4>
-                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Puntuación Global</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Valoración</div>
                     </div>
 
                     <div class="flex gap-4 mb-4 text-xs font-mono z-10">
@@ -4542,6 +4540,167 @@
             });
 
             container.innerHTML = html;
+        }
+
+                // ==========================================
+        // GENERADOR DE COMENTARIOS (RELATIVO AL GRUPO)
+        // ==========================================
+        function generateStrictComment(note, playerStats, allStats) {
+            let comments = [];
+            
+            // 1. Calcular Medias del Grupo
+            let count = Object.keys(allStats).length; 
+            if (count === 0) return "Sin datos para comparar.";
+
+            let totalUE = 0, totalW = 0, totalDF = 0;
+            for (let key in allStats) {
+                totalUE += allStats[key].ue;
+                totalW += allStats[key].w;
+                totalDF += allStats[key].df;
+            }
+            
+            let avgUE = totalUE / count;
+            let avgW = totalW / count;
+            let avgDF = totalDF / count;
+
+            // 2. Calcular Diferencias del Jugador vs Media
+            let wDiff = playerStats.w - avgW;
+            let ueDiff = playerStats.ue - avgUE;
+            let dfDiff = playerStats.df - avgDF;
+
+            // --- LÓGICA DE COMENTARIOS COMPARATIVOS ---
+
+            // A. Comparación de Winners (Ofensiva)
+            if (wDiff >= 3) {
+                comments.push("El que más golpes puso del grupo.");
+                comments.push("Ofensivamente muy superior a la media.");
+            } else if (wDiff <= -3) {
+                comments.push("Aportó menos puntos ganados que el promedio.");
+                comments.push("Ofensivamente por debajo de la media.");
+            } else if (wDiff >= 1) {
+                comments.push("Bien arriba de la media en golpes.");
+            }
+
+            // B. Comparación de Errores No Forzados (Defensa)
+            if (ueDiff >= 3) {
+                comments.push("Cometió significativamente más errores que el resto.");
+                comments.push("El que más regaló del grupo.");
+            } else if (ueDiff <= -3 && avgUE > 2) { // Solo si los demás cometieron errores y él fue limpio
+                comments.push("El más limpio en defensa del grupo.");
+                comments.push("Menos errores que la media general.");
+            }
+
+            // C. Comparación de Doble Faltas (Saque)
+            if (dfDiff >= 2) {
+                comments.push("Su saque falló mucho más que al resto.");
+            } else if (dfDiff <= -2 && playerStats.df === 0) {
+                comments.push("Saque impecable comparado con los demás.");
+            }
+
+            // D. Nota Global (Contexto Final)
+            if (note >= 9.0) {
+                comments.push("Claramente el MVP del partido.");
+            } else if (note >= 8.0 && wDiff > 0) {
+                comments.push("Muy buen rendimiento, fue clave.");
+            } else if (note <= 4.0) {
+                comments.push("El más flojo del día comparado con los demás.");
+            }
+
+            // E. Fallback Empático (Si no hay datos claros de comparación)
+            if (comments.length === 0) {
+                if (note >= 7.0) return "Rendimiento sólido y ajustado al grupo.";
+                if (note >= 5.0) return "Dentro de la media del partido.";
+                return "Un poco por debajo del nivel general.";
+            }
+
+            // Elegir comentario principal (aleatorio si hay varios de peso similar)
+            // Priorizamos los comentarios ofensivos si la nota es alta, defensivos si es baja
+            if (note >= 7 && wDiff > 0) return comments.filter(c => c.includes("golpe"))[0] || comments[0];
+            if (note < 5 && ueDiff > 0) return comments.filter(c => c.includes("errores"))[0] || comments[0];
+
+            return comments[0];
+        }
+
+        // ==========================================
+        // GENERADOR DE COMENTARIOS (ESTILO ANTERIOR)
+        // ==========================================
+        function generateStrictComment(note, stats) {
+            let text = "";
+            let totalErrors = stats.ue + stats.df;
+            let netEfficiency = stats.w - totalErrors; // Winners netos de errores
+
+            // Prioridad 1: Evaluación de Errores (Si hay muchos, esto domina el comentario)
+            if (totalErrors > 15) {
+                return "Partido para olvidar. Demasiados errores propios.";
+            }
+            if (totalErrors > 8) {
+                if (stats.w > totalErrors) return "Mucha producción, pero demasiadas regalías.";
+                return "Le costó demasiado mantener la pelota en juego.";
+            }
+
+            // Prioridad 2: Evaluación de Nota Alta
+            if (note >= 9.0) {
+                return "Jugador estelar. Casi perfecto.";
+            }
+            if (note >= 8.0) {
+                return "Muy buen partido. Sólido en todos los aspectos.";
+            }
+
+            // Prioridad 3: Casos Mixtos (Balance)
+            if (netEfficiency > 5) {
+                return "Balance positivo. Golpeó fuerte y limpió.";
+            }
+            if (netEfficiency > 0) {
+                return "Correcto. Aportó más de lo que falló.";
+            }
+            if (stats.w === 0) {
+                return "Fichó a la defensa. Sin peso en el resto.";
+            }
+
+            // Fallback
+            if (note >= 6.0) return "Regular. Tuvo momentos buenos y otros flojos.";
+            return "Complicado. Mejorar la constancia.";
+        }
+
+        // ==========================================
+        // GENERADOR DE COMENTARIOS (ESTILO ANTERIOR)
+        // ==========================================
+        function generateStrictComment(note, stats) {
+            let text = "";
+            let totalErrors = stats.ue + stats.df;
+            let netEfficiency = stats.w - totalErrors; // Winners netos de errores
+
+            // Prioridad 1: Evaluación de Errores (Si hay muchos, esto domina el comentario)
+            if (totalErrors > 15) {
+                return "Partido para olvidar. Demasiados errores propios.";
+            }
+            if (totalErrors > 8) {
+                if (stats.w > totalErrors) return "Mucha producción, pero demasiadas regalías.";
+                return "Le costó demasiado mantener la pelota en juego.";
+            }
+
+            // Prioridad 2: Evaluación de Nota Alta
+            if (note >= 9.0) {
+                return "Jugador estelar. Casi perfecto.";
+            }
+            if (note >= 8.0) {
+                return "Muy buen partido. Sólido en todos los aspectos.";
+            }
+
+            // Prioridad 3: Casos Mixtos (Balance)
+            if (netEfficiency > 5) {
+                return "Balance positivo. Golpeó fuerte y limpió.";
+            }
+            if (netEfficiency > 0) {
+                return "Correcto. Aportó más de lo que falló.";
+            }
+            if (stats.w === 0) {
+                return "Fichó a la defensa. Sin peso en el resto.";
+            }
+
+            // Fallback
+            if (note >= 6.0) return "Regular. Tuvo momentos buenos y otros flojos.";
+            return "Complicado. Mejorar la constancia.";
         }
     </script>
     <!-- MODAL DE GUARDADO -->
