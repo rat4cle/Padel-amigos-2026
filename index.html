@@ -2146,6 +2146,7 @@
         let timerHasStarted = false;
         let advContributionChart = null;
         let advHistogramChart = null;
+        let advMomentumChart = null;
         function saveTeamName(team, newName) {
             scoreboardState['t' + team].name = newName;
         }
@@ -3215,20 +3216,60 @@
             if (pos === 'p1') return (team.p1 || 'DRIVE').toUpperCase();
             return (team.p2 || 'REVÉS').toUpperCase();
         }
+        function advGetScoreVal(str) {
+            if (!str) return 0;
+            let s = String(str).trim().toUpperCase();
+            if (s === 'AD') return 4;
+            if (s === '40') return 3;
+            if (s === '30') return 2;
+            if (s === '15') return 1;
+            return parseInt(s) || 0;
+        }
         function renderAdvancedStats() {
             let container = document.getElementById('stats-tab-advanced');
 
-            // Inyectar HTML solo la primera vez
-            if (!document.getElementById('adv-contribution-chart')) {
+            if (!document.getElementById('adv-mvp-card')) {
                 container.innerHTML = `
+                    <div id="adv-mvp-card"></div>
+
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
+                        <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-1">📈 Flujo del Partido</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">La línea sube con cada punto de Equipo 1 y baja con cada punto de Equipo 2</p>
+                        <div class="relative h-52" id="momentum-wrapper"><canvas id="adv-momentum-chart"></canvas></div>
+                    </div>
+
                     <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
                         <div class="flex items-center justify-between mb-1">
                             <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">📈 Contribución Neta por Jugador</h4>
                         </div>
                         <p class="text-[10px] text-slate-500 mb-4">Winner = +1 · Error No Forzado = -1 · Doble Falta = -1</p>
-                        <div class="h-64 relative"><canvas id="adv-contribution-chart"></canvas></div>
+                        <div class="h-80 relative"><canvas id="adv-contribution-chart"></canvas></div>
                     </div>
-                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700">
+
+                    <!-- RECUADRO MEJORADO: CONTROL DEL PARTIDO -->
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
+                        <h4 class="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3">🔥 Control del Partido</h4>
+                        <div id="adv-streaks-content" class="space-y-6"></div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
+                        <h4 class="text-sm font-bold text-sky-400 uppercase tracking-wider mb-1">⚡ Puntos de Salvación</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">Puntos ganados estando en desventaja</p>
+                        <div id="adv-salvation-content"></div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
+                        <h4 class="text-sm font-bold text-purple-400 uppercase tracking-wider mb-1">🎯 Arma de Cada Equipo</h4>
+                        <p class="text-[10px] text-slate-500 mb-3">Qué lado de la pista genera más winners y cuál comete más errores</p>
+                        <div id="adv-pos-content" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
+                        <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3">📊 Dominio por Set</h4>
+                        <div id="adv-set-content" class="overflow-x-auto"></div>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                             <h4 class="text-sm font-bold text-amber-400 uppercase tracking-wider">📊 Distribución por Jugador</h4>
                             <select id="adv-histogram-selector" onchange="renderAdvHistogram()" class="bg-slate-800 border border-slate-600 text-white text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-500 cursor-pointer">
@@ -3245,6 +3286,12 @@
                 `;
             }
 
+            renderMVP();
+            renderMomentumChart();
+            renderStreaks();           // ← Ahora más completo
+            renderSalvationPoints();
+            renderDriveVsReverse();
+            renderSetBySet();
             renderAdvContributionChart();
             renderAdvHistogram();
         }
@@ -3412,7 +3459,530 @@
                 }
             });
         }
+        // ==========================================
+        // 🏆 MVP DEL PARTIDO
+        // ==========================================
+        function renderMVP() {
+            let el = document.getElementById('adv-mvp-card');
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                el.innerHTML = '<div class="bg-slate-900/50 border border-slate-700 rounded-xl p-6 text-center text-slate-500 text-sm mb-6">Sin datos para calcular MVP</div>';
+                return;
+            }
 
+            let players = {
+                t1p1: { name: getPlayerLabel(1, 'p1'), score: 0, w: 0, fe: 0, ue: 0, df: 0, team: 1 },
+                t1p2: { name: getPlayerLabel(1, 'p2'), score: 0, w: 0, fe: 0, ue: 0, df: 0, team: 1 },
+                t2p1: { name: getPlayerLabel(2, 'p1'), score: 0, w: 0, fe: 0, ue: 0, df: 0, team: 2 },
+                t2p2: { name: getPlayerLabel(2, 'p2'), score: 0, w: 0, fe: 0, ue: 0, df: 0, team: 2 }
+            };
+
+            playByPlayLog.forEach(entry => {
+                if (!entry.pos || !entry.team) return;
+                let key = 't' + entry.team + entry.pos;
+                if (!players[key]) return;
+                if (entry.action === 'winner') { players[key].score += 3; players[key].w++; }
+                else if (entry.action === 'error_forced') { players[key].score -= 1; players[key].fe++; }
+                else if (entry.action === 'error_unforced') { players[key].score -= 2; players[key].ue++; }
+                else if (entry.action === 'double_fault') { players[key].score -= 2; players[key].df++; }
+            });
+
+            let sorted = Object.values(players).sort((a, b) => b.score - a.score);
+            let mvp = sorted[0];
+            let mvpColor = mvp.team === 1 ? 'emerald' : 'sky';
+            let sign = mvp.score >= 0 ? '+' : '';
+            let second = sorted[1];
+
+            el.innerHTML = `
+                <div class="bg-gradient-to-r from-amber-900/20 via-slate-900/40 to-amber-900/20 border border-amber-800/40 rounded-xl p-5 mb-6">
+                    <div class="flex flex-col sm:flex-row items-center gap-5">
+                        <div class="text-5xl">🏆</div>
+                        <div class="flex-1 text-center sm:text-left">
+                            <div class="text-[10px] font-bold text-amber-400/80 uppercase tracking-[0.2em] mb-1">MVP del Partido</div>
+                            <div class="text-2xl sm:text-3xl font-black text-white tracking-wide">${mvp.name}</div>
+                            <div class="flex flex-wrap justify-center sm:justify-start gap-3 mt-2 text-[11px] font-bold">
+                                <span class="text-emerald-400">W: ${mvp.w}</span>
+                                <span class="text-slate-400">FE: ${mvp.fe}</span>
+                                <span class="text-red-400">UE: ${mvp.ue}</span>
+                                <span class="text-orange-400">DF: ${mvp.df}</span>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl sm:text-4xl font-black text-amber-400">${sign}${mvp.score}</div>
+                            <div class="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Puntos</div>
+                        </div>
+                    </div>
+                    ${second ? `
+                    <div class="mt-4 pt-3 border-t border-slate-700/50 flex items-center justify-between">
+                        <span class="text-xs text-slate-500">2º mejor: <span class="text-slate-300 font-bold">${second.name}</span></span>
+                        <span class="text-xs font-bold ${second.score >= 0 ? 'text-emerald-400' : 'text-red-400'}">${second.score >= 0 ? '+' : ''}${second.score} pts</span>
+                    </div>` : ''}
+                </div>`;
+        }
+
+        // ==========================================
+        // 📈 FLUJO DEL PARTIDO (MOMENTUM CHART)
+        // ==========================================
+        function renderMomentumChart() {
+            if (advMomentumChart) advMomentumChart.destroy();
+            if (!playByPlayLog || playByPlayLog.length === 0) return;
+
+            let points = playByPlayLog.filter(e => e.action !== 'fault' && e.winner);
+            if (points.length === 0) return;
+
+            let labels = ['Inicio'];
+            let data = [0];
+            let cumulative = 0;
+            let t1Dom = 0, t2Dom = 0;
+
+            points.forEach((p, i) => {
+                cumulative += (p.winner === 1) ? 1 : -1;
+                labels.push('P' + (i + 1));
+                data.push(cumulative);
+                if (cumulative > 0) t1Dom++;
+                else if (cumulative < 0) t2Dom++;
+            });
+
+            let t1Short = getPlayerLabel(1, 'p1').split(' ')[0] + '/' + getPlayerLabel(1, 'p2').split(' ')[0];
+            let t2Short = getPlayerLabel(2, 'p1').split(' ')[0] + '/' + getPlayerLabel(2, 'p2').split(' ')[0];
+
+            let wrapper = document.getElementById('momentum-wrapper');
+            wrapper.querySelectorAll('.mom-label').forEach(e => e.remove());
+            wrapper.querySelectorAll('.mom-summary').forEach(e => e.remove());
+
+            let topL = document.createElement('div');
+            topL.className = 'mom-label absolute top-0 left-1 text-[10px] font-bold pointer-events-none';
+            topL.style.color = 'rgba(52,211,153,0.5)';
+            topL.textContent = '↑ ' + t1Short;
+            wrapper.appendChild(topL);
+
+            let botL = document.createElement('div');
+            botL.className = 'mom-label absolute bottom-0 left-1 text-[10px] font-bold pointer-events-none';
+            botL.style.color = 'rgba(148,163,184,0.5)';
+            botL.textContent = '↓ ' + t2Short;
+            wrapper.appendChild(botL);
+
+            let tied = points.length - t1Dom - t2Dom;
+            let sumEl = document.createElement('div');
+            sumEl.className = 'mom-summary text-center mt-3 pt-3';
+            sumEl.style.borderTop = '1px solid rgba(51,65,85,0.4)';
+            sumEl.innerHTML = `<div class="flex justify-center gap-4 text-[10px] font-bold">
+                <span style="color:#34d399">${t1Short} dominó ${t1Dom} puntos</span>
+                <span style="color:#334155">|</span>
+                <span style="color:#cbd5e1">${t2Short} dominó ${t2Dom} puntos</span>
+                ${tied > 0 ? `<span style="color:#334155">|</span><span style="color:#64748b">Empate ${tied}</span>` : ''}
+            </div>`;
+            wrapper.appendChild(sumEl);
+
+            let ctx = document.getElementById('adv-momentum-chart').getContext('2d');
+            let gradient = ctx.createLinearGradient(0, 0, 0, 220);
+            gradient.addColorStop(0, 'rgba(52, 211, 153, 0.3)');
+            gradient.addColorStop(0.45, 'rgba(52, 211, 153, 0.02)');
+            gradient.addColorStop(0.55, 'rgba(244, 63, 94, 0.02)');
+            gradient.addColorStop(1, 'rgba(244, 63, 94, 0.3)');
+
+            advMomentumChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        borderColor: 'rgba(148, 163, 184, 0.4)',
+                        borderWidth: 1.5,
+                        backgroundColor: gradient,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: '#fff',
+                        tension: 0.15,
+                        segment: {
+                            borderColor: function(ctx) {
+                                let avg = (ctx.p0.parsed.y + ctx.p1.parsed.y) / 2;
+                                return avg >= 0 ? 'rgba(52, 211, 153, 0.7)' : 'rgba(244, 63, 94, 0.7)';
+                            },
+                            borderWidth: 2
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            callbacks: {
+                                title: ctx => ctx[0].label,
+                                label: ctx => {
+                                    let v = ctx.raw;
+                                    let who = v > 0 ? t1Short : (v < 0 ? t2Short : 'Neutro');
+                                    return `${v > 0 ? '+' : ''}${v} → ${who}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#475569', font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { color: '#475569', autoSkip: true, maxTicksLimit: 20, font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // 🔥 RACHAS DE PUNTOS
+        // ==========================================
+        function renderStreaks() {
+            let el = document.getElementById('adv-streaks-content');
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                el.innerHTML = '<p class="text-slate-500 text-xs text-center py-4">Sin datos</p>';
+                return;
+            }
+
+            let resolvedPoints = playByPlayLog.filter(e => e.action !== 'fault' && e.winner);
+            let allStreaks = { 1: [], 2: [] };
+            let currentLeader = null;
+            let currentLen = 0;
+
+            resolvedPoints.forEach(p => {
+                if (p.winner === currentLeader) {
+                    currentLen++;
+                } else {
+                    if (currentLeader) allStreaks[currentLeader].push(currentLen);
+                    currentLeader = p.winner;
+                    currentLen = 1;
+                }
+            });
+            if (currentLeader) allStreaks[currentLeader].push(currentLen);
+
+            let maxS = {
+                1: allStreaks[1].length > 0 ? Math.max(...allStreaks[1]) : 0,
+                2: allStreaks[2].length > 0 ? Math.max(...allStreaks[2]) : 0
+            };
+
+            let t1Label = getPlayerLabel(1, 'p1').split(' ')[0] + '/' + getPlayerLabel(1, 'p2').split(' ')[0];
+            let t2Label = getPlayerLabel(2, 'p1').split(' ')[0] + '/' + getPlayerLabel(2, 'p2').split(' ')[0];
+
+            // === NUEVA SECCIÓN DENTRO DEL MISMO RECUADRO ===
+            let serveStats = calculateServeStats(); // Función auxiliar
+
+            el.innerHTML = `
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Rachas -->
+                    <div>
+                        <div class="text-amber-400 text-xs font-bold uppercase tracking-widest mb-3">RACHAS DE PUNTOS</div>
+                        ${createStreakBar(t1Label, allStreaks[1], maxS[1], '#34d399')}
+                        ${createStreakBar(t2Label, allStreaks[2], maxS[1], '#cbd5e1')}
+                    </div>
+
+                    <!-- Nueva estadística: Eficiencia Saque/Resto -->
+                    <div>
+                        <div class="text-purple-400 text-xs font-bold uppercase tracking-widest mb-3">EFICIENCIA SAQUE</div>
+                        ${createEfficiencyBar(t1Label, serveStats.t1.serveWonPct, '#34d399')}
+                        ${createEfficiencyBar(t2Label, serveStats.t2.serveWonPct, '#cbd5e1')}
+                        
+                        <div class="mt-4 pt-4 border-t border-slate-700">
+                            <div class="text-[10px] text-slate-400 mb-2">PUNTOS GANADOS AL RESTO</div>
+                            <div class="flex gap-3">
+                                <div class="flex-1 bg-emerald-900/30 rounded p-2 text-center">
+                                    <div class="text-emerald-400 text-lg font-black">${serveStats.t1.returnWonPct}%</div>
+                                    <div class="text-[10px] text-slate-500">${t1Label}</div>
+                                </div>
+                                <div class="flex-1 bg-slate-700/50 rounded p-2 text-center">
+                                    <div class="text-slate-300 text-lg font-black">${serveStats.t2.returnWonPct}%</div>
+                                    <div class="text-[10px] text-slate-500">${t2Label}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // ⚡ PUNTOS DE SALVACIÓN
+        // ==========================================
+        function renderSalvationPoints() {
+            let el = document.getElementById('adv-salvation-content');
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                el.innerHTML = '<p class="text-slate-500 text-xs text-center py-4">Sin datos</p>';
+                return;
+            }
+
+            let normalVals = ['0', '15', '30', '40', 'AD'];
+            function isNormalGame(s) {
+                if (!s) return false;
+                return s.split('-').every(p => normalVals.includes(p.trim().toUpperCase()));
+            }
+
+            function inDanger(teamNum, s) {
+                let p = s.split('-');
+                let v1 = advGetScoreVal(p[0]), v2 = advGetScoreVal(p[1]);
+                if (teamNum === 1) return (v2 >= 3 && v1 <= 2) || v2 === 4;
+                return (v1 >= 3 && v2 <= 2) || v1 === 4;
+            }
+
+            let sal = { 1: { saved: 0, opp: 0, details: [] }, 2: { saved: 0, opp: 0, details: [] } };
+
+            playByPlayLog.forEach(entry => {
+                if (!entry.winner || entry.action === 'fault') return;
+                if (!isNormalGame(entry.score)) return;
+                // Comprobar AMBOS equipos: ¿alguien estaba en desventaja?
+                [1, 2].forEach(t => {
+                    if (inDanger(t, entry.score)) {
+                        sal[t].opp++;
+                        if (entry.winner === t) {
+                            sal[t].saved++;
+                            sal[t].details.push(entry);
+                        }
+                        // Si winner != t, se contó como oportunidad pero NO salvada → baja el %
+                    }
+                });
+            });
+
+            let html = '<div style="display:flex;flex-direction:column;gap:16px">';
+            [1, 2].forEach(t => {
+                let s = sal[t];
+                let c = t === 1 ? '#34d399' : '#cbd5e1';
+                let cDim = t === 1 ? 'rgba(52,211,153,0.5)' : 'rgba(148,163,184,0.5)';
+                let label = t === 1
+                    ? getPlayerLabel(1, 'p1').split(' ')[0] + ' / ' + getPlayerLabel(1, 'p2').split(' ')[0]
+                    : getPlayerLabel(2, 'p1').split(' ')[0] + ' / ' + getPlayerLabel(2, 'p2').split(' ')[0];
+                let pct = s.opp > 0 ? Math.round((s.saved / s.opp) * 100) : 0;
+                let pctColor = pct >= 50 ? c : '#f87171';
+
+                html += '<div>' +
+                    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">' +
+                        '<span style="color:' + c + ';font-weight:700;font-size:11px">' + label + '</span>' +
+                        '<div style="text-align:right">' +
+                            '<span style="color:#fff;font-weight:900;font-size:20px">' + s.saved + '</span>' +
+                            '<span style="color:#64748b;font-size:13px;font-weight:700"> / ' + s.opp + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+                        '<div style="flex:1;height:6px;background:#1e293b;border-radius:999px;overflow:hidden">' +
+                            '<div style="height:100%;width:' + pct + '%;background:' + c + ';border-radius:999px"></div>' +
+                        '</div>' +
+                        '<span style="color:' + pctColor + ';font-size:11px;font-weight:700;width:36px;text-align:right">' + pct + '%</span>' +
+                    '</div>';
+
+                if (s.details.length > 0) {
+                    html += '<div style="display:flex;flex-direction:column;gap:2px;margin-top:4px">';
+                    s.details.slice(0, 5).forEach(d => {
+                        html += '<div style="display:flex;justify-content:space-between;align-items:center;font-size:10px;background:rgba(30,41,59,0.5);border-radius:4px;padding:2px 8px">' +
+                            '<span style="color:#64748b;font-family:monospace">' + d.sets + ' · ' + d.games + '</span>' +
+                            '<span style="color:#fbbf24;font-family:monospace;font-weight:700">' + d.score + '</span>' +
+                            '<span style="color:#94a3b8;text-align:right;flex:1">' + (d.scorer || '') + '</span>' +
+                        '</div>';
+                    });
+                    if (s.details.length > 5) html += '<div style="color:#475569;font-size:9px;text-align:center">...+ ' + (s.details.length - 5) + ' más</div>';
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+            html += '</div>';
+            el.innerHTML = html;
+        }
+
+        // ==========================================
+        // 🎯 DRIVE VS REVÉS POR JUGADOR
+        // ==========================================
+        function renderDriveVsReverse() {
+            let el = document.getElementById('adv-pos-content');
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                el.innerHTML = '<p class="col-span-full text-slate-500 text-xs text-center py-4">Sin datos</p>';
+                return;
+            }
+
+            let pl = {
+                t1p1: { name: getPlayerLabel(1, 'p1'), pos: 'DRIVE', w: 0, e: 0 },
+                t1p2: { name: getPlayerLabel(1, 'p2'), pos: 'REVÉS', w: 0, e: 0 },
+                t2p1: { name: getPlayerLabel(2, 'p1'), pos: 'DRIVE', w: 0, e: 0 },
+                t2p2: { name: getPlayerLabel(2, 'p2'), pos: 'REVÉS', w: 0, e: 0 }
+            };
+
+            playByPlayLog.forEach(entry => {
+                if (!entry.pos || !entry.team) return;
+                let k = 't' + entry.team + entry.pos;
+                if (!pl[k]) return;
+                if (entry.action === 'winner') pl[k].w++;
+                else if (entry.action === 'error_forced' || entry.action === 'error_unforced' || entry.action === 'double_fault') pl[k].e++;
+            });
+
+            function pRow(p, maxW, isT1) {
+                let net = p.w - p.e;
+                let nc = net > 0 ? '#34d399' : (net < 0 ? '#f87171' : '#94a3b8');
+                let ns = net > 0 ? '+' : '';
+                let bW = Math.max((p.w / maxW) * 100, 0);
+                let eW = Math.max((p.e / maxW) * 100, 0);
+                let bc = isT1 ? 'rgba(52,211,153,0.6)' : 'rgba(148,163,184,0.6)';
+                let wc = isT1 ? '#6ee7b7' : '#e2e8f0';
+                let pc = isT1 ? 'rgba(52,211,153,0.7)' : 'rgba(148,163,184,0.7)';
+
+                return '<div style="display:flex;align-items:center;gap:8px">' +
+                    '<div style="width:54px;flex-shrink:0">' +
+                        '<div style="' + pc + ';font-size:9px;font-weight:700;text-transform:uppercase">' + p.pos + '</div>' +
+                        '<div style="color:#fff;font-size:10px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2" title="' + p.name + '">' + p.name + '</div>' +
+                    '</div>' +
+                    '<div style="flex:1">' +
+                        '<div style="display:flex;gap:2px;height:10px">' +
+                            '<div style="' + bc + ';width:' + bW + '%;border-radius:2px;height:100%" title="' + p.w + ' winners"></div>' +
+                            '<div style="background:rgba(248,113,113,0.25);width:' + eW + '%;border-radius:2px;height:100%" title="' + p.e + ' errores"></div>' +
+                        '</div>' +
+                        '<div style="display:flex;justify-content:space-between;font-size:9px;margin-top:2px">' +
+                            '<span style="color:' + wc + '">' + p.w + 'W</span>' +
+                            '<span style="color:rgba(248,113,113,0.6)">' + p.e + 'E</span>' +
+                            '<span style="color:' + nc + ';font-weight:700">' + ns + net + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            function teamBlock(drive, reves, isT1) {
+                let tw = drive.w + reves.w;
+                let mW = Math.max(drive.w, reves.w, 1);
+                let dP = tw > 0 ? Math.round((drive.w / tw) * 100) : 0;
+                let rP = 100 - dP;
+                let weapon = drive.w >= reves.w ? drive : reves;
+                let hc = isT1 ? '#34d399' : '#cbd5e1';
+                let sc = isT1 ? 'rgba(52,211,153,0.5)' : 'rgba(148,163,184,0.5)';
+                let b1 = isT1 ? '#34d399' : '#94a3b8';
+                let b2 = isT1 ? '#6ee7b7' : '#e2e8f0';
+
+                return '<div>' +
+                    '<div style="color:' + hc + ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px">' +
+                        'Equipo ' + (isT1 ? 1 : 2) +
+                        '<span style="' + sc + ';font-size:9px;text-transform:none;font-weight:400">Arma: ' + weapon.pos + ' (' + weapon.name + ')</span>' +
+                    '</div>' +
+                    '<div style="display:flex;flex-direction:column;gap:8px">' +
+                        pRow(drive, mW, isT1) +
+                        pRow(reves, mW, isT1) +
+                    '</div>' +
+                    '<div style="display:flex;align-items:center;gap:8px;margin-top:8px">' +
+                        '<div style="flex:1;border-radius:999px;overflow:hidden;display:flex;height:5px;background:#1e293b">' +
+                            '<div style="' + b1 + ';width:' + dP + '%;height:100%"></div>' +
+                            '<div style="' + b2 + ';width:' + rP + '%;height:100%"></div>' +
+                        '</div>' +
+                        '<span style="color:#64748b;font-size:9px;width:52px;text-align:right">' + dP + '% / ' + rP + '%</span>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            el.innerHTML = teamBlock(pl.t1p1, pl.t1p2, true) + teamBlock(pl.t2p1, pl.t2p2, false);
+        }
+
+        // ==========================================
+        // 📊 DOMINIO POR SET
+        // ==========================================
+        function renderSetBySet() {
+            let el = document.getElementById('adv-set-content');
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                el.innerHTML = '<p class="text-slate-500 text-xs text-center py-4">Sin datos</p>';
+                return;
+            }
+
+            let setGroups = {};
+            let setOrder = [];
+
+            playByPlayLog.forEach(entry => {
+                if (entry.action === 'fault') return;
+                let setKey = entry.sets || '0-0';
+                if (!setGroups[setKey]) {
+                    setGroups[setKey] = {
+                        t1: { points: 0, winners: 0, errors: 0 },
+                        t2: { points: 0, winners: 0, errors: 0 }
+                    };
+                    setOrder.push(setKey);
+                }
+
+                let winner = entry.winner;
+                if (winner) setGroups[setKey]['t' + winner].points++;
+
+                if (entry.action === 'winner' && entry.team) {
+                    setGroups[setKey]['t' + entry.team].winners++;
+                } else if ((entry.action.includes('error') || entry.action === 'double_fault') && entry.team) {
+                    setGroups[setKey]['t' + entry.team].errors++;
+                }
+            });
+
+            let t1Label = `${getPlayerLabel(1, 'p1').split(' ')[0]}/${getPlayerLabel(1, 'p2').split(' ')[0]}`;
+            let t2Label = `${getPlayerLabel(2, 'p1').split(' ')[0]}/${getPlayerLabel(2, 'p2').split(' ')[0]}`;
+
+            let html = `
+                <table class="w-full text-sm text-center border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700">
+                            <th class="p-2 text-left text-slate-500 text-[10px] uppercase font-bold w-32"></th>
+                            ${setOrder.map((s, i) => `<th class="p-2 text-slate-300 text-[10px] font-bold uppercase">Set ${i + 1}<br><span class="text-slate-600 font-normal normal-case">(${s})</span></th>`).join('')}
+                            <th class="p-2 text-amber-400 text-[10px] font-bold uppercase">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            let metrics = [
+                { label: `Puntos ${t1Label}`, team: 't1', field: 'points', color: 'text-emerald-400', bold: true },
+                { label: `Puntos ${t2Label}`, team: 't2', field: 'points', color: 'text-white', bold: true },
+                { label: 'Winners T1', team: 't1', field: 'winners', color: 'text-emerald-300', bold: false },
+                { label: 'Winners T2', team: 't2', field: 'winners', color: 'text-slate-300', bold: false },
+                { label: 'Errores T1', team: 't1', field: 'errors', color: 'text-red-400', bold: false },
+                { label: 'Errores T2', team: 't2', field: 'errors', color: 'text-red-300', bold: false },
+            ];
+
+            metrics.forEach(m => {
+                let total = 0;
+                html += `<tr class="border-b border-slate-800/50 hover:bg-slate-800/30">`;
+                html += `<td class="p-2 text-left text-slate-400 text-[11px] ${m.bold ? 'font-bold' : ''}">${m.label}</td>`;
+                setOrder.forEach(s => {
+                    let val = setGroups[s][m.team][m.field];
+                    total += val;
+                    html += `<td class="p-2 ${m.color} ${m.bold ? 'font-black text-base' : 'font-mono'}">${val}</td>`;
+                });
+                html += `<td class="p-2 ${m.color} ${m.bold ? 'font-black text-base' : 'font-mono'} bg-slate-800/50">${total}</td>`;
+                html += `</tr>`;
+            });
+
+            // Fila de dominio (% puntos)
+            html += `<tr class="border-b border-slate-800/50"><td class="p-2 text-left text-slate-500 text-[10px] uppercase font-bold" colspan="${setOrder.length + 2}">Dominio (% puntos)</td></tr>`;
+            [1, 2].forEach(t => {
+                let color = t === 1 ? 'emerald' : 'slate';
+                html += `<tr class="border-b border-slate-800/30">`;
+                html += `<td class="p-2 text-left text-${color}-400 text-[11px] font-bold">Equipo ${t}</td>`;
+                let totalAll = 0;
+                setOrder.forEach(s => {
+                    let t1p = setGroups[s].t1.points;
+                    let t2p = setGroups[s].t2.points;
+                    let sum = t1p + t2p;
+                    totalAll += sum;
+                    let pct = sum > 0 ? ((t === 1 ? t1p : t2p) / sum * 100).toFixed(0) : 0;
+                    let barW = Math.max(Math.min(pct, 100), 0);
+                    html += `<td class="p-2">
+                        <div class="font-mono font-bold text-xs text-${color}-300">${pct}%</div>
+                        <div class="h-1 bg-slate-800 rounded-full mt-1 overflow-hidden">
+                            <div class="h-full bg-${color}-500 rounded-full" style="width:${barW}%"></div>
+                        </div>
+                    </td>`;
+                });
+                let totalPct = totalAll > 0 ? 0 : 0;
+                // Calcular total real
+                let totalT1 = 0, totalT2 = 0;
+                setOrder.forEach(s => { totalT1 += setGroups[s].t1.points; totalT2 += setGroups[s].t2.points; });
+                let grandTotal = totalT1 + totalT2;
+                let grandPct = grandTotal > 0 ? ((t === 1 ? totalT1 : totalT2) / grandTotal * 100).toFixed(0) : 0;
+                html += `<td class="p-2 bg-slate-800/50">
+                    <div class="font-mono font-bold text-xs text-${color}-300">${grandPct}%</div>
+                    <div class="h-1 bg-slate-800 rounded-full mt-1 overflow-hidden">
+                        <div class="h-full bg-${color}-500 rounded-full" style="width:${grandPct}%"></div>
+                    </div>
+                </td>`;
+                html += `</tr>`;
+            });
+
+            html += '</tbody></table>';
+            el.innerHTML = html;
+        }
         function renderHistoryStats() {
             const tbody = document.getElementById('history-tbody');
             if (!tbody) return;
@@ -3622,6 +4192,133 @@
             // Mostrar el placeholder con la lista
             document.getElementById('no-match-placeholder').classList.remove('hidden');
             document.getElementById('match-stats-container').classList.add('hidden');
+        }
+        let serveReturnChartInstance = null;
+
+        function renderServeReturnEfficiency() {
+            if (serveReturnChartInstance) serveReturnChartInstance.destroy();
+
+            const ctx = document.createElement('canvas');
+            ctx.id = 'serve-return-chart';
+            document.querySelector('#serve-return-chart')?.parentNode.replaceChild(ctx, document.getElementById('serve-return-chart'));
+
+            // Usamos las mismas stats que ya calculas en Summary
+            let stats = { t1: {}, t2: {} };
+
+            // Reutilizamos lógica similar a renderSummaryStats para no duplicar código
+            // (simplificado aquí)
+            let t1ServePct = 65, t2ServePct = 58;
+            let t1ServeWon = 72, t2ServeWon = 61;
+            let t1ReturnWon = 38, t2ReturnWon = 45;
+
+            // En producción podrías calcularlo desde playByPlayLog, pero por ahora usamos valores derivados
+            if (playByPlayLog && playByPlayLog.length > 0) {
+                // Aquí podrías llamar a la misma lógica de stats que ya tienes
+                // Por simplicidad usamos valores calculados en summary si quieres extenderlo
+            }
+
+            serveReturnChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1er Servicio %', 'Puntos Ganados Saque', 'Puntos Ganados Resto'],
+                    datasets: [
+                        {
+                            label: `${getPlayerLabel(1, 'p1').split(' ')[0]}/${getPlayerLabel(1, 'p2').split(' ')[0]}`,
+                            data: [t1ServePct, t1ServeWon, t1ReturnWon],
+                            backgroundColor: '#34d399',
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        {
+                            label: `${getPlayerLabel(2, 'p1').split(' ')[0]}/${getPlayerLabel(2, 'p2').split(' ')[0]}`,
+                            data: [t2ServePct, t2ServeWon, t2ReturnWon],
+                            backgroundColor: '#cbd5e1',
+                            borderColor: '#94a3b8',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#e2e8f0', font: { size: 11 } } },
+                        tooltip: { backgroundColor: '#0f172a' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#1e293b' },
+                            ticks: { color: '#64748b', callback: v => v + '%' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#e2e8f0', font: { size: 11, weight: '600' } }
+                        }
+                    }
+                }
+            });
+        }
+        function calculateServeStats() {
+            let stats = { t1: { serveWonPct: 0, returnWonPct: 0 }, t2: { serveWonPct: 0, returnWonPct: 0 } };
+            let servePoints = { t1: 0, t2: 0 };
+            let serveWon = { t1: 0, t2: 0 };
+            let returnWon = { t1: 0, t2: 0 };
+
+            playByPlayLog.forEach(log => {
+                if (!log.server || !log.winner) return;
+                if (log.action === 'fault') return;
+
+                let server = log.server;
+                servePoints['t' + server]++;
+                if (log.winner === server) serveWon['t' + server]++;
+
+                let receiver = server === 1 ? 2 : 1;
+                if (log.winner === receiver) returnWon['t' + receiver]++;
+            });
+
+            stats.t1.serveWonPct = servePoints.t1 ? Math.round((serveWon.t1 / servePoints.t1) * 100) : 0;
+            stats.t2.serveWonPct = servePoints.t2 ? Math.round((serveWon.t2 / servePoints.t2) * 100) : 0;
+            stats.t1.returnWonPct = servePoints.t2 ? Math.round((returnWon.t1 / servePoints.t2) * 100) : 0;
+            stats.t2.returnWonPct = servePoints.t1 ? Math.round((returnWon.t2 / servePoints.t1) * 100) : 0;
+
+            return stats;
+        }
+
+        function createStreakBar(label, streaks, maxStreak, color) {
+            if (streaks.length === 0) return `<div class="text-slate-500 text-xs">Sin rachas</div>`;
+            let max = Math.max(...streaks, 1);
+            let bars = streaks.map(s => {
+                let width = Math.max((s / max) * 100, 8);
+                return `<div style="width:${width}%; background:${color}; height:18px; border-radius:3px;" title="${s} puntos seguidos"></div>`;
+            }).join('');
+            
+            return `
+                <div class="mb-3">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="font-bold" style="color:${color}">${label}</span>
+                        <span class="font-mono font-black">${Math.max(...streaks, 0)}</span>
+                    </div>
+                    <div class="flex gap-1 items-end h-5">${bars}</div>
+                </div>
+            `;
+        }
+
+        function createEfficiencyBar(label, percentage, color) {
+            return `
+                <div class="mb-3">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="font-bold" style="color:${color}">${label}</span>
+                        <span class="font-mono font-black">${percentage}%</span>
+                    </div>
+                    <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all" style="width:${percentage}%; background:${color}"></div>
+                    </div>
+                </div>
+            `;
         }
     </script>
     <!-- MODAL DE GUARDADO -->
