@@ -4439,7 +4439,7 @@
             // 3. CÁLCULO DE PUNTUACIÓN BRUTA
             let evaluations = players.map(p => {
                 let s = stats[p.key];
-                let rawScore = (s.w * 3) - (s.fe * 0.5) - (s.ue * 1.5) - (s.df * 2.0);
+                let rawScore = (s.w * 3) - (s.fe * 0.5) - (s.ue * 2) - (s.df * 5);
                 return { ...p, stats: s, rawScore: rawScore };
             });
 
