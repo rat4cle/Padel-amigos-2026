@@ -1703,9 +1703,9 @@
                 
                 let rotarText = "";
                 if (playerToSit && playerToSit.consecutivePlayed > 0) {
-                    rotarText = ` Para que juegue, debe rotar <strong class="text-red-400">${playerToSit.name}</strong> (${playerToSit.consecutivePlayed} seguidos).`;
+                    rotarText = ` Debe rotar <strong class="text-red-400">${playerToSit.name}</strong> (${playerToSit.consecutivePlayed} seguidos).`;
                 } else if (playerToSit) {
-                    rotarText = ` Para que juegue, debe rotar <strong class="text-red-400">${playerToSit.name}</strong> (mayor carga de partidos).`;
+                    rotarText = ` Debe rotar <strong class="text-red-400">${playerToSit.name}</strong> (mayor carga de partidos).`;
                 }
 
                 rotacionText = `Le toca jugar a <strong class="text-emerald-400">${playerToEnter.name}</strong>. (${daysText}${missedText}.${rotarText}`;
