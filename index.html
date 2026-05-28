@@ -848,7 +848,7 @@
                     <div class="bg-gradient-to-r from-amber-900/10 to-emerald-900/10 border border-slate-700 rounded-2xl overflow-hidden"><button onclick="toggleAdvancedStats()" class="w-full p-6 text-left flex justify-between items-center hover:bg-slate-800/50 transition-colors"><h3 class="text-lg font-bold text-white flex items-center gap-2">🌟 Estadísticas por Meses</h3><span id="adv-stats-icon" class="text-2xl text-emerald-400 transform transition-transform">+</span></button><div id="advanced-stats-container" class="hidden px-6 pb-6 space-y-3"></div></div>
                     <!-- CURIOSIDADES -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🥶 El Frigorífico</h3><p id="cur-frio" class="text-sm text-slate-400">Calculando...</p></div>
+                        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🔄 Rotación</h3><p id="cur-rotacion" class="text-sm text-slate-400">Calculando...</p></div>
                         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🎾 Vida de las Bolas</h3><p id="cur-bolas-vida" class="text-sm text-slate-400">Calculando...</p></div>
                     </div>
                 </section>
@@ -1053,15 +1053,15 @@
                         </div>
                         <div class="flex flex-wrap gap-2 border-t border-slate-700 pt-3">
                             <span class="text-xs text-slate-500 font-bold self-center mr-1">Filtros:</span>
-                            <button onclick="filterRecorded()" id="btn-videoteca" class="tag-btn text-xs bg-purple-900/30 text-purple-400 hover:bg-purple-800/50 rounded-lg px-3 py-1 font-bold transition-colors border border-purple-800/50">🎬 Videoteca</button>
-                            <button onclick="toggleTagFilter('3set')" id="tag-3set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">3️⃣ 3 Sets</button>
-                            <button onclick="toggleTagFilter('2set')" id="tag-2set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">2️⃣ 2 Sets</button>
-                            <button onclick="toggleTagFilter('tb')" id="tag-tb" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">⛓️ Tie Break</button>
-                            <button onclick="toggleTagFilter('empate')" id="tag-empate" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">🤝 Empate</button>
-                            <button onclick="toggleTagFilter('bolas')" id="tag-bolas" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold">🎾 Bolas Nuevas</button>
+                            <button onclick="filterRecorded()" id="btn-videoteca" class="tag-btn text-xs bg-purple-900/30 text-purple-400 hover:bg-purple-800/50 rounded-lg px-3 py-1 font-bold transition-colors border border-purple-800/50"><i class="ri-movie-2-line mr-1"></i>Videoteca</button>
+                            <button onclick="toggleTagFilter('3set')" id="tag-3set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold"><i class="ri-layout-column-line mr-1"></i>3 Sets</button>
+                            <button onclick="toggleTagFilter('2set')" id="tag-2set" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold"><i class="ri-layout-row-line mr-1"></i>2 Sets</button>
+                            <button onclick="toggleTagFilter('tb')" id="tag-tb" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold"><i class="ri-link mr-1"></i>Tie Break</button>
+                            <button onclick="toggleTagFilter('empate')" id="tag-empate" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold"><i class="ri-scales-3-line mr-1"></i>Empate</button>
+                            <button onclick="toggleTagFilter('bolas')" id="tag-bolas" class="tag-btn text-xs bg-slate-700 text-slate-300 hover:bg-slate-600 rounded-lg px-3 py-1 transition-colors font-bold"><i class="ri-record-circle-line mr-1"></i>Bolas Nuevas</button>
                         </div>
                     </div>
-                    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><div class="overflow-x-auto max-h-[600px] overflow-y-auto"><table class="w-full text-left border-collapse" id="matchesTable"><thead class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700 sticky top-0 z-10"><tr><th class="p-4">#</th><th class="p-4">Fecha</th><th class="p-4">Pista</th><th class="p-4">Pareja 1</th><th class="p-4">Pareja 2</th><th class="p-4 text-center">Resultado</th><th class="p-4">Ganadores</th></tr></thead><tbody class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
+                    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden"><div class="overflow-x-auto max-h-[600px] overflow-y-auto"><table class="w-full text-left border-collapse" id="matchesTable"><thead class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700 sticky top-0 z-10"><tr><th class="p-4">#</th><th class="p-4">Fecha</th><th class="p-4">Pista</th><th class="p-4">Pareja 1</th><th class="p-4">Pareja 2</th><th class="p-4 text-center">Resultado</th><th class="p-4 text-center">Pelotas</th><th class="p-4">Ganadores</th></tr></thead><tbody class="divide-y divide-slate-700/50 text-sm text-slate-300"></tbody></table></div></div>
                 </section>
 
                 <!-- TAB 6: FINANZAS -->
@@ -1622,7 +1622,8 @@
             let parejasArray = []; for(let p in parejasStats) { let pDecisivos = parejasStats[p].w + parejasStats[p].l; let wr = pDecisivos > 0 ? (parejasStats[p].w / pDecisivos) : 0; parejasArray.push({ name: p, w: parejasStats[p].w, l: parejasStats[p].l, d: parejasStats[p].d, p: parejasStats[p].p, wr: wr }); }
             let parejasElegibles = parejasArray.filter(p => p.p >= 3).sort((a, b) => b.wr - a.wr); let parejaLetalText = parejasElegibles.length > 0 ? `${parejasElegibles[0].name} (${(parejasElegibles[0].wr*100).toFixed(0)}%)` : "Ninguna";
             globalRankingArray = [];
-            for(let j in jugadoresStats) { let s = jugadoresStats[j]; if(s.partidos < 3 && !MANDATORY_PLAYERS.includes(j)) continue; let puntos = (s.victorias * 3) + (s.empates * 1), maxPuntos = s.partidos * 3; let puntuacion = maxPuntos > 0 ? ((puntos / maxPuntos) * 100).toFixed(1) : 0; let partidosDecisivos = s.victorias + s.derrotas; let winRateVic = partidosDecisivos > 0 ? ((s.victorias / partidosDecisivos) * 100).toFixed(1) : 0; let streakIcon = "", streakType = ""; let results = (rachasData[j] || []).filter(r => r !== 'D');
+            for(let j in jugadoresStats) { let s = jugadoresStats[j]; if(s.partidos < 3 && !MANDATORY_PLAYERS.includes(j)) continue; let pg = s.victorias, pe = s.empates, pj = s.partidos;
+            let puntuacion = pj > 0 ? ((((pg + 1 + 0.2 * pe) / (pj + 2)) * (1 - 1 / (pj + 1))) * 100).toFixed(1) : 0; let partidosDecisivos = s.victorias + s.derrotas; let winRateVic = partidosDecisivos > 0 ? ((s.victorias / partidosDecisivos) * 100).toFixed(1) : 0; let streakIcon = "", streakType = ""; let results = (rachasData[j] || []).filter(r => r !== 'D');
                 if(results.length > 0) { let last = results[results.length - 1]; let count = 0; for(let i = results.length - 1; i >= 0; i--) { if(results[i] === last) count++; else break; } if(last === 'W' && count >= 3) { streakIcon = `🔥${count}`; streakType = "fire"; } if(last === 'L' && count >= 3) { streakIcon = `🧊${count}`; streakType = "ice"; } } globalRankingArray.push({ nombre: j, puntuacionValor: parseFloat(puntuacion), partidos: s.partidos, victorias: s.victorias, empates: s.empates, derrotas: s.derrotas, difSets: s.sf - s.sc, winRateVic: parseFloat(winRateVic), puntuacion: parseFloat(puntuacion), streak: streakIcon, streakType: streakType }); }
             MANDATORY_PLAYERS.forEach(mp => { if(!jugadoresStats[mp]) globalRankingArray.push({ nombre: mp, puntuacionValor: 0, partidos: 0, victorias: 0, empates: 0, derrotas: 0, difSets: 0, winRateVic: 0, puntuacion: 0, streak: "", streakType: "" }); });
             globalRankingArray.sort((a,b) => b.puntuacion - a.puntuacion || b.difSets - a.difSets);
@@ -1633,15 +1634,84 @@
             renderPlayerFolderTabs();
             renderPlayerProfile();
 
-            // CURIOSIDAD: El Frigorífico (Solo fijos)
-            let lastDates = {};
-            rows.forEach(row => { let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let d = parseCSVDate(row.fecha); [j1A,j1B,j2A,j2B].forEach(j => { if(j&&j!=="Playtomic") { if(!lastDates[j]||d>lastDates[j]) lastDates[j]=d; } }); });
-            let now = Date.now(); let maxDays=0, frozen="Nadie";
-            for(let j in lastDates) { 
-                if (!MANDATORY_PLAYERS.includes(j)) continue; // Filtra solo los 5 fijos
-                let diff=Math.floor((now-lastDates[j])/86400000); if(diff>maxDays){maxDays=diff;frozen=j;} 
+            // CURIOSIDAD: Rotación (Solo fijos, NO externos)
+            let pRotation = {};
+            MANDATORY_PLAYERS.forEach(p => {
+                pRotation[p] = { lastDate: 0, consecutiveMissed: 0, consecutivePlayed: 0, total: globalJugadoresStats[p] ? globalJugadoresStats[p].partidos : 0 };
+            });
+
+            rows.forEach(row => {
+                let isExterno = String(row['tipo'] || "").toLowerCase() === "externo";
+                if (isExterno) return; // <--- IGNORAR PARTIDOS EXTERNOS
+
+                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim();
+                let d = parseCSVDate(row.fecha);
+                let inMatch = new Set([j1A, j1B, j2A, j2B]);
+
+                MANDATORY_PLAYERS.forEach(p => {
+                    if (inMatch.has(p)) {
+                        pRotation[p].lastDate = Math.max(pRotation[p].lastDate, d);
+                        pRotation[p].consecutivePlayed++;
+                        pRotation[p].consecutiveMissed = 0; 
+                    } else {
+                        pRotation[p].consecutiveMissed++; 
+                        pRotation[p].consecutivePlayed = 0; 
+                    }
+                });
+            });
+
+            let now = Date.now(); 
+            
+            // 1. Encontrar quién necesita entrar
+            let playerToEnter = null;
+            MANDATORY_PLAYERS.forEach(p => {
+                let stats = pRotation[p];
+                stats.daysOut = stats.lastDate > 0 ? Math.floor((now - stats.lastDate) / 86400000) : 9999; 
+                
+                if (!playerToEnter) {
+                    playerToEnter = { name: p, ...stats };
+                } else {
+                    if (stats.consecutiveMissed > playerToEnter.consecutiveMissed ||
+                        (stats.consecutiveMissed === playerToEnter.consecutiveMissed && stats.daysOut > playerToEnter.daysOut) ||
+                        (stats.consecutiveMissed === playerToEnter.consecutiveMissed && stats.daysOut === playerToEnter.daysOut && stats.total < playerToEnter.total)) {
+                        playerToEnter = { name: p, ...stats };
+                    }
+                }
+            });
+
+            // 2. Encontrar quién debe rotar/salir
+            let playerToSit = null;
+            MANDATORY_PLAYERS.forEach(p => {
+                if (p === playerToEnter.name) return; 
+                
+                let stats = pRotation[p];
+                
+                if (!playerToSit) {
+                    playerToSit = { name: p, ...stats };
+                } else {
+                    if (stats.consecutivePlayed > playerToSit.consecutivePlayed ||
+                        (stats.consecutivePlayed === playerToSit.consecutivePlayed && stats.total > playerToSit.total)) {
+                        playerToSit = { name: p, ...stats };
+                    }
+                }
+            });
+
+            let rotacionText = "";
+            if (playerToEnter) {
+                let daysText = playerToEnter.daysOut === 9999 ? "aún no ha debutado" : `${playerToEnter.daysOut} días sin jugar`;
+                let missedText = playerToEnter.consecutiveMissed > 0 ? ` - ${playerToEnter.consecutiveMissed} partido(s) seguido(s) fuera)` : "";
+                
+                let rotarText = "";
+                if (playerToSit && playerToSit.consecutivePlayed > 0) {
+                    rotarText = ` Para que juegue, debe rotar <strong class="text-red-400">${playerToSit.name}</strong> (${playerToSit.consecutivePlayed} seguidos).`;
+                } else if (playerToSit) {
+                    rotarText = ` Para que juegue, debe rotar <strong class="text-red-400">${playerToSit.name}</strong> (mayor carga de partidos).`;
+                }
+
+                rotacionText = `Le toca jugar a <strong class="text-emerald-400">${playerToEnter.name}</strong>. (${daysText}${missedText}.${rotarText}`;
             }
-            document.getElementById('cur-frio').innerText = `${frozen} lleva ${maxDays} días sin jugar. ¡Sacadlo del congelador!`;
+
+            document.getElementById('cur-rotacion').innerHTML = rotacionText;
 
             // CURIOSIDAD: Vida de las Bolas (Lógica por persona)
             let activeBalls = {}; // Guarda el estado del bote de cada jugador
@@ -1701,7 +1771,9 @@
             renderHeatmap();
         }
 
-        function calculatePlayerOfMonth(rows) { let monthlyStats = {}; rows.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let setsP1 = parseInt(row['sets p1'] || 0), setsP2 = parseInt(row['sets p2'] || 0); let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; [j1A, j1B, j2A, j2B].forEach(j => { if(j && j !== "Playtomic") { if(!monthlyStats[monthKey]) monthlyStats[monthKey] = {}; if(!monthlyStats[monthKey][j]) monthlyStats[monthKey][j] = {pj:0, v:0, e:0, sf:0, sc:0}; } }); [[j1A, j1B, setsP1, setsP2], [j2A, j2B, setsP2, setsP1]].forEach(team => { team.slice(0,2).forEach(j => { if(j && j !== "Playtomic") { monthlyStats[monthKey][j].pj += 1; monthlyStats[monthKey][j].sf += team[2]; monthlyStats[monthKey][j].sc += team[3]; if(isDraw) monthlyStats[monthKey][j].e += 1; else if(ganadores.includes(j)) monthlyStats[monthKey][j].v += 1; } }); }); }); let container = document.getElementById('advanced-stats-container'); container.innerHTML = ""; let sortedMonths = Object.keys(monthlyStats).sort().reverse(); sortedMonths.forEach(monthKey => { let monthPlayers = []; for(let j in monthlyStats[monthKey]) { let s = monthlyStats[monthKey][j]; if(s.pj < 3) continue; let pts = (s.v * 3) + s.e, maxPts = s.pj * 3; monthPlayers.push({nombre: j, punt: maxPts > 0 ? (pts/maxPts)*100 : 0, v: s.v, pj: s.pj, difS: s.sf - s.sc}); } monthPlayers.sort((a,b) => b.punt - a.punt || b.difS - a.difS); if(monthPlayers.length === 0) return; let p = monthPlayers[0]; let dateObj = new Date(monthKey + "-02"); let monthName = dateObj.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }); container.innerHTML += `<div class="bg-slate-900/50 p-4 rounded-xl border border-amber-800/20 flex flex-col sm:flex-row justify-between items-center gap-2"><div class="text-center sm:text-left"><span class="text-xs text-slate-500 uppercase font-bold block">${monthName}</span><span class="text-2xl font-black text-amber-400 block">${p.nombre} 👑</span></div><div class="text-center sm:text-right"><span class="text-lg font-bold text-white">${p.punt.toFixed(1)}% Punt.</span><span class="text-xs text-slate-400 block">${p.v}V / ${p.pj} PJ | Dif. Sets: ${p.difS > 0 ? '+' : ''}${p.difS}</span></div></div>`; }); }
+        function calculatePlayerOfMonth(rows) { let monthlyStats = {}; rows.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let setsP1 = parseInt(row['sets p1'] || 0), setsP2 = parseInt(row['sets p2'] || 0); let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; [j1A, j1B, j2A, j2B].forEach(j => { if(j && j !== "Playtomic") { if(!monthlyStats[monthKey]) monthlyStats[monthKey] = {}; if(!monthlyStats[monthKey][j]) monthlyStats[monthKey][j] = {pj:0, v:0, e:0, sf:0, sc:0}; } }); [[j1A, j1B, setsP1, setsP2], [j2A, j2B, setsP2, setsP1]].forEach(team => { team.slice(0,2).forEach(j => { if(j && j !== "Playtomic") { monthlyStats[monthKey][j].pj += 1; monthlyStats[monthKey][j].sf += team[2]; monthlyStats[monthKey][j].sc += team[3]; if(isDraw) monthlyStats[monthKey][j].e += 1; else if(ganadores.includes(j)) monthlyStats[monthKey][j].v += 1; } }); }); }); let container = document.getElementById('advanced-stats-container'); container.innerHTML = ""; let sortedMonths = Object.keys(monthlyStats).sort().reverse(); sortedMonths.forEach(monthKey => { let monthPlayers = []; for(let j in monthlyStats[monthKey]) { let s = monthlyStats[monthKey][j]; if(s.pj < 3) continue; let pg = s.v, pe = s.e, pj = s.pj;
+        let punt = pj > 0 ? (((pg + 1 + 0.2 * pe) / (pj + 2)) * (1 - 1 / (pj + 1))) * 100 : 0;
+        monthPlayers.push({nombre: j, punt: punt, v: s.v, pj: s.pj, difS: s.sf - s.sc}); } monthPlayers.sort((a,b) => b.punt - a.punt || b.difS - a.difS); if(monthPlayers.length === 0) return; let p = monthPlayers[0]; let dateObj = new Date(monthKey + "-02"); let monthName = dateObj.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }); container.innerHTML += `<div class="bg-slate-900/50 p-4 rounded-xl border border-amber-800/20 flex flex-col sm:flex-row justify-between items-center gap-2"><div class="text-center sm:text-left"><span class="text-xs text-slate-500 uppercase font-bold block">${monthName}</span><span class="text-2xl font-black text-amber-400 block">${p.nombre} 👑</span></div><div class="text-center sm:text-right"><span class="text-lg font-bold text-white">${p.punt.toFixed(1)}% Punt.</span><span class="text-xs text-slate-400 block">${p.v}V / ${p.pj} PJ | Dif. Sets: ${p.difS > 0 ? '+' : ''}${p.difS}</span></div></div>`; }); }
 
         function calculateFaceOffs(rows) {
             globalFaceOffs = {}; globalPairFaceOffs = {}; globalH2H_Wins = {};
@@ -1727,7 +1799,7 @@
             let curseBreaks = {};
 
             const init = (j) => {
-                if(!bs[j]) bs[j] = { pj:0, tb:0, remontadas:0, bolasW:0, bolasPj:0, posRev:0, posDriv:0, mates:{}, maxW:0, maxL:0, curW:0, curL:0, s3reach:0, s3win:0, matchesWonIn2:0, s1win:0, s1lose:0, s2lose:0, s3lose:0, cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{}, firstHalf: {w:0, p:0}, secondHalf: {w:0, p:0}, defeatsBy:{}, tbWin:0 };
+                if(!bs[j]) bs[j] = { pj:0, tb:0, remontadas:0, bolasW:0, bolasPj:0, posRev:0, posDriv:0, mates:{}, maxW:0, maxL:0, curW:0, curL:0, s3reach:0, s3win:0, matchesWonIn2:0, s1win:0, s1lose:0, s2lose:0, s3lose:0, cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{}, firstHalf: {w:0, p:0}, secondHalf: {w:0, p:0}, defeatsBy:{}, tbWin:0, zaragozaW:0, allTbMatches:0 };
             };
 
             let midIndex = Math.floor(rows.length / 2);
@@ -1743,6 +1815,14 @@
                 let has3Set = s3p1 > 0 || s3p2 > 0;
                 let winT1 = ganadores.includes(j1A) && ganadores.includes(j1B); let winT2 = ganadores.includes(j2A) && ganadores.includes(j2B);
                 let court = String(row['pista']||"").trim();
+                // Lógica 777 (3 Tie Breaks en un partido)
+                let s1IsTb = (s1p1===7 && s1p2===6) || (s1p1===6 && s1p2===7);
+                let s2IsTb = (s2p1===7 && s2p2===6) || (s2p1===6 && s2p2===7);
+                let s3IsTb = has3Set && ((s3p1===7 && s3p2===6) || (s3p1===6 && s3p2===7));
+                let is777Match = has3Set && s1IsTb && s2IsTb && s3IsTb;
+                if (is777Match) {
+                    [j1A, j1B, j2A, j2B].forEach(jz => { if(jz && jz!=="Playtomic") { init(jz); bs[jz].allTbMatches++; } });
+                }
 
                 if(j1A && j1B) pairMatchesCount[[j1A, j1B].sort().join(" & ")] = (pairMatchesCount[[j1A, j1B].sort().join(" & ")] || 0) + 1;
                 if(j2A && j2B) pairMatchesCount[[j2A, j2B].sort().join(" & ")] = (pairMatchesCount[[j2A, j2B].sort().join(" & ")] || 0) + 1;
@@ -1778,6 +1858,14 @@
                 [[j1A, j1B, 1, 2], [j2A, j2B, 2, 1]].forEach(t => {
                     let pA = t[0], pB = t[1], tNum = t[2];
                     let teamWon = (tNum===1&&winT1)||(tNum===2&&winT2);
+                    
+                    // Lógica Zaragozista
+                    let zaragozaVal = String(row['victoria zaragoza'] || "").trim().toLowerCase();
+                    let isZaragozaWin = zaragozaVal === "true" || zaragozaVal === "verdadero" || zaragozaVal === "*";
+                    if (isZaragozaWin && teamWon) {
+                        [pA, pB].forEach(jz => { if(jz && jz!=="Playtomic") { init(jz); bs[jz].zaragozaW++; } });
+                    }
+
                     [pA, pB].forEach(j => {
                         if(!j || j==="Playtomic") return; init(j);
                         bs[j].pj++;
@@ -1807,40 +1895,92 @@
             for(let j in playerHistory) { let hist = playerHistory[j]; let trans = 0; for(let i=1; i<hist.length; i++) { if(hist[i] !== hist[i-1]) trans++; } alternations[j] = hist.length > 1 ? trans / (hist.length - 1) : 0; }
             let maxPairCount = 0, maxPairName = ""; for(let pair in pairMatchesCount) { if(pairMatchesCount[pair] > maxPairCount) { maxPairCount = pairMatchesCount[pair]; maxPairName = pair; } }
             let verdugoCount = {}; for(let j in bs) { if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue; let maxD=0, nems=[]; for(let r in bs[j].defeatsBy) { if(bs[j].defeatsBy[r]>maxD){maxD=bs[j].defeatsBy[r];nems=[r];}else if(bs[j].defeatsBy[r]===maxD)nems.push(r); } if(maxD>0) nems.forEach(n => verdugoCount[n]=(verdugoCount[n]||0)+1); }
+            // Cálculo Ave Fénix (Racha V seguida de Racha D)
+            let phoenixMax = {};
+            for(let j in playerHistory) {
+                let hist = playerHistory[j];
+                let maxWStreak = 0;
+                let curW = 0;
+                for(let i=0; i<hist.length; i++) {
+                    if(hist[i] === 'W') {
+                        curW++;
+                    } else if(hist[i] === 'L' && curW >= 3) {
+                        let lCount = 0;
+                        let tempI = i;
+                        while(tempI < hist.length && hist[tempI] === 'L') {
+                            lCount++;
+                            tempI++;
+                        }
+                        if(lCount >= 3) {
+                            if(curW > maxWStreak) maxWStreak = curW;
+                        }
+                        curW = 0;
+                        i = tempI - 1; 
+                    } else {
+                        curW = 0; // Empates u otras cosas rompen la racha
+                    }
+                }
+                phoenixMax[j] = maxWStreak;
+            }
 
             globalBadges = [
-                { id:'clean_sets', name:'Cirujano', emoji:'🔪', desc:'El rey del set limpio (6-0 o 6-1)', findMax: (b) => b.pj >= 3 ? b.cleanSets : null, format: (v) => `${v} sets limpios` },
-                { id:'ext_comeback', name:'Efecto Diésel', emoji:'⛽', desc:'De menos a más (pierde 1er set por 1-6/2-6 y gana partido)', findMax: (b) => b.extComebacks > 0 ? b.extComebacks : null, format: (v) => `${v} remontadas extremas` },
-                { id:'close_sets', name:'El Cerrajero', emoji:'🔐', desc:'El que mejor cierra (sets 7-5)', findMax: (b) => b.closeSetPlayed >= 2 ? (b.closeSetWins / b.closeSetPlayed)*100 : null, format: (v) => `${v.toFixed(1)}% en 7-5` },
-                { id:'choke', name:'Ícaro', emoji:'🐦‍🔥', desc:'El que más partidos ha perdido ganando el 1er set', findMax: (b) => b.chokeJobs > 0 ? b.chokeJobs : null, format: (v) => `${v} partidos perdidos` },
-                { id:'adaptable', name:'Camaleón', emoji:'🦎', desc:'Ha ganado al menos 1 partido con todos los miembros fijos del grupo', findMax: (b, name) => { let group = MANDATORY_PLAYERS.filter(p => p !== name); if(group.length === 0) return null; return group.every(mate => b.winsWith[mate] > 0) ? group.length : null; }, format: (v) => `Ha ganado con los ${v} fijos` },
-                { id:'kryptonite', name:'Kriptonita', emoji:'☢️', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
-                { id:'matrimonio', name:'Matrimonio', emoji:'💍', desc:'La pareja fija que más partidos ha jugado junta', findMax: (b, name) => maxPairName.includes(name) ? maxPairCount : null, format: (v) => `${maxPairName} (${v} partidos)` },
-                { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', desc:'El compañero con el que peor % de victoria ponderado se tiene', findMin: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); let avgWR = sumP > 0 ? (sumWRxP / sumP) * 100 : null; return avgWR; }, format: (v) => `${v.toFixed(1)}% WR ponderado con compas` },
-                { id:'rey_granja', name:'Rey de La Granja', emoji:'🌾', desc:'Mayor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
-                { id:'rey_indoor', name:'Indoor Pro', emoji:'🏛️', desc:'Mayor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
-                { id:'victima_granja', name:'Forastero', emoji:'⛈️', desc:'Menor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
-                { id:'victima_indoor', name:'Indoor Rookie', emoji:'🧊', desc:'Menor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
-                { id:'evolucion', name:'La Evolución', emoji:'📈', desc:'Mayor mejora de % victoria comparando 1ª y 2ª mitad de temporada', findMax: (b) => { let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; if(wr1 === null || wr2 === null) return null; return wr2 - wr1; }, format: (v) => `+${v.toFixed(1)}% de mejora` },
-                { id:'abonado', name:'El Abonado', emoji:'🎟️', desc:'El jugador que más partidos totales acumula', findMax: (b) => b.pj, format: (v) => `${v} partidos totales` },
-                { id:'talisman_bolas', name:'Talismán Bolas', emoji:'✨', desc:'El jugador que más veces ha ganado con bolas nuevas', findMax: (b) => b.bolasW > 0 ? b.bolasW : null, format: (v) => `${v} victorias con bolas nuevas` },
-                { id:'muro', name:'Aguafiestas', emoji:'🥳', desc:'Corta la racha de victorias de otros', findMax: (b, name) => (streakBreaks[name] || 0) > 0 ? streakBreaks[name] : null, format: (v) => `${v} rachas cortadas` },
-                { id:'maldiciones', name:'Rompe-maldiciones', emoji:'🧿', desc:'Era compañero cuando alguien cortó su racha de derrotas', findMax: (b, name) => (curseBreaks[name] || 0) > 0 ? curseBreaks[name] : null, format: (v) => `${v} maldiciones rotas como compañero` },
-                { id:'montaña_rusa', name:'Montaña Rusa', emoji:'🎢', desc:'El más irregular (alterna V-D-V-D)', findMax: (b, name) => alternations[name] > 0 ? alternations[name] : null, format: (v) => `${(v * 100).toFixed(1)}% de alternancia` },
-                { id:'tb_most', name:'Tiebreaker', emoji:'⛓️', desc:'Jugador con más partidos con Tie Break', findMax: (b) => b.tb > 0 ? b.tb : null, format: (v) => `${v} partidos con Tie Break` },
-                { id:'tb_least', name:'Evita Problemas', emoji:'🧘', desc:'Jugador con menos partidos con Tie Break (mín. 3 partidos)', findMin: (b) => b.pj >= 3 ? b.tb : null, format: (v) => `${v} partidos con Tie Break` },
-                { id:'comeback', name:'Remontador', emoji:'🦸‍♂️', desc:'Más victorias perdiendo el 1er set', findMax: (b) => b.remontadas > 0 ? b.remontadas : null, format: (v) => `${v} remontadas` },
-                { id:'fixed_pos', name:'Inamovible', emoji:'🗿', desc:'Jugador que menos ha jugado en su lado contrario', findMin: (b) => b.pj >= 3 ? Math.min(b.posRev, b.posDriv) / b.pj : null, format: (v) => `${(v * 100).toFixed(1)}% en lado contrario` },
-                { id:'best_mate', name:'Compañero Perfecto', emoji:'🤝', desc:'Mayor % de victoria ponderado con compañeros', findMax: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); return sumP > 0 ? (sumWRxP / sumP) * 100 : null; }, format: (v) => `${v.toFixed(1)}% ponderado` },
-                { id:'streak_w', name:'Racha Dorada', emoji:'🔥', desc:'Racha más larga de victorias', findMax: (b) => b.maxW >= 3 ? b.maxW : null, format: (v) => `${v} partidos seguidos` },
-                { id:'streak_l', name:'Mala Racha', emoji:'💀', desc:'Racha más larga de derrotas', findMax: (b) => b.maxL >= 3 ? b.maxL : null, format: (v) => `${v} partidos seguidos` },
-                { id:'s3_reach', name:'Guerrero', emoji:'⚔️', desc:'Jugador que más ha llegado a 3er set', findMax: (b) => b.s3reach, format: (v) => `${v} veces` },
-                { id:'s3_win', name:'Decisivo', emoji:'🎯', desc:'Jugador que más 3er sets ha ganado', findMax: (b) => b.s3win, format: (v) => `${v} veces` },
-                { id:'s3_lose', name:'Agotado', emoji:'🥵', desc:'Jugador que más 3er sets ha perdido', findMax: (b) => b.s3lose, format: (v) => `${v} veces` },
-                { id:'s2_win', name:'Exprés', emoji:'🚄', desc:'Jugador que más veces ha ganado en 2 sets', findMax: (b) => b.matchesWonIn2, format: (v) => `${v} veces` },
-                { id:'s1_win', name:'Arrancador', emoji:'🥇', desc:'Jugador que más 1er sets ha ganado', findMax: (b) => b.s1win, format: (v) => `${v} veces` },
-                { id:'s1_lose', name:'Frio Inicio', emoji:'❄️', desc:'Jugador que más 1er sets ha perdido', findMax: (b) => b.s1lose, format: (v) => `${v} veces` },
-                { id:'verdugo', name:'El Verdugo', emoji:'🪓', desc:'El jugador que es el Némesis de más personas distintas', findMax: (b, name) => (verdugoCount[name]||0) > 0 ? verdugoCount[name] : null, format: (v) => `Es el némesis de ${v} jugadores` },
+                // 🥚 COMUNES
+                { id:'choke', name:'Ícaro', emoji:'🪽', rarity:'comun', desc:'El que más partidos ha perdido ganando el 1er set', findMax: (b) => b.chokeJobs > 0 ? b.chokeJobs : null, format: (v) => `${v} partidos perdidos` },
+                { id:'abonado', name:'El Abonado', emoji:'🎟️', rarity:'comun', desc:'El jugador que más partidos totales acumula', findMax: (b) => b.pj, format: (v) => `${v} partidos totales` },
+                { id:'matrimonio', name:'Matrimonio', emoji:'💍', rarity:'comun', desc:'La pareja fija que más partidos ha jugado junta', findMax: (b, name) => maxPairName.includes(name) ? maxPairCount : null, format: (v) => `${maxPairName} (${v} partidos)` },
+                { id:'fixed_pos', name:'Inamovible', emoji:'🗿', rarity:'comun', desc:'Jugador que menos ha jugado en su lado contrario', findMin: (b) => b.pj >= 3 ? Math.min(b.posRev, b.posDriv) / b.pj : null, format: (v) => `${(v * 100).toFixed(1)}% en lado contrario` },
+                { id:'s1_lose', name:'Frio Inicio', emoji:'❄️', rarity:'comun', desc:'Jugador que más 1er sets ha perdido', findMax: (b) => b.s1lose, format: (v) => `${v} veces` },
+                { id:'s3_lose', name:'Agotado', emoji:'🥵', rarity:'comun', desc:'Jugador que más 3er sets ha perdido', findMax: (b) => b.s3lose, format: (v) => `${v} veces` },
+                { id:'streak_l', name:'Mala Racha', emoji:'💀', rarity:'comun', desc:'Racha más larga de derrotas', findMax: (b) => b.maxL >= 3 ? b.maxL : null, format: (v) => `${v} partidos seguidos` },
+                { id:'montaña_rusa', name:'Montaña Rusa', emoji:'🎢', rarity:'comun', desc:'El más irregular (alterna V-D-V-D)', findMax: (b, name) => alternations[name] > 0 ? alternations[name] : null, format: (v) => `${(v * 100).toFixed(1)}% de alternancia` },
+
+                // 🔉 RARAS
+                { id:'close_sets', name:'El Cerrajero', emoji:'🔐', rarity:'rara', desc:'El que mejor cierra (sets 7-5)', findMax: (b) => b.closeSetPlayed >= 2 ? (b.closeSetWins / b.closeSetPlayed)*100 : null, format: (v) => `${v.toFixed(1)}% en 7-5` },
+                { id:'s1_win', name:'Arrancador', emoji:'🥇', rarity:'rara', desc:'Jugador que más 1er sets ha ganado', findMax: (b) => b.s1win, format: (v) => `${v} veces` },
+                { id:'s2_win', name:'Exprés', emoji:'🚄', rarity:'rara', desc:'Jugador que más veces ha ganado en 2 sets', findMax: (b) => b.matchesWonIn2, format: (v) => `${v} veces` },
+                { id:'s3_reach', name:'Guerrero', emoji:'⚔️', rarity:'rara', desc:'Jugador que más ha llegado a 3er set', findMax: (b) => b.s3reach, format: (v) => `${v} veces` },
+                { id:'tb_most', name:'Tiebreaker', emoji:'⛓️', rarity:'rara', desc:'Jugador con más partidos con Tie Break', findMax: (b) => b.tb > 0 ? b.tb : null, format: (v) => `${v} partidos con Tie Break` },
+                { id:'tb_least', name:'Evita Problemas', emoji:'🧘', rarity:'rara', desc:'Jugador con menos partidos con Tie Break (mín. 3 partidos)', findMin: (b) => b.pj >= 3 ? b.tb : null, format: (v) => `${v} partidos con Tie Break` },
+                { id:'streak_w', name:'Racha Dorada', emoji:'🔥', rarity:'rara', desc:'Racha más larga de victorias', findMax: (b) => b.maxW >= 3 ? b.maxW : null, format: (v) => `${v} partidos seguidos` },
+                { id:'gato_negro', name:'Gato Negro', emoji:'🐈‍⬛', rarity:'rara', desc:'El compañero con el que peor % de victoria ponderado se tiene', findMin: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); let avgWR = sumP > 0 ? (sumWRxP / sumP) * 100 : null; return avgWR; }, format: (v) => `${v.toFixed(1)}% WR ponderado con compas` },
+                { id:'talisman_bolas', name:'Talismán Bolas', emoji:'✨', rarity:'rara', desc:'El jugador que más veces ha ganado con bolas nuevas', findMax: (b) => b.bolasW > 0 ? b.bolasW : null, format: (v) => `${v} victorias con bolas nuevas` },
+                { id:'evolucion', name:'La Evolución', emoji:'📈', rarity:'rara', desc:'Mayor mejora de % victoria comparando 1ª y 2ª mitad de temporada', findMax: (b) => { let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; if(wr1 === null || wr2 === null) return null; return wr2 - wr1; }, format: (v) => `+${v.toFixed(1)}% de mejora` },
+                { id:'rey_granja', name:'Rey de La Granja', emoji:'🌾', rarity:'rara', desc:'Mayor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
+                { id:'rey_indoor', name:'Indoor Pro', emoji:'🏛️', rarity:'rara', desc:'Mayor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMax: (b) => { let best = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(best === null || wr > best) best = wr; } } } return best; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
+                { id:'victima_granja', name:'Forastero', emoji:'⛈️', rarity:'rara', desc:'Menor % victoria (sin empates) en La Granja (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('granja')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en La Granja` },
+                { id:'victima_indoor', name:'Indoor Rookie', emoji:'🧊', rarity:'rara', desc:'Menor % victoria (sin empates) en Padel Indoor (mín. 3 partidos)', findMin: (b) => { let worst = null; for(let c in b.courts) { if(c.toLowerCase().includes('indoor')) { let dec = b.courts[c].p - b.courts[c].d; if(dec >= 3) { let wr = (b.courts[c].w / dec) * 100; if(worst === null || wr < worst) worst = wr; } } } return worst; }, format: (v) => `${v.toFixed(1)}% en Padel Indoor` },
+                { id:'zaragozista', name:'Zaragozista', emoji:'🦁', rarity:'rara', desc:'Más victorias cuando el Zaragoza también ganó', findMax: (b) => b.zaragozaW > 0 ? b.zaragozaW : null, format: (v) => `${v} victorias con el Zaragoza` },
+                { id:'no_3set', name:'Fobia al 3er Set', emoji:'✌️', rarity:'rara', desc:'Menor % de partidos llegando a 3er set (mín. 5 PJ)', findMin: (b) => b.pj >= 5 ? (b.s3reach / b.pj) * 100 : null, format: (v) => `Solo ${v.toFixed(1)}% van al 3er set` },
+
+                // 🟣 ÉPICAS
+                { id:'clean_sets', name:'Cirujano', emoji:'🔪', rarity:'epica', desc:'El rey del set limpio (6-0 o 6-1)', findMax: (b) => b.pj >= 3 ? b.cleanSets : null, format: (v) => `${v} sets limpios` },
+                { id:'comeback', name:'Remontador', emoji:'🦸‍♂️', rarity:'epica', desc:'Más victorias perdiendo el 1er set', findMax: (b) => b.remontadas > 0 ? b.remontadas : null, format: (v) => `${v} remontadas` },
+                { id:'s3_win', name:'Decisivo', emoji:'🎯', rarity:'epica', desc:'Jugador que más 3er sets ha ganado', findMax: (b) => b.s3win, format: (v) => `${v} veces` },
+                { id:'kryptonite', name:'Kriptonita', emoji:'☢️', rarity:'epica', desc:'El anti-invictos: Más veces le ha ganado al Top 1', findMax: (b) => b.kryptoWins > 0 ? b.kryptoWins : null, format: (v) => `${v} victorias al Top 1` },
+                { id:'verdugo', name:'El Verdugo', emoji:'🪓', rarity:'epica', desc:'El jugador que es el Némesis de más personas distintas', findMax: (b, name) => (verdugoCount[name]||0) > 0 ? verdugoCount[name] : null, format: (v) => `Es el némesis de ${v} jugadores` },
+                { id:'muro', name:'Aguafiestas', emoji:'🥳', rarity:'epica', desc:'Corta la racha de victorias de otros', findMax: (b, name) => (streakBreaks[name] || 0) > 0 ? streakBreaks[name] : null, format: (v) => `${v} rachas cortadas` },
+                { id:'maldiciones', name:'Rompe-maldiciones', emoji:'🧿', rarity:'epica', desc:'Era compañero cuando alguien cortó su racha de derrotas', findMax: (b, name) => (curseBreaks[name] || 0) > 0 ? curseBreaks[name] : null, format: (v) => `${v} maldiciones rotas como compañero` },
+                { id:'best_mate', name:'Compañero Perfecto', emoji:'🤝', rarity:'epica', desc:'Mayor % de victoria ponderado con compañeros', findMax: (b) => { let mates = Object.values(b.mates); if(mates.length < 2) return null; let sumWRxP = 0; let sumP = 0; mates.forEach(m => { let decisive = m.p - (m.d||0); let wr = decisive > 0 ? m.w / decisive : 0; sumWRxP += wr * m.p; sumP += m.p; }); return sumP > 0 ? (sumWRxP / sumP) * 100 : null; }, format: (v) => `${v.toFixed(1)}% ponderado` },
+                { id:'777', name:'777', emoji:'🎰', rarity:'epica', desc:'Partido con 3 Tie Breaks (La Ruleta Rusa del Pádel)', findMax: (b) => b.allTbMatches > 0 ? b.allTbMatches : null, format: (v) => `${v} partidos de 3 Tie Breaks` },
+
+                // 🟡 LEGENDARIAS
+                { id:'phoenix', name:'Ave Fénix', emoji:'🐦‍🔥', rarity:'legendaria', desc:'Racha de 3+ victorias seguida inmediatamente de racha de 3+ derrotas (Gana el de mayor racha V)', findMax: (b, name) => (phoenixMax[name] || 0) >= 3 ? phoenixMax[name] : null, format: (v) => `Resurgió con una racha de ${v} victorias seguidas` },
+                { id:'adaptable', name:'Camaleón', emoji:'🦎', rarity:'legendaria', desc:'Ha ganado con TODOS los fijos. En caso de empate en victorias, gana el que lo hizo en menos partidos', findMax: (b, name) => { 
+                    let group = MANDATORY_PLAYERS.filter(p => p !== name); 
+                    if(group.length === 0) return null; 
+                    let hasWonWithAll = group.every(mate => b.winsWith[mate] > 0); 
+                    if (!hasWonWithAll) return null; 
+                    
+                    let totalWinsWithGroup = group.reduce((sum, mate) => sum + (b.winsWith[mate] || 0), 0); 
+                    
+                    // Lógica de eficiencia: 
+                    // 1. Prioridad: Más victorias (peso principal)
+                    // 2. Prioridad: Menos partidos jugados (desempate)
+                    // Restamos una fracción minúscula de PJ. Así, si dos tienen 14 victorias,
+                    // el que jugó 20 partidos (14 - 0.020 = 13.98) le gana al que jugó 25 (14 - 0.025 = 13.975)
+                    return totalWinsWithGroup - (b.pj * 0.001); 
+                }, format: (v) => `${Math.round(v)} victorias con los fijos` },
+                { id:'ext_comeback', name:'Efecto Diésel', emoji:'⛽', rarity:'legendaria', desc:'De menos a más (pierde 1er set por 1-6/2-6 y gana partido)', findMax: (b) => b.extComebacks > 0 ? b.extComebacks : null, format: (v) => `${v} remontadas extremas` }
             ];
 
             globalBadges.forEach(badge => {
@@ -1860,7 +2000,71 @@
         }
 
         function calculateTramos(rows) { let internalMatches = rows.filter(r => String(r['tipo'] || "").toLowerCase() !== "externo"); internalMatches.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); tramosData = {}; let tramo1Matches = []; let restMatches = []; internalMatches.forEach(m => { if (parseCSVDate(m.fecha) <= TRAMO1_END_DATE) tramo1Matches.push(m); else restMatches.push(m); }); processTramoChunk(1, tramo1Matches, true); let chunkIndex = 2; for (let i = 0; i < restMatches.length; i += TRAMO_SIZE) { processTramoChunk(chunkIndex, restMatches.slice(i, i + TRAMO_SIZE), false); chunkIndex++; } let totalPts = {}; let totalPj = {}; let totalPunt = {}; for(let t in tramosData) { tramosData[t].data.forEach(r => { totalPj[r.nombre] = (totalPj[r.nombre] || 0) + r.pj; totalPunt[r.nombre] = r.puntuacion; if (tramosData[t].isFinished) totalPts[r.nombre] = (totalPts[r.nombre] || 0) + r.pts; }); } let totalData = []; for(let j in totalPts) totalData.push({ nombre: j, pj: totalPj[j], puntuacion: totalPunt[j], pts: totalPts[j] }); totalData.sort((a,b) => b.pts - a.pts || b.puntuacion - a.puntuacion); tramosData['total'] = { label: "🏆 Total Acumulado", data: totalData, isFinished: true }; renderTramoButtons(chunkIndex-1); switchTramo(1); }
-        function processTramoChunk(tramoNum, chunk, isTramo1) { let stats = {}, firstDate = null, lastDate = null; chunk.forEach(row => { let rowDate = parseCSVDate(row.fecha); if(!firstDate || rowDate < firstDate) firstDate = rowDate; if(!lastDate || rowDate > lastDate) lastDate = rowDate; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""); [j1A, j1B, j2A, j2B].forEach(j => { if(j && j !== "Playtomic" && !stats[j]) stats[j] = { pj: 0, victorias: 0, empates: 0 }; }); [[j1A, j1B], [j2A, j2B]].forEach(team => { team.forEach(j => { if(j && j !== "Playtomic") { stats[j].pj += 1; if(isDraw) stats[j].empates += 1; else if(ganadores.includes(j)) stats[j].victorias += 1; } }); }); }); let rankArr = []; for(let j in stats) { let s = stats[j]; if(s.pj < 3) continue; let puntos = (s.victorias * 3) + (s.empates * 1), maxP = s.pj * 3; let puntuacion = maxP > 0 ? ((puntos / maxP) * 100) : 0; rankArr.push({ nombre: j, pj: s.pj, puntuacion: puntuacion, pts: 0 }); } rankArr.sort((a,b) => b.puntuacion - a.puntuacion || b.pj - a.pj); rankArr.forEach((r, idx) => { r.pts = idx < POINTS_SYS.length ? POINTS_SYS[idx] : 0; }); let isFinished = isTramo1 ? (new Date().getTime() > TRAMO1_END_DATE) : (chunk.length === TRAMO_SIZE); let formatDate = (ts) => { if(!ts) return "?"; return new Date(ts).toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'2-digit'}); }; let label = (isTramo1 ? "Tramo 1" : "Tramo "+tramoNum) + " ("+formatDate(firstDate)+" - "+formatDate(lastDate)+")"; if (!isFinished) label += " (En curso*)"; tramosData[tramoNum] = { label: label, data: rankArr, isFinished: isFinished }; }
+        function processTramoChunk(tramoNum, chunk, isTramo1) { 
+            let stats = {}, firstDate = null, lastDate = null; 
+            chunk.forEach(row => { 
+                let rowDate = parseCSVDate(row.fecha); 
+                if(!firstDate || rowDate < firstDate) firstDate = rowDate; 
+                if(!lastDate || rowDate > lastDate) lastDate = rowDate; 
+                let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); 
+                let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); 
+                let ganadores = String(row['ganadores'] || ""); 
+                let setsP1 = parseInt(row['sets p1'] || 0), setsP2 = parseInt(row['sets p2'] || 0); 
+                
+                [j1A, j1B, j2A, j2B].forEach(j => { if(j && j !== "Playtomic" && !stats[j]) stats[j] = { pj: 0, victorias: 0, empates: 0, sf: 0, sc: 0 }; }); 
+                
+                [[j1A, j1B, setsP1, setsP2], [j2A, j2B, setsP2, setsP1]].forEach(team => { 
+                    team.slice(0,2).forEach(j => { 
+                        if(j && j !== "Playtomic") { 
+                            stats[j].pj += 1; 
+                            stats[j].sf += team[2]; // Sets a favor
+                            stats[j].sc += team[3]; // Sets en contra
+                            if(isDraw) stats[j].empates += 1; 
+                            else if(ganadores.includes(j)) stats[j].victorias += 1; 
+                        } 
+                    }); 
+                }); 
+            }); 
+
+            let rankArr = [];
+            for(let j in stats) { 
+                let s = stats[j]; 
+                
+                // REGLA DE VISIBILIDAD:
+                // 1. Nadie con 0 partidos aparece en la tabla
+                if(s.pj === 0) continue; 
+                // 2. Los NO fijos necesitan mínimo 3 partidos. Los fijos pueden con 1 o 2.
+                if(s.pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue; 
+                
+                let pg = s.victorias, pe = s.empates, pj = s.pj;
+                let puntuacion = pj > 0 ? ((((pg + 1 + 0.2 * pe) / (pj + 2)) * (1 - 1 / (pj + 1))) * 100) : 0; 
+                let difSets = s.sf - s.sc;
+                rankArr.push({ nombre: j, pj: s.pj, puntuacion: puntuacion, difSets: difSets, pts: 0 }); 
+            } 
+            
+            // Orden: 1. Puntuación, 2. Dif. Sets, 3. Partidos Jugados
+            rankArr.sort((a,b) => b.puntuacion - a.puntuacion || b.difSets - a.difSets || b.pj - a.pj); 
+
+            // Asignación de puntos permitiendo empates
+            for(let i = 0; i < rankArr.length; i++) {
+                let r = rankArr[i];
+                let prev = i > 0 ? rankArr[i-1] : null;
+                
+                // Si empata en todo con el anterior, hereda sus puntos
+                if (prev && r.puntuacion === prev.puntuacion && r.difSets === prev.difSets && r.pj === prev.pj) {
+                    r.pts = prev.pts;
+                } else {
+                    // Si no hay empate, puntos por posición actual
+                    r.pts = i < POINTS_SYS.length ? POINTS_SYS[i] : 0;
+                }
+            }
+            
+            let isFinished = isTramo1 ? (new Date().getTime() > TRAMO1_END_DATE) : (chunk.length === TRAMO_SIZE); 
+            let formatDate = (ts) => { if(!ts) return "?"; return new Date(ts).toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'2-digit'}); }; 
+            let label = (isTramo1 ? "Tramo 1" : "Tramo "+tramoNum) + " ("+formatDate(firstDate)+" - "+formatDate(lastDate)+")"; 
+            if (!isFinished) label += " (En curso*)"; 
+            tramosData[tramoNum] = { label: label, data: rankArr, isFinished: isFinished }; 
+        }
         function renderTramoButtons(numTramos) { let container = document.getElementById('tramos-buttons'); container.innerHTML = ""; for(let t = 1; t <= numTramos; t++) { container.innerHTML += `<button onclick="switchTramo(${t})" id="btn-tramo-${t}" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">${tramosData[t].label.split(" (")[0]}</button>`; } container.innerHTML += `<button onclick="switchTramo('total')" id="btn-tramo-total" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">🏆 Total</button>`; }
         function switchTramo(tramoId) { document.querySelectorAll('.tramo-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400'); }); let activeBtn = document.getElementById('btn-tramo-' + tramoId); if(activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); } document.getElementById('tramo-subtitle').innerText = tramosData[tramoId].label; let data = tramosData[tramoId].data; let isFinished = tramosData[tramoId].isFinished; let tbody = document.getElementById('tramos-tbody'); tbody.innerHTML = ""; data.forEach((r, idx) => { let m = idx===0?"👑 ":""; let tr = document.createElement("tr"); tr.className = "hover:bg-slate-750/30 border-b border-slate-800"; let pColor = r.pts >= 7 ? 'text-emerald-400' : (r.pts >= 3 ? 'text-amber-400' : 'text-slate-400'); let ptsDisplay = isFinished ? `<span class="${pColor}">${r.pts} pts</span>` : `<span class="text-slate-500 text-xs">${r.pts} pts*</span>`; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.pj}</td><td class="p-3 text-center font-mono text-slate-300">${r.puntuacion.toFixed(1)}%</td><td class="p-3 text-right font-mono font-bold">${ptsDisplay}</td>`; tbody.appendChild(tr); }); }
 
@@ -1896,7 +2100,33 @@
             if(!player) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
             let htmlBadges = "";
-            globalBadges.forEach(b => { if(b.winners.includes(player)) { htmlBadges += `<div onclick="showBadgeDetail('${b.id}')" class="bg-slate-900/60 border border-slate-700 hover:border-emerald-500 p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105 shadow-sm hover:shadow-emerald-500/20 animate-fade-in"><span class="text-4xl">${b.emoji}</span><span class="text-xs font-bold text-slate-200 text-center leading-tight uppercase tracking-wider">${b.name}</span></div>`; } });
+            globalBadges.forEach(b => { 
+                if(b.winners.includes(player)) { 
+                    // Estilos según rareza
+                    let rarityStyles = {
+                        'comun': 'border-slate-700 hover:border-slate-500 text-slate-400 shadow-slate-900/50',
+                        'rara': 'border-blue-800/40 hover:border-blue-400 text-blue-300 shadow-blue-500/10',
+                        'epica': 'border-purple-800/40 hover:border-purple-400 text-purple-300 shadow-purple-500/20',
+                        'legendaria': 'border-amber-600/50 hover:border-amber-400 text-amber-300 shadow-amber-500/30 shadow-lg'
+                    };
+                    let rarityLabels = {
+                        'comun': '<span class="text-[8px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500 uppercase font-bold">Común</span>',
+                        'rara': '<span class="text-[8px] bg-blue-900/40 px-1.5 py-0.5 rounded text-blue-400 uppercase font-bold">Rara</span>',
+                        'epica': '<span class="text-[8px] bg-purple-900/40 px-1.5 py-0.5 rounded text-purple-400 uppercase font-bold">Épica</span>',
+                        'legendaria': '<span class="text-[8px] bg-amber-900/40 px-1.5 py-0.5 rounded text-amber-400 uppercase font-bold animate-pulse">Legendaria</span>'
+                    };
+
+                    let style = rarityStyles[b.rarity] || rarityStyles['comun'];
+                    let label = rarityLabels[b.rarity] || rarityLabels['comun'];
+
+                    htmlBadges += `
+                    <div onclick="showBadgeDetail('${b.id}')" class="bg-slate-900/60 border ${style} p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105 animate-fade-in relative overflow-hidden group">
+                        <span class="text-4xl z-10">${b.emoji}</span>
+                        <span class="text-xs font-bold text-center leading-tight uppercase tracking-wider z-10">${b.name}</span>
+                        <div class="mt-1 z-10">${label}</div>
+                    </div>`; 
+                } 
+            });
             document.getElementById('profile-badges').innerHTML = htmlBadges || `<div class="col-span-full text-center text-slate-500 py-8">Aún no ha desbloqueado insignias</div>`;
             let vT=0, pT=0, lT=0, rJ=0, rV=0, rD=0, dJ=0, dV=0, dD=0, sociosStats={}, nemesisCount={}, posReves=0, posDrive=0;
             let opponentsCount = {}, opponentPairsCount = {};
@@ -1988,8 +2218,9 @@
             chartRadarInstance = new Chart(document.getElementById('chartRadar'), { type: 'radar', data: { labels: labels, datasets: [{ label: player, data: diffData, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 1)', pointBackgroundColor: 'rgba(16, 185, 129, 1)', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: false, min: -40, max: 40, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }, ticks: { display: true, color: '#64748b', backdropColor: 'transparent', stepSize: 20 } } }, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: function(context) { let val = context.raw; let sign = val > 0 ? '+' : ''; return `${context.dataset.label}: ${sign}${val.toFixed(1)}% vs Media`; } } } } } });
         }
 
-        function renderPlayerMonthlyChart(player) { if(chartMonthlyInstance) chartMonthlyInstance.destroy(); let monthlyData = {}; rawDataGlobal.forEach(row => { if(String(row.tipo || "").toLowerCase() === "externo") return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let inMatch = [j1A, j1B, j2A, j2B].includes(player); if(!inMatch) return; let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; if(!monthlyData[monthKey]) monthlyData[monthKey] = {pj:0, v:0, e:0}; monthlyData[monthKey].pj += 1; if(isDraw) monthlyData[monthKey].e += 1; else if(ganadores.includes(player)) monthlyData[monthKey].v += 1; }); let labels = [], dataPoints = []; Object.keys(monthlyData).sort().forEach(m => { let s = monthlyData[m]; let pts = (s.v * 3) + s.e, maxPts = s.pj * 3; let punt = maxPts > 0 ? (pts/maxPts)*100 : 0; labels.push(new Date(m + "-02").toLocaleDateString('es-ES', { month: 'short', year:'2-digit' })); dataPoints.push(punt.toFixed(1)); }); chartMonthlyInstance = new Chart(document.getElementById('chartMonthlyEvolution'), { type: 'line', data: { labels: labels, datasets: [{ label: '% Puntuación', data: dataPoints, borderColor: PLAYER_COLORS[player] || '#34d399', backgroundColor: PLAYER_COLORS[player] ? PLAYER_COLORS[player] + '33' : 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: PLAYER_COLORS[player] || '#34d399' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: '#334155' }, ticks: { color:'#94a3b8' } } } } }); }
-        function renderPlayerMatchChart(player) { if(chartMatchInstance) chartMatchInstance.destroy(); let totalPoints = 0, matchCount = 0; let labels = [], dataPoints = []; let playerMatches = filteredDataGlobal.filter(row => { if(String(row.tipo || "").toLowerCase() === "externo") return false; let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); return [j1A, j1B, j2A, j2B].includes(player); }).sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); playerMatches.forEach(row => { matchCount++; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let ganadores = String(row['ganadores'] || ""); if(isDraw) totalPoints += 1; else if(ganadores.includes(player)) totalPoints += 3; let maxPts = matchCount * 3; let punt = maxPts > 0 ? (totalPoints / maxPts) * 100 : 0; labels.push(new Date(parseCSVDate(row.fecha)).toLocaleDateString('es-ES', {day:'2-digit', month:'short'})); dataPoints.push(parseFloat(punt.toFixed(1))); }); chartMatchInstance = new Chart(document.getElementById('chartMatchEvolution'), { type: 'line', data: { labels: labels, datasets: [{ label: '% Puntuación Acumulada', data: dataPoints, borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.1, pointRadius: 4, pointBackgroundColor: '#34d399' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', autoSkip: true, maxTicksLimit: 15 } } } } }); }
+        function renderPlayerMonthlyChart(player) { if(chartMonthlyInstance) chartMonthlyInstance.destroy(); let monthlyData = {}; rawDataGlobal.forEach(row => { if(String(row.tipo || "").toLowerCase() === "externo") return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let inMatch = [j1A, j1B, j2A, j2B].includes(player); if(!inMatch) return; let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; if(!monthlyData[monthKey]) monthlyData[monthKey] = {pj:0, v:0, e:0}; monthlyData[monthKey].pj += 1; if(isDraw) monthlyData[monthKey].e += 1; else if(ganadores.includes(player)) monthlyData[monthKey].v += 1; }); let labels = [], dataPoints = []; Object.keys(monthlyData).sort().forEach(m => { let s = monthlyData[m]; let pg = s.v, pe = s.e, pj = s.pj;
+        let punt = pj > 0 ? (((pg + 1 + 0.2 * pe) / (pj + 2)) * (1 - 1 / (pj + 1))) * 100 : 0; labels.push(new Date(m + "-02").toLocaleDateString('es-ES', { month: 'short', year:'2-digit' })); dataPoints.push(punt.toFixed(1)); }); chartMonthlyInstance = new Chart(document.getElementById('chartMonthlyEvolution'), { type: 'line', data: { labels: labels, datasets: [{ label: '% Puntuación', data: dataPoints, borderColor: PLAYER_COLORS[player] || '#34d399', backgroundColor: PLAYER_COLORS[player] ? PLAYER_COLORS[player] + '33' : 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.3, pointRadius: 5, pointBackgroundColor: PLAYER_COLORS[player] || '#34d399' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: '#334155' }, ticks: { color:'#94a3b8' } } } } }); }
+        function renderPlayerMatchChart(player) { if(chartMatchInstance) chartMatchInstance.destroy(); let winsCount = 0, drawsCount = 0, matchCount = 0; let labels = [], dataPoints = []; let playerMatches = filteredDataGlobal.filter(row => { if(String(row.tipo || "").toLowerCase() === "externo") return false; let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); return [j1A, j1B, j2A, j2B].includes(player); }).sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); playerMatches.forEach(row => { matchCount++; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let ganadores = String(row['ganadores'] || ""); if(isDraw) drawsCount++; else if(ganadores.includes(player)) winsCount++; let pg = winsCount, pe = drawsCount, pj = matchCount; let punt = pj > 0 ? (((pg + 1 + 0.2 * pe) / (pj + 2)) * (1 - 1 / (pj + 1))) * 100 : 0; labels.push(new Date(parseCSVDate(row.fecha)).toLocaleDateString('es-ES', {day:'2-digit', month:'short'})); dataPoints.push(parseFloat(punt.toFixed(1))); }); chartMatchInstance = new Chart(document.getElementById('chartMatchEvolution'), { type: 'line', data: { labels: labels, datasets: [{ label: '% Puntuación Acumulada', data: dataPoints, borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', fill: true, tension: 0.1, pointRadius: 4, pointBackgroundColor: '#34d399' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { display: false } }, scales: { y: { beginAtZero: true, max: 100, grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }, x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8', autoSkip: true, maxTicksLimit: 15 } } } } }); }
 
         function toggleTagFilter(tag) { if (activeTagFilters.includes(tag)) activeTagFilters = activeTagFilters.filter(t => t !== tag); else activeTagFilters.push(tag); document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active')); activeTagFilters.forEach(t => { let btn = document.getElementById('tag-' + t); if(btn) btn.classList.add('active'); }); filterMatches(); }
         function filterMatches() { const q = (document.getElementById("searchInput").value || "").toLowerCase(); const words = q.split(' ').filter(w => w.length > 0); const PLAYER_FIELDS = ['p1 - jugador a', 'p1 - jugador b', 'p2 - jugador a', 'p2 - jugador b']; const META_FIELDS = ['fecha', 'pista']; let result = filteredDataGlobal.filter(row => { if (words.length > 0) { let allMatched = words.every(w => { let inPlayerField = PLAYER_FIELDS.some(f => String(row[f] || "").toLowerCase().includes(w)); if (inPlayerField) return true; let inMetaField = META_FIELDS.some(f => String(row[f] || "").toLowerCase().includes(w)); if (inMetaField) return true; if (w.includes("-")) { let parts = w.split("-"); if(parts.length === 2) { let revQ = parts[1] + "-" + parts[0]; let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=`${row['set 3 - p1']||0}-${row['set 3 - p2']||0}`; if(s1===w||s2===w||s3===w||s1===revQ||s2===revQ||s3===revQ) return true; } } return false; }); if (!allMatched) return false; } if (activeTagFilters.length > 0) { for (let tag of activeTagFilters) { let s3p1 = parseInt(row['set 3 - p1'] || 0), s3p2 = parseInt(row['set 3 - p2'] || 0); let has3Set = s3p1 > 0 || s3p2 > 0; let s1 = `${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`; let s2 = `${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`; let s3 = `${s3p1}-${s3p2}`; let isTB = [s1,s2,s3].some(s => s==='7-6' || s==='6-7'); let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*"; if (tag === '3set' && !has3Set) return false; if (tag === '2set' && has3Set) return false; if (tag === 'tb' && !isTB) return false; if (tag === 'empate' && !isDraw) return false; if (tag === 'bolas' && !isB) return false; } } return true; }); displayMatches(result); }
@@ -2003,7 +2234,60 @@
         function renderPositionCharts(rv, rd, re, dv, dd, de) { if(chartRevesInstance) chartRevesInstance.destroy(); if(chartDriveInstance) chartDriveInstance.destroy(); const O = { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } }, datalabels: { display: false } } }; chartRevesInstance = new Chart(document.getElementById('chartReves'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [rv,rd,re], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O }); chartDriveInstance = new Chart(document.getElementById('chartDrive'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [dv,dd,de], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O }); }
         function renderRankingTable(ranking) { const tbody = document.getElementById("ranking-tbody"); tbody.innerHTML = ""; ranking.forEach((r, idx) => { let m = idx===0?"👑 ":""; const tr = document.createElement("tr"); let rowClass = "hover:bg-slate-750/30 border-b border-slate-800"; if (idx === 0 && r.streakType === 'fire') rowClass += " leader-fire"; else if (idx === 0 && r.streakType === 'ice') rowClass += " leader-ice"; else if (idx === 0) rowClass += " leader"; else if (r.streakType === 'fire') rowClass += " streak-fire"; else if (r.streakType === 'ice') rowClass += " streak-ice"; tr.className = rowClass; let dc = r.difSets>0?'text-emerald-400':(r.difSets<0?'text-red-400':'text-slate-400'); let dp = r.difSets>0?'+':''; let streakHtml = r.streak ? `<span class="mr-1">${r.streak}</span>` : ""; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${streakHtml}${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.partidos}</td><td class="p-3 text-center text-emerald-400 font-bold">${r.victorias}</td><td class="p-3 text-center text-red-400">${r.derrotas}</td><td class="p-3 text-center text-amber-400">${r.empates}</td><td class="p-3 text-center font-bold ${dc}">${dp}${r.difSets}</td><td class="p-3 text-center font-mono text-slate-300">${r.winRateVic}%</td><td class="p-3 text-right font-mono font-bold text-white bg-slate-900/50 rounded-l-lg">${r.puntuacion}%</td>`; tbody.appendChild(tr); }); }
 
-        function displayMatches(matches) { const tbody = document.querySelector("#matchesTable tbody"); tbody.innerHTML = ""; matches.forEach((row, idx) => { let isE = String(row.tipo||"").toLowerCase()==="externo", isG = String(row['grabado']||"").toLowerCase()==="true"; let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*"; let bE = isE?`<span class="ml-2 px-1.5 py-0.5 bg-red-950 text-red-400 text-[9px] rounded border border-red-900 font-black">EXT</span>`:""; let bG = isG?`<span class="ml-2 px-1.5 py-0.5 bg-purple-950 text-purple-400 text-[9px] rounded border border-purple-900 font-black">🎬</span>`:""; let bB = isB?`<span class="ml-2 px-1.5 py-0.5 bg-emerald-950 text-emerald-400 text-[9px] rounded border border-emerald-900 font-black">🎾</span>`:""; let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=row['set 3 - p1']?`,${row['set 3 - p1']}-${row['set 3 - p2']}`:""; const tr = document.createElement("tr"); tr.className = `border-b border-slate-800 transition ${isE?'bg-red-950/5 opacity-60':'hover:bg-slate-750/20'}`; tr.innerHTML = `<td class="p-4 text-xs font-mono text-slate-500">${idx+1}</td><td class="p-4 text-xs font-mono text-slate-400 whitespace-nowrap">${row['fecha']||'-'} ${bE} ${bG} ${bB}</td><td class="p-4 font-semibold text-slate-200">${row['pista']||'-'}</td><td class="p-4 text-xs text-slate-300">${row['p1 - jugador a']||'?'}/${row['p1 - jugador b']||'?'}</td><td class="p-4 text-xs text-slate-300">${row['p2 - jugador a']||'?'}/${row['p2 - jugador b']||'?'}</td><td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td><td class="p-4 font-bold text-emerald-400">${row['ganadores']||'-'}</td>`; tbody.appendChild(tr); }); }
+        function displayMatches(matches) { 
+            const tbody = document.querySelector("#matchesTable tbody"); 
+            tbody.innerHTML = ""; 
+            
+            // 1. Filtrar externos (Playtomic)
+            let internalMatches = matches.filter(row => String(row.tipo||"").toLowerCase() !== "externo");
+
+            internalMatches.forEach((row, idx) => { 
+                let isG = String(row['grabado']||"").toLowerCase()==="true"; 
+                let isB = String(row['bolas nuevas']||"").trim().toLowerCase() === "true" || String(row['bolas nuevas']||"").trim().toLowerCase() === "verdadero" || String(row['bolas nuevas']||"").trim() === "*"; 
+                
+                // Iconos en lugar de emojis
+                let bG = isG?`<span class="ml-2 px-1.5 py-0.5 bg-purple-950 text-purple-400 text-[9px] rounded border border-purple-900 font-black"><i class="ri-movie-2-line text-[8px]"></i></span>`:""; 
+                let bB = isB?`<span class="ml-2 px-1.5 py-0.5 bg-emerald-950 text-emerald-400 text-[9px] rounded border border-emerald-900 font-black"><i class="ri-record-circle-line text-[8px]"></i></span>`:""; 
+                
+                let s1=`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`, s2=`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`, s3=row['set 3 - p1']?`,${row['set 3 - p1']}-${row['set 3 - p2']}`:""; 
+                
+                // Lógica de Pelotas (quién las trajo)
+                let pelotasPerson = String(row['pelotas'] || "").trim();
+                if (!pelotasPerson || pelotasPerson.toLowerCase() === "false" || pelotasPerson === "*" || pelotasPerson === "Playtomic") {
+                    pelotasPerson = String(row['pago reserva'] || "").trim();
+                    if (!pelotasPerson || pelotasPerson.toLowerCase() === "false" || pelotasPerson === "*" || pelotasPerson === "Playtomic") {
+                        pelotasPerson = "-";
+                    }
+                }
+                if (isB) pelotasPerson = `<span class="text-emerald-400 font-bold">${pelotasPerson}</span>`;
+
+                // Lógica de Ganadores/Perdedores (Color verde/gris)
+                let ganadoresStr = String(row['ganadores'] || "");
+                let isDraw = ganadoresStr.toLowerCase().includes("empate");
+                let p1A = String(row['p1 - jugador a'] || "").trim(), p1B = String(row['p1 - jugador b'] || "").trim();
+                let p2A = String(row['p2 - jugador a'] || "").trim(), p2B = String(row['p2 - jugador b'] || "").trim();
+                
+                let team1Text = `${p1A}/${p1B}`;
+                let team2Text = `${p2A}/${p2B}`;
+                let winT1 = ganadoresStr.includes(p1A) && ganadoresStr.includes(p1B);
+                let winT2 = ganadoresStr.includes(p2A) && ganadoresStr.includes(p2B);
+                
+                if (winT1) {
+                    team1Text = `<span class="text-emerald-400 font-bold">${team1Text}</span>`;
+                    team2Text = `<span class="text-slate-500">${team2Text}</span>`;
+                } else if (winT2) {
+                    team2Text = `<span class="text-emerald-400 font-bold">${team2Text}</span>`;
+                    team1Text = `<span class="text-slate-500">${team1Text}</span>`;
+                }
+
+                let winnersDisplay = isDraw ? `<span class="text-amber-400">Empate</span>` : `<span class="text-emerald-400">${ganadoresStr}</span>`;
+
+                const tr = document.createElement("tr"); 
+                tr.className = `border-b border-slate-800 transition hover:bg-slate-750/20`; 
+                tr.innerHTML = `<td class="p-4 text-xs font-mono text-slate-500">${idx+1}</td><td class="p-4 text-xs font-mono text-slate-400 whitespace-nowrap">${row['fecha']||'-'} ${bG} ${bB}</td><td class="p-4 font-semibold text-slate-200">${row['pista']||'-'}</td><td class="p-4 text-xs">${team1Text}</td><td class="p-4 text-xs">${team2Text}</td><td class="p-4 text-center font-bold text-amber-400">${s1}, ${s2}${s3}</td><td class="p-4 text-xs text-center">${pelotasPerson}</td><td class="p-4 text-xs font-bold">${winnersDisplay}</td>`; 
+                tbody.appendChild(tr); 
+            }); 
+        }
 
         let resultChartInstance = null;
         function calculateMostFrequentResult() {
