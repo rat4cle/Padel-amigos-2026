@@ -2112,8 +2112,89 @@
                 renderTeams(options, title);
             }
         }
-        function renderTeams(options, title) { let stats = {}; globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor); let html = `<h4 class="text-lg font-bold mb-3 text-purple-300">${title}</h4>`; if (options.length > 1) { html += `<p class="text-xs text-cyan-400 mb-3 font-bold">⚡ ${options.length} opciones empatadas — elige la que prefieras:</p>`; } options.forEach((opt, idx) => { let [n1, n2, n3, n4] = opt; let avg1 = (((stats[n1]||0) + (stats[n2]||0)) / 2).toFixed(1); let avg2 = (((stats[n3]||0) + (stats[n4]||0)) / 2).toFixed(1); html += `<div class="grid grid-cols-2 gap-4 ${options.length > 1 ? 'mb-3 p-3 rounded-xl border border-slate-700' : ''}">`; if (options.length > 1) html += `<div class="col-span-2 text-xs text-slate-500 font-bold mb-1">Opción ${idx + 1}</div>`; html += `<div class="bg-emerald-900/20 p-3 rounded-lg border border-emerald-800/50"><div class="text-sm text-emerald-400 font-bold">EQUIPO 1</div><div class="text-xl font-black text-white">${n1} & ${n2}</div><div class="text-xs text-slate-400">Media: ${avg1}%</div></div>`; html += `<div class="bg-red-900/20 p-3 rounded-lg border border-red-800/50"><div class="text-sm text-red-400 font-bold">EQUIPO 2</div><div class="text-xl font-black text-white">${n3} & ${n4}</div><div class="text-xs text-slate-400">Media: ${avg2}%</div></div>`; html += `</div>`; }); document.getElementById('mm-result').innerHTML = html; }
+        function renderTeams(options, title) {
+            let stats = {};
+            globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor);
 
+            let html = `<h4 class="text-lg font-bold mb-3 text-purple-300">${title}</h4>`;
+            
+            if (options.length > 1) {
+                html += `<p class="text-xs text-cyan-400 mb-3 font-bold">⚡ ${options.length} opciones empatadas — elige la que prefieras:</p>`;
+            }
+
+            options.forEach((opt, idx) => {
+                let [n1, n2, n3, n4] = opt;
+                
+                // Cálculo de medias
+                let avg1 = (((stats[n1]||0) + (stats[n2]||0)) / 2).toFixed(1);
+                let avg2 = (((stats[n3]||0) + (stats[n4]||0)) / 2).toFixed(1);
+
+                // ==========================================
+                // CÁLCULO PREDICCIÓN (AMBOS EQUIPOS)
+                // ==========================================
+                let probT1 = calculateMatchProbability([n1, n2], [n3, n4]);
+                let probT2 = 100 - probT1; // La suma siempre es 100%
+
+                // Lógica de colores: Verde para el favorito (>60% o <40% si es el T2)
+                let colorT1 = probT1 >= 60 ? 'text-emerald-400' : (probT1 <= 40 ? 'text-red-400' : 'text-slate-400');
+                let colorT2 = probT2 >= 60 ? 'text-emerald-400' : (probT2 <= 40 ? 'text-red-400' : 'text-slate-400');
+                
+                // Texto de favorito
+                let favText = probT1 > probT2 ? "Favorito: T1" : "Favorito: T2";
+                
+                // Bloque HTML actualizado
+                let predictionBlock = `
+                    <div class="col-span-2 mt-2 pt-2 border-t border-slate-700/50 flex flex-col gap-1 px-1">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] text-slate-500 font-bold uppercase">🔖 IA Prediction</span>
+                            <span class="text-[10px] ${probT1 >= 60 || probT1 <= 40 ? 'text-emerald-400 font-bold' : 'text-slate-600'}">${favText}</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-end gap-2">
+                            <!-- EQUIPO 1 -->
+                            <div class="flex flex-col items-center flex-1">
+                                <span class="text-[10px] text-emerald-400 font-bold mb-0.5">${n1}/${n2}</span>
+                                <span class="font-black text-2xl ${colorT1}">${probT1}%</span>
+                            </div>
+                            
+                            <span class="text-slate-600 text-xs mb-1 self-end">vs</span>
+                            
+                            <!-- EQUIPO 2 -->
+                            <div class="flex flex-col items-center flex-1">
+                                <span class="text-[10px] text-red-400 font-bold mb-0.5">${n3}/${n4}</span>
+                                <span class="font-black text-2xl ${colorT2}">${probT2}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                // ==========================================
+
+                html += `<div class="grid grid-cols-2 gap-4 ${options.length > 1 ? 'mb-3 p-3 rounded-xl border border-slate-700' : ''}">`;
+                
+                if (options.length > 1) {
+                    html += `<div class="col-span-2 text-xs text-slate-500 font-bold mb-1">Opción ${idx + 1}</div>`;
+                }
+
+                // Team 1
+                html += `<div class="bg-emerald-900/20 p-3 rounded-lg border border-emerald-800/50">
+                    <div class="text-sm text-emerald-400 font-bold">EQUIPO 1</div>
+                    <div class="text-xl font-black text-white">${n1} & ${n2}</div>
+                    <div class="text-xs text-slate-400">Media: ${avg1}%</div>
+                </div>`;
+
+                // Team 2
+                html += `<div class="bg-red-900/20 p-3 rounded-lg border border-red-800/50">
+                    <div class="text-sm text-red-400 font-bold">EQUIPO 2</div>
+                    <div class="text-xl font-black text-white">${n3} & ${n4}</div>
+                    <div class="text-xs text-slate-400">Media: ${avg2}%</div>
+                </div>`;
+
+                html += predictionBlock;
+                html += `</div>`;
+            });
+
+            document.getElementById('mm-result').innerHTML = html;
+        }
         function renderPlayerProfile() {
             let player = selectedPlayerName; let container = document.getElementById('player-stats-container'); document.getElementById('badge-detail').classList.add('hidden');
             if(!player) { container.classList.add('hidden'); return; }
@@ -5039,6 +5120,59 @@
             }
 
             return comments[0] || "Sin valorar.";
+        }
+        function calculateMatchProbability(p1, p2) {
+            // ==========================================
+            // 1. INTENTO USAR HISTORIAL DIRECTO (H2H)
+            // ==========================================
+            let wins = 0;
+            let totalMatches = 0;
+            
+            // Recorremos los 4 cruces posibles (A vs C, A vs D, B vs C, B vs D)
+            p1.forEach(attacker => {
+                p2.forEach(defender => {
+                    // Verificamos que globalFaceOffs exista y tenga datos para este par
+                    if (globalFaceOffs && globalFaceOffs[attacker] && globalFaceOffs[attacker][defender] !== undefined) {
+                        let w = globalFaceOffs[attacker][defender] || 0;
+                        let l = (globalFaceOffs[defender] && globalFaceOffs[defender][attacker]) || 0;
+                        
+                        wins += w;
+                        totalMatches += (w + l);
+                    }
+                });
+            });
+
+            // Si tenemos suficientes partidos cara a cara, devolvemos ese porcentaje real
+            if (totalMatches > 0) {
+                return Math.round((wins / totalMatches) * 100);
+            }
+
+            // ==========================================
+            // 2. FALLBACK: USAR PUNTOS DE RANKING (SI NO HAY H2H)
+            // ==========================================
+            // Si nunca se han jugado estos equipos, usamos la lógica:
+            // "Si el Team 1 tiene más puntos, tiene más probabilidad"
+            
+            // Obtenemos los puntos actuales de los jugadores
+            let stats = {};
+            globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor);
+
+            let p1Points = (stats[p1[0]] || 0) + (stats[p1[1]] || 0);
+            let p2Points = (stats[p2[0]] || 0) + (stats[p2[1]] || 0);
+
+            // Si tienen puntos exactamente iguales, es un 50% real
+            if (p1Points === p2Points) return 50;
+
+            // Fórmula simple de desplazamiento desde el 50%
+            // Diferencia de puntos * 1.5 (factor de sensibilidad)
+            let diff = p1Points - p2Points; 
+            let probability = 50 + (diff * 1.5);
+
+            // Limitamos para que no diga 0% o 100% (humildad tecnológica)
+            if (probability > 90) probability = 90;
+            if (probability < 10) probability = 10;
+
+            return Math.round(probability);
         }
     </script>
     <!-- MODAL DE GUARDADO -->
