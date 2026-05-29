@@ -10,6 +10,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <style>
+         
+         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@400;700;900&family=Quicksand:wght@400;700;900&family=Raleway:wght@400;700;900&display=swap');
+        .leader td { background-color: rgba(255, 215, 0, 0.12); }
+
         .leader td { background-color: rgba(255, 215, 0, 0.12); }
         .streak-fire td { background-color: rgba(255, 140, 0, 0.15); }
         .streak-ice td { background-color: rgba(0, 191, 255, 0.1); }
@@ -711,6 +715,85 @@
             padding-bottom: 8px;
             letter-spacing: 0.05em;
         }
+        /* ========== TEMAS (AMPLIADO Y CORREGIDO) ========== */
+        
+        /* --- TEMA CLARO --- */
+        body[data-theme="claro"] { background: #f1f5f9 !important; color: #0f172a !important; }
+        body[data-theme="claro"] #sidebar, body[data-theme="claro"] #filter-panel { background: #e2e8f0 !important; border-color: #cbd5e1 !important; }
+        body[data-theme="claro"] #topbar { background: rgba(241,245,249,0.95) !important; border-color: #cbd5e1 !important; }
+        body[data-theme="claro"] .bg-slate-800, body[data-theme="claro"] .bg-slate-900\/50, body[data-theme="claro"] .bg-slate-900\/60, body[data-theme="claro"] .bg-slate-900\/40 { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #0f172a; }
+        body[data-theme="claro"] .bg-slate-900, body[data-theme="claro"] .bg-slate-950 { background-color: #f1f5f9 !important; color: #0f172a; }
+        body[data-theme="claro"] .text-white, body[data-theme="claro"] .text-slate-200, body[data-theme="claro"] .text-slate-100 { color: #0f172a !important; }
+        body[data-theme="claro"] .text-slate-300 { color: #334155 !important; }
+        body[data-theme="claro"] .text-slate-400 { color: #475569 !important; }
+        body[data-theme="claro"] .text-slate-500 { color: #64748b !important; }
+        body[data-theme="claro"] .text-emerald-400, body[data-theme="claro"] .text-emerald-300 { color: #059669 !important; } /* Verde más oscuro para contraste */
+        body[data-theme="claro"] .text-amber-400 { color: #b45309 !important; } /* Naranja más oscuro */
+        body[data-theme="claro"] .text-red-400, body[data-theme="claro"] .text-red-300 { color: #dc2626 !important; } /* Rojo más oscuro */
+        body[data-theme="claro"] .text-sky-400 { color: #0284c7 !important; } /* Azul más oscuro */
+        body[data-theme="claro"] .border-slate-700, body[data-theme="claro"] .border-slate-800, body[data-theme="claro"] .border-slate-600 { border-color: #e2e8f0 !important; }
+        body[data-theme="claro"] .divide-slate-700\/50 > :not([hidden]) ~ :not([hidden]) { border-color: #e2e8f0 !important; }
+        body[data-theme="claro"] input, body[data-theme="claro"] select { background: #f8fafc !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
+        body[data-theme="claro"] .sidebar-item { color: #475569 !important; }
+        body[data-theme="claro"] .sidebar-item.active { color: #059669 !important; background: rgba(16,185,129,0.15) !important; border-left-color: #059669 !important; }
+        body[data-theme="claro"] .topbar-title { color: #059669 !important; }
+        body[data-theme="claro"] .topbar-title span { color: #059669 !important; } /* Arregla el 2026 */
+        body[data-theme="claro"] .leader td, body[data-theme="claro"] .streak-fire td, body[data-theme="claro"] .streak-ice td { background-color: rgba(0,0,0,0.05) !important; }
+
+        /* --- TEMA NEÓN --- */
+        body[data-theme="neon"] { background: #050505 !important; color: #e2e8f0 !important; }
+        body[data-theme="neon"] #sidebar, body[data-theme="neon"] #filter-panel { background: #0a0a0a !important; border-color: #00ffff30 !important; box-shadow: 0 0 15px #00ffff10; }
+        body[data-theme="neon"] #topbar { background: rgba(5,5,5,0.95) !important; border-color: #ff00ff30 !important; box-shadow: 0 0 15px #ff00ff10; }
+        body[data-theme="neon"] .bg-slate-800, body[data-theme="neon"] .bg-slate-900\/50, body[data-theme="neon"] .bg-slate-900\/60, body[data-theme="neon"] .bg-slate-900\/40 { background-color: #0f0f0f !important; border: 1px solid #00ffff20 !important; box-shadow: 0 0 10px #00ffff08; color: #e2e8f0; }
+        body[data-theme="neon"] .bg-slate-900, body[data-theme="neon"] .bg-slate-950 { background-color: #050505 !important; }
+        body[data-theme="neon"] .text-white, body[data-theme="neon"] .text-slate-200, body[data-theme="neon"] .text-slate-100 { color: #ffffff !important; text-shadow: 0 0 5px #00ffff80; }
+        body[data-theme="neon"] .text-slate-300 { color: #00ffff !important; }
+        body[data-theme="neon"] .text-slate-400 { color: #ff00ff !important; }
+        body[data-theme="neon"] .text-slate-500 { color: #94a3b8 !important; }
+        body[data-theme="neon"] .text-emerald-400, body[data-theme="neon"] .text-emerald-300 { color: #00ffff !important; text-shadow: 0 0 8px #00ffff; }
+        body[data-theme="neon"] .text-amber-400 { color: #fbbf24 !important; text-shadow: 0 0 8px #fbbf24; }
+        body[data-theme="neon"] .text-red-400, body[data-theme="neon"] .text-red-300 { color: #ff00ff !important; text-shadow: 0 0 8px #ff00ff; }
+        body[data-theme="neon"] .text-sky-400 { color: #00ffff !important; text-shadow: 0 0 8px #00ffff; }
+        body[data-theme="neon"] .border-slate-700, body[data-theme="neon"] .border-slate-800, body[data-theme="neon"] .border-slate-600 { border-color: #00ffff20 !important; }
+        body[data-theme="neon"] .divide-slate-700\/50 > :not([hidden]) ~ :not([hidden]) { border-color: #00ffff20 !important; }
+        body[data-theme="neon"] input, body[data-theme="neon"] select { background: #0a0a0a !important; color: #00ffff !important; border-color: #00ffff50 !important; }
+        body[data-theme="neon"] .sidebar-item { color: #ff00ff !important; }
+        body[data-theme="neon"] .sidebar-item.active { color: #00ffff !important; background: #00ffff15 !important; border-left-color: #00ffff !important; text-shadow: 0 0 8px #00ffff; }
+        body[data-theme="neon"] .topbar-title { color: #00ffff !important; text-shadow: 0 0 10px #00ffff; }
+        body[data-theme="neon"] .topbar-title span { color: #ff00ff !important; text-shadow: 0 0 10px #ff00ff; }
+
+        /* --- TEMA BOSQUE --- */
+        body[data-theme="bosque"] { background: #052e16 !important; color: #ecfdf5 !important; }
+        body[data-theme="bosque"] #sidebar, body[data-theme="bosque"] #filter-panel { background: #064e3b !important; border-color: #065f46 !important; }
+        body[data-theme="bosque"] #topbar { background: rgba(5,46,22,0.95) !important; border-color: #065f46 !important; }
+        body[data-theme="bosque"] .bg-slate-800, body[data-theme="bosque"] .bg-slate-900\/50, body[data-theme="bosque"] .bg-slate-900\/60, body[data-theme="bosque"] .bg-slate-900\/40 { background-color: #022c22 !important; border-color: #065f46 !important; color: #ecfdf5; }
+        body[data-theme="bosque"] .bg-slate-900, body[data-theme="bosque"] .bg-slate-950 { background-color: #052e16 !important; }
+        body[data-theme="bosque"] .text-white, body[data-theme="bosque"] .text-slate-200, body[data-theme="bosque"] .text-slate-100 { color: #ecfdf5 !important; }
+        body[data-theme="bosque"] .text-slate-300 { color: #a7f3d0 !important; }
+        body[data-theme="bosque"] .text-slate-400 { color: #6ee7b7 !important; }
+        body[data-theme="bosque"] .text-slate-500 { color: #34d399 !important; }
+        body[data-theme="bosque"] .text-emerald-400, body[data-theme="bosque"] .text-emerald-300 { color: #34d399 !important; }
+        body[data-theme="bosque"] .text-amber-400 { color: #fbbf24 !important; }
+        body[data-theme="bosque"] .text-red-400, body[data-theme="bosque"] .text-red-300 { color: #f87171 !important; }
+        body[data-theme="bosque"] .text-sky-400 { color: #67e8f9 !important; }
+        body[data-theme="bosque"] .border-slate-700, body[data-theme="bosque"] .border-slate-800, body[data-theme="bosque"] .border-slate-600 { border-color: #065f46 !important; }
+        body[data-theme="bosque"] .divide-slate-700\/50 > :not([hidden]) ~ :not([hidden]) { border-color: #065f46 !important; }
+        body[data-theme="bosque"] input, body[data-theme="bosque"] select { background: #052e16 !important; color: #a7f3d0 !important; border-color: #065f46 !important; }
+        body[data-theme="bosque"] .sidebar-item { color: #6ee7b7 !important; }
+        body[data-theme="bosque"] .sidebar-item.active { color: #ecfdf5 !important; background: #065f46 !important; border-left-color: #34d399 !important; }
+        body[data-theme="bosque"] .topbar-title { color: #34d399 !important; }
+        body[data-theme="bosque"] .topbar-title span { color: #6ee7b7 !important; }
+        
+        /* ========== TEMAS (TIPOGRAFÍAS) ========== */
+        
+        /* --- TEMA CLARO --- */
+        body[data-theme="claro"] { background: #f1f5f9 !important; color: #0f172a !important; font-family: 'Raleway', sans-serif !important; }
+
+        /* --- TEMA NEÓN --- */
+        body[data-theme="neon"] { background: #050505 !important; color: #e2e8f0 !important; font-family: 'Orbitron', sans-serif !important; }
+
+        /* --- TEMA BOSQUE --- */
+        body[data-theme="bosque"] { background: #052e16 !important; color: #ecfdf5 !important; font-family: 'Quicksand', sans-serif !important; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -747,6 +830,10 @@
             <!-- Añade esto dentro de sidebar-nav -->
             <div class="sidebar-item" onclick="switchTab('partido-stats')" id="nav-partido-stats">
                 <span class="icon"><i class="ri-bar-chart-grouped-line"></i></span><span class="label">Estadísticas Partido</span>
+            </div>
+            <div class="sidebar-item" onclick="cycleTheme()" id="nav-theme" style="margin-top: auto; border-left: 3px solid transparent;">
+                <span class="icon"><i class="ri-moon-line"></i></span>
+                <span class="label">Tema</span>
             </div>
         </div>
     </nav>
@@ -822,8 +909,8 @@
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 flex flex-col justify-between relative overflow-hidden"><div class="absolute -right-4 -top-4 opacity-10 text-7xl">🔥</div><span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Pareja Letal</span><span id="kpi-pareja" class="text-xl font-black text-amber-400 mt-2 z-10">-</span></div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-400">🏅 Rendimiento General</h3><p class="text-xs text-slate-500 mb-4">* % V calculado sin empates. Ordenado por % Puntuación.</p><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-[10px] sm:text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">#</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-right">% P</th></tr></thead><tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-xs sm:text-sm"></tbody></table></div></div>
-                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-400">🏅 Rendimiento General</h3><p class="text-xs text-slate-500 mb-4">* % V calculado sin empates. Ordenado por % Puntuación.</p><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-[10px] sm:text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">#</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-center">% Puntuación</th></tr></thead><tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-xs sm:text-sm"></tbody></table></div></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">% V</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
                     </div>
                     <!-- GRILLA: Gráfico Puntuación + Matriz de Dominancia -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1423,6 +1510,37 @@
                 contentArea.classList.remove('filter-expanded');
             }
         }
+        // ===== SISTEMA DE TEMAS =====
+        const themes = ['oscuro', 'claro', 'neon', 'bosque'];
+        const themeIcons = {
+            'oscuro': 'ri-moon-line',
+            'claro': 'ri-sun-line',
+            'neon': 'ri-flashlight-line',
+            'bosque': 'ri-plant-line'
+        };
+        let currentThemeIdx = 0;
+
+        function applyTheme(themeName) {
+            document.body.setAttribute('data-theme', themeName);
+            localStorage.setItem('padelTheme', themeName); // Guarda la preferencia
+            
+            // Cambiar el icono del botón
+            const iconEl = document.querySelector('#nav-theme .icon i');
+            if(iconEl) iconEl.className = themeIcons[themeName];
+        }
+
+        function cycleTheme() {
+            currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+            applyTheme(themes[currentThemeIdx]);
+        }
+        
+        // Inicializar el tema al cargar (recuperar del localStorage)
+        const savedTheme = localStorage.getItem('padelTheme') || 'oscuro';
+        currentThemeIdx = themes.indexOf(savedTheme);
+        // Aplicar cuando cargue
+        window.addEventListener('DOMContentLoaded', () => {
+            applyTheme(savedTheme);
+        });
 
         // ===== DAY TYPE FILTER =====
         function toggleDayTypeFilter(type) {
@@ -2008,7 +2126,16 @@
             });
         }
 
-        function calculateTramos(rows) { let internalMatches = rows.filter(r => String(r['tipo'] || "").toLowerCase() !== "externo"); internalMatches.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); tramosData = {}; let tramo1Matches = []; let restMatches = []; internalMatches.forEach(m => { if (parseCSVDate(m.fecha) <= TRAMO1_END_DATE) tramo1Matches.push(m); else restMatches.push(m); }); processTramoChunk(1, tramo1Matches, true); let chunkIndex = 2; for (let i = 0; i < restMatches.length; i += TRAMO_SIZE) { processTramoChunk(chunkIndex, restMatches.slice(i, i + TRAMO_SIZE), false); chunkIndex++; } let totalPts = {}; let totalPj = {}; let totalPunt = {}; for(let t in tramosData) { tramosData[t].data.forEach(r => { totalPj[r.nombre] = (totalPj[r.nombre] || 0) + r.pj; totalPunt[r.nombre] = r.puntuacion; if (tramosData[t].isFinished) totalPts[r.nombre] = (totalPts[r.nombre] || 0) + r.pts; }); } let totalData = []; for(let j in totalPts) totalData.push({ nombre: j, pj: totalPj[j], puntuacion: totalPunt[j], pts: totalPts[j] }); totalData.sort((a,b) => b.pts - a.pts || b.puntuacion - a.puntuacion); tramosData['total'] = { label: "🏆 Total Acumulado", data: totalData, isFinished: true }; renderTramoButtons(chunkIndex-1); switchTramo(1); }
+        function calculateTramos(rows) { let internalMatches = rows.filter(r => String(r['tipo'] || "").toLowerCase() !== "externo"); internalMatches.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); tramosData = {}; let tramo1Matches = []; let restMatches = []; internalMatches.forEach(m => { if (parseCSVDate(m.fecha) <= TRAMO1_END_DATE) tramo1Matches.push(m); else restMatches.push(m); }); processTramoChunk(1, tramo1Matches, true); let chunkIndex = 2; for (let i = 0; i < restMatches.length; i += TRAMO_SIZE) { processTramoChunk(chunkIndex, restMatches.slice(i, i + TRAMO_SIZE), false); chunkIndex++; } 
+        let totalPts = {}; let totalPj = {}; let totalPg = {}; let totalPp = {}; let totalPe = {}; let totalPunt = {};
+            for(let t in tramosData) { tramosData[t].data.forEach(r => { totalPj[r.nombre] = (totalPj[r.nombre] || 0) + r.pj; totalPg[r.nombre] = (totalPg[r.nombre] || 0) + (r.pg || 0); totalPp[r.nombre] = (totalPp[r.nombre] || 0) + (r.pp || 0); totalPe[r.nombre] = (totalPe[r.nombre] || 0) + (r.pe || 0); totalPunt[r.nombre] = r.puntuacion; if (tramosData[t].isFinished) totalPts[r.nombre] = (totalPts[r.nombre] || 0) + r.pts; }); }
+            let totalData = [];
+            for(let j in totalPts) {
+                let pj = totalPj[j] || 0, pg = totalPg[j] || 0, pp = totalPp[j] || 0, pe = totalPe[j] || 0;
+                let partidosDecisivos = pg + pp;
+                let winRateVic = partidosDecisivos > 0 ? ((pg / partidosDecisivos) * 100).toFixed(1) : 0;
+                totalData.push({ nombre: j, pj: pj, pg: pg, pp: pp, pe: pe, winRateVic: parseFloat(winRateVic), puntuacion: totalPunt[j], pts: totalPts[j] });
+            } totalData.sort((a,b) => b.pts - a.pts || b.puntuacion - a.puntuacion); tramosData['total'] = { label: "🏆 Total Acumulado", data: totalData, isFinished: true }; renderTramoButtons(chunkIndex-1); switchTramo(1); }
         function processTramoChunk(tramoNum, chunk, isTramo1) { 
             let stats = {}, firstDate = null, lastDate = null; 
             chunk.forEach(row => { 
@@ -2048,8 +2175,11 @@
                 let pg = s.victorias, pe = s.empates, pj = s.pj;
                 let puntuacion = pj > 0 ? ((((pg + 1 + 0.2 * pe) / (pj + 2)) * (1 - 1 / (pj + 1))) * 100) : 0; 
                 let difSets = s.sf - s.sc;
-                rankArr.push({ nombre: j, pj: s.pj, puntuacion: puntuacion, difSets: difSets, pts: 0 }); 
-            } 
+                let derrotas = s.pj - s.victorias - s.empates;
+                let partidosDecisivos = s.victorias + derrotas;
+                let winRateVic = partidosDecisivos > 0 ? ((s.victorias / partidosDecisivos) * 100).toFixed(1) : 0;
+                rankArr.push({ nombre: j, pj: s.pj, pg: s.victorias, pp: derrotas, pe: s.empates, winRateVic: parseFloat(winRateVic), puntuacion: puntuacion, difSets: difSets, pts: 0 }); 
+                } 
             
             // Orden: 1. Puntuación, 2. Dif. Sets, 3. Partidos Jugados
             rankArr.sort((a,b) => b.puntuacion - a.puntuacion || b.difSets - a.difSets || b.pj - a.pj); 
@@ -2089,9 +2219,18 @@
                 
                 let tr = document.createElement("tr"); 
                 tr.className = "hover:bg-slate-750/30 border-b border-slate-800"; 
-                let pColor = r.pts >= 7 ? 'text-emerald-400' : (r.pts >= 3 ? 'text-amber-400' : 'text-slate-400'); 
-                let ptsDisplay = isFinished ? `<span class="${pColor}">${r.pts} pts</span>` : `<span class="text-slate-500 text-xs">${r.pts} pts*</span>`; 
-                tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${pos}</td><td class="p-3 font-bold text-slate-200">${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.pj}</td><td class="p-3 text-center font-mono text-slate-300">${r.puntuacion.toFixed(1)}%</td><td class="p-3 text-right font-mono font-bold">${ptsDisplay}</td>`; 
+                let pColor = r.pts >= 7 ? 'text-emerald-400' : (r.pts >= 3 ? 'text-amber-400' : 'text-slate-400');
+                let ptsDisplay = isFinished ? `<span class="${pColor} font-bold">${r.pts} pts</span>` : `<span class="text-slate-500 font-bold">${r.pts} pts*</span>`;
+                
+                tr.innerHTML = `<td class="p-3 text-slate-500">${idx+1}</td>
+                                <td class="p-3 text-slate-300">${m}${r.nombre}</td>
+                                <td class="p-3 text-center text-slate-400">${r.pj}</td>
+                                <td class="p-3 text-center text-slate-400">${r.pg}</td>
+                                <td class="p-3 text-center text-slate-400">${r.pp}</td>
+                                <td class="p-3 text-center text-slate-400">${r.pe}</td>
+                                <td class="p-3 text-center text-slate-400">${r.winRateVic}%</td>
+                                <td class="p-3 text-center text-slate-400">${r.puntuacion.toFixed(1)}%</td>
+                                <td class="p-3 text-right font-bold">${ptsDisplay}</td>`; 
                 tbody.appendChild(tr); 
             }); }
 
@@ -2340,7 +2479,7 @@
         function compararParejas() { let p1 = document.getElementById('cmp-p1').value, p2 = document.getElementById('cmp-p2').value, p3 = document.getElementById('cmp-p3').value, p4 = document.getElementById('cmp-p4').value; if(!p1||!p2||!p3||!p4) return; let respectOrder = document.getElementById('cmp-respectOrder').checked; let groupedMatches = {}; filteredDataGlobal.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let j1A = String(row['p1 - jugador a']||"").trim(), j1B = String(row['p1 - jugador b']||"").trim(), j2A = String(row['p2 - jugador a']||"").trim(), j2B = String(row['p2 - jugador b']||"").trim(); let isC1T1 = respectOrder ? (j1A===p1 && j1B===p2) : ((j1A===p1 && j1B===p2) || (j1A===p2 && j1B===p1)); let isC2T2 = respectOrder ? (j2A===p3 && j2B===p4) : ((j2A===p3 && j2B===p4) || (j2A===p4 && j2B===p3)); let isC1T2 = respectOrder ? (j2A===p1 && j2B===p2) : ((j2A===p1 && j2B===p2) || (j2A===p2 && j2B===p1)); let isC2T1 = respectOrder ? (j1A===p3 && j1B===p4) : ((j1A===p3 && j1B===p4) || (j1A===p4 && j1B===p3)); let c1IsLeft = false; let layoutKey = ""; if (isC1T1 && isC2T2) { c1IsLeft = true; layoutKey = respectOrder ? `${p1}/${p2} vs ${p3}/${p4}` : `${p1} & ${p2} vs ${p3} & ${p4}`; } else if (isC1T2 && isC2T1) { c1IsLeft = false; layoutKey = respectOrder ? `${p1}/${p2} vs ${p3}/${p4}` : `${p1} & ${p2} vs ${p3} & ${p4}`; } if (layoutKey !== "") { if (!groupedMatches[layoutKey]) groupedMatches[layoutKey] = []; groupedMatches[layoutKey].push({ row: row, c1IsLeft: c1IsLeft }); } }); document.getElementById('cmp-result').classList.remove('hidden'); let htmlHistorial = "", htmlSets = ""; const layoutKeys = Object.keys(groupedMatches); if (layoutKeys.length === 0) { htmlHistorial = `<div class="text-xl font-black text-center py-4 text-slate-500">Sin enfrentamientos</div>`; htmlSets = `<div class="text-center py-4 text-slate-500">Sin datos</div>`; } else { layoutKeys.forEach(key => { let matches = groupedMatches[key], c1W=0, c2W=0, draws=0, s1Scores=[], s2Scores=[], s3Scores=[]; matches.forEach(m => { let row = m.row, ganadores = String(row['ganadores'] || ""); let p1s1 = parseInt(row['set 1 - p1']||0), p2s1 = parseInt(row['set 1 - p2']||0), p1s2 = parseInt(row['set 2 - p1']||0), p2s2 = parseInt(row['set 2 - p2']||0), p1s3 = parseInt(row['set 3 - p1']||0), p2s3 = parseInt(row['set 3 - p2']||0); if(ganadores.includes(p1)&&ganadores.includes(p2)) c1W++; else if(ganadores.includes(p3)&&ganadores.includes(p4)) c2W++; else draws++; let c1S1 = m.c1IsLeft ? p1s1 : p2s1, c2S1 = m.c1IsLeft ? p2s1 : p1s1, c1S2 = m.c1IsLeft ? p1s2 : p2s2, c2S2 = m.c1IsLeft ? p2s2 : p1s2, c1S3 = m.c1IsLeft ? p1s3 : p2s3, c2S3 = m.c1IsLeft ? p2s3 : p1s3; s1Scores.push(`${c1S1}-${c2S1}`); s2Scores.push(`${c1S2}-${c2S2}`); if(p1s3>0||p2s3>0) s3Scores.push(`${c1S3}-${c2S3}`); }); let names = key.split(" vs "); htmlHistorial += `<div class="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700"><h5 class="text-xs font-bold text-slate-400 mb-2 uppercase">${key}</h5><div class="text-xl font-black text-center"><span class="text-emerald-400">${names[0]}: ${c1W}V</span><br><span class="text-red-400 mt-1 block">${names[1]}: ${c2W}V</span><br><span class="text-amber-400 mt-1 block text-sm">Empates: ${draws}</span></div></div>`; htmlSets += `<div class="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700"><h5 class="text-xs font-bold text-slate-400 mb-2 uppercase">${key}</h5>`; if(s1Scores.length > 0) { htmlSets += `<div class="text-slate-300 font-bold text-sm">SET 1: <span class="font-mono">${formatScoreMode(getModes(s1Scores))}</span></div><div class="text-slate-300 font-bold text-sm mt-1">SET 2: <span class="font-mono">${formatScoreMode(getModes(s2Scores))}</span></div>`; if(s3Scores.length > 0) htmlSets += `<div class="text-slate-300 font-bold text-sm mt-1">SET 3: <span class="font-mono">${formatScoreMode(getModes(s3Scores))}</span></div>`; } else { htmlSets += `<div class="text-slate-500 text-sm">Sin datos</div>`; } htmlSets += `</div>`; }); } document.getElementById('cmp-historial').innerHTML = htmlHistorial; document.getElementById('cmp-sets').innerHTML = htmlSets; }
         function calcHabPareja() { let p1 = document.getElementById('hab-p1').value, p2 = document.getElementById('hab-p2').value; if(!p1 || !p2) return; let s1Scores=[], s2Scores=[], s3Scores=[]; filteredDataGlobal.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let j1A = String(row['p1 - jugador a']||"").trim(), j1B = String(row['p1 - jugador b']||"").trim(), j2A = String(row['p2 - jugador a']||"").trim(), j2B = String(row['p2 - jugador b']||"").trim(); let isTeam1P1 = (j1A===p1 && j1B===p2) || (j1A===p2 && j1B===p1); let isTeam1P2 = (j2A===p1 && j2B===p2) || (j2A===p2 && j2B===p1); if (isTeam1P1) { s1Scores.push(`${row['set 1 - p1']||0}-${row['set 1 - p2']||0}`); s2Scores.push(`${row['set 2 - p1']||0}-${row['set 2 - p2']||0}`); if(parseInt(row['set 3 - p1']||0)>0 || parseInt(row['set 3 - p2']||0)>0) s3Scores.push(`${row['set 3 - p1']||0}-${row['set 3 - p2']||0}`); } else if (isTeam1P2) { s1Scores.push(`${row['set 1 - p2']||0}-${row['set 1 - p1']||0}`); s2Scores.push(`${row['set 2 - p2']||0}-${row['set 2 - p1']||0}`); if(parseInt(row['set 3 - p1']||0)>0 || parseInt(row['set 3 - p2']||0)>0) s3Scores.push(`${row['set 3 - p2']||0}-${row['set 3 - p1']||0}`); } }); let resultDiv = document.getElementById('hab-pareja-result'); resultDiv.classList.remove('hidden'); if (s1Scores.length === 0) { resultDiv.innerHTML = `<span class="text-slate-500 text-sm font-sans">No han jugado juntos</span>`; } else { resultDiv.innerHTML = `<div class="text-sm text-slate-400 mb-2 font-sans">${s1Scores.length} partidos juntos</div><div class="grid grid-cols-3 gap-4 text-center text-lg"><div><div class="text-xs text-slate-500 mb-1 font-sans">SET 1</div><div>${formatScoreMode(getModes(s1Scores))}</div></div><div><div class="text-xs text-slate-500 mb-1 font-sans">SET 2</div><div>${formatScoreMode(getModes(s2Scores))}</div></div><div><div class="text-xs text-slate-500 mb-1 font-sans">SET 3</div><div>${s3Scores.length > 0 ? formatScoreMode(getModes(s3Scores)) : '-'}</div></div></div>`; } }
         function renderPositionCharts(rv, rd, re, dv, dd, de) { if(chartRevesInstance) chartRevesInstance.destroy(); if(chartDriveInstance) chartDriveInstance.destroy(); const O = { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } }, datalabels: { display: false } } }; chartRevesInstance = new Chart(document.getElementById('chartReves'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [rv,rd,re], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O }); chartDriveInstance = new Chart(document.getElementById('chartDrive'), { type: 'doughnut', data: { labels: ['V','D','E'], datasets: [{ data: [dv,dd,de], backgroundColor: ['#34d399','#f43f5e','#fbbf24'], borderWidth: 0 }] }, options: O }); }
-        function renderRankingTable(ranking) { const tbody = document.getElementById("ranking-tbody"); tbody.innerHTML = ""; ranking.forEach((r, idx) => { let m = idx===0?"👑 ":""; const tr = document.createElement("tr"); let rowClass = "hover:bg-slate-750/30 border-b border-slate-800"; if (idx === 0 && r.streakType === 'fire') rowClass += " leader-fire"; else if (idx === 0 && r.streakType === 'ice') rowClass += " leader-ice"; else if (idx === 0) rowClass += " leader"; else if (r.streakType === 'fire') rowClass += " streak-fire"; else if (r.streakType === 'ice') rowClass += " streak-ice"; tr.className = rowClass; let dc = r.difSets>0?'text-emerald-400':(r.difSets<0?'text-red-400':'text-slate-400'); let dp = r.difSets>0?'+':''; let streakHtml = r.streak ? `<span class="mr-1">${r.streak}</span>` : ""; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${streakHtml}${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.partidos}</td><td class="p-3 text-center text-emerald-400 font-bold">${r.victorias}</td><td class="p-3 text-center text-red-400">${r.derrotas}</td><td class="p-3 text-center text-amber-400">${r.empates}</td><td class="p-3 text-center font-bold ${dc}">${dp}${r.difSets}</td><td class="p-3 text-center font-mono text-slate-300">${r.winRateVic}%</td><td class="p-3 text-right font-mono font-bold text-white bg-slate-900/50 rounded-l-lg">${r.puntuacion}%</td>`; tbody.appendChild(tr); }); }
+        function renderRankingTable(ranking) { const tbody = document.getElementById("ranking-tbody"); tbody.innerHTML = ""; ranking.forEach((r, idx) => { let m = idx===0?"👑 ":""; const tr = document.createElement("tr"); let rowClass = "hover:bg-slate-750/30 border-b border-slate-800"; if (idx === 0 && r.streakType === 'fire') rowClass += " leader-fire"; else if (idx === 0 && r.streakType === 'ice') rowClass += " leader-ice"; else if (idx === 0) rowClass += " leader"; else if (r.streakType === 'fire') rowClass += " streak-fire"; else if (r.streakType === 'ice') rowClass += " streak-ice"; tr.className = rowClass; let dc = r.difSets>0?'text-emerald-400':(r.difSets<0?'text-red-400':'text-slate-400'); let dp = r.difSets>0?'+':''; let streakHtml = r.streak ? `<span class="mr-1">${r.streak}</span>` : ""; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${streakHtml}${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.partidos}</td><td class="p-3 text-center text-emerald-400 font-bold">${r.victorias}</td><td class="p-3 text-center text-red-400">${r.derrotas}</td><td class="p-3 text-center text-amber-400">${r.empates}</td><td class="p-3 text-center font-bold ${dc}">${dp}${r.difSets}</td><td class="p-3 text-center font-mono text-slate-300">${r.winRateVic}%</td><td class="p-3 text-center font-mono font-bold text-white">${r.puntuacion}%</td>`; tbody.appendChild(tr); }); }
 
         function displayMatches(matches) { 
             const tbody = document.querySelector("#matchesTable tbody"); 
