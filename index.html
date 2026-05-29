@@ -1560,7 +1560,7 @@
 
         function aplicarFiltrosGlobales() {
             let dStart = document.getElementById('dateStart').value, dEnd = document.getElementById('dateEnd').value;
-            let timeStart = dStart ? new Date(dStart).getTime() : 0, timeEnd = dEnd ? new Date(dEnd).getTime() + 86400000 : Infinity;
+            let timeStart = dStart ? new Date(dStart).getTime() : 0, timeEnd = dEnd ? new Date(dEnd).getTime() : Infinity;
             let rangeLabel = "Histórico Completo";
             if (dStart && dEnd) rangeLabel = "Filtrado";
             else if (dStart) rangeLabel = "Desde " + dStart;
