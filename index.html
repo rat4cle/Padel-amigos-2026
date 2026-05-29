@@ -11,9 +11,9 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
     <style>
         .leader td { background-color: rgba(255, 215, 0, 0.12); }
-        .streak-fire td { background-color: rgba(255, 69, 0, 0.1); }
+        .streak-fire td { background-color: rgba(255, 140, 0, 0.15); }
         .streak-ice td { background-color: rgba(0, 191, 255, 0.1); }
-        .leader-fire td { background: linear-gradient(90deg, rgba(255, 140, 0, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(255, 69, 0, 0.3); }
+        .leader-fire td { background-color: rgba(255, 140, 0, 0.22); font-weight: 900; text-shadow: 0 0 4px rgba(255, 69, 0, 0.3); }
         .leader-ice td { background: linear-gradient(90deg, rgba(0, 191, 255, 0.35), rgba(255, 215, 0, 0.05)); font-weight: 900; text-shadow: 0 0 4px rgba(0, 0, 139, 0.3); }
         .tag-btn.active { background-color: #059669 !important; color: white !important; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -39,6 +39,7 @@
             white-space: nowrap;
         }
         #sidebar.expanded { width: 220px; }
+        #sidebar:hover { width: 220px; }
 
         .sidebar-header {
             height: 64px;
@@ -62,7 +63,7 @@
             white-space: nowrap;
             overflow: hidden;
         }
-        #sidebar.expanded .sidebar-title { max-width: 150px; opacity: 1; }
+        #sidebar.expanded .sidebar-title, #sidebar:hover .sidebar-title { max-width: 150px; opacity: 1; }
 
         .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0; }
         .sidebar-nav::-webkit-scrollbar { display: none; }
@@ -96,7 +97,7 @@
             overflow: hidden;
             white-space: nowrap;
         }
-        #sidebar.expanded .sidebar-item .label { max-width: 150px; opacity: 1; }
+        #sidebar.expanded .sidebar-item .label, #sidebar:hover .sidebar-item .label { max-width: 150px; opacity: 1; }
 
         .sidebar-toggle {
             height: 48px;
@@ -751,7 +752,7 @@
     </nav>
 
     <!-- PANEL FILTROS DERECHO -->
-    <div id="filter-panel">
+    <div id="filter-panel" class="expanded">
         <!-- Botón del Embudo + Estado -->
         <div class="filter-toggle-btn" onclick="toggleFilterPanel()">
             <span class="filter-toggle-icon"><i class="ri-filter-3-line"></i></span>
@@ -802,7 +803,7 @@
     <!-- CUERPO PRINCIPAL -->
     <div id="app-body">
         <div id="topbar">
-            <div class="topbar-title">🎾 PADEL AMIGOS <span style="background:#10b981;color:#0f172a;font-size:0.6rem;padding:1px 6px;border-radius:999px;margin-left:4px;vertical-align:middle;">2026</span></div>
+            <div class="topbar-title">🎾 PADELiCO <span style="color:#34d399;margin-left:8px;vertical-align:middle;display:inline-flex;align-items:center;gap:5px;"><i class="ri-verified-badge-fill" style="font-size:1.3rem;"></i> <span style="font-size:0.85rem;font-weight:900;"></span></span></div>
         </div>
 
         <div id="loading">
@@ -811,7 +812,7 @@
         </div>
 
         <div id="main-content">
-            <div id="content-area">
+            <div id="content-area" class="filter-expanded">
 
                 <!-- TAB 1: CLASIFICACIÓN -->
                 <section id="tab-resumen" class="tab-content space-y-6">
@@ -946,7 +947,7 @@
 
                                             <!-- Perfil Radar (con overflow-hidden para evitar que sobresalga) -->
                                             <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800 flex flex-col h-[360px] sm:h-[420px]">
-                                                <h4 class="text-sm font-bold mb-3 text-slate-300 uppercase tracking-wider text-center">🕸️ Perfil Radar</h4>
+                                                <h4 class="text-sm font-bold mb-3 text-slate-300 uppercase tracking-wider text-center">🧬 ADN del Jugador</h4>
                                                 <div class="flex-1 relative overflow-hidden">
                                                     <canvas id="chartRadar"></canvas>
                                                 </div>
@@ -2066,7 +2067,25 @@
             tramosData[tramoNum] = { label: label, data: rankArr, isFinished: isFinished }; 
         }
         function renderTramoButtons(numTramos) { let container = document.getElementById('tramos-buttons'); container.innerHTML = ""; for(let t = 1; t <= numTramos; t++) { container.innerHTML += `<button onclick="switchTramo(${t})" id="btn-tramo-${t}" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">${tramosData[t].label.split(" (")[0]}</button>`; } container.innerHTML += `<button onclick="switchTramo('total')" id="btn-tramo-total" class="tramo-btn px-3 py-1 rounded font-bold text-xs text-slate-400 hover:text-white transition-all">🏆 Total</button>`; }
-        function switchTramo(tramoId) { document.querySelectorAll('.tramo-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400'); }); let activeBtn = document.getElementById('btn-tramo-' + tramoId); if(activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); } document.getElementById('tramo-subtitle').innerText = tramosData[tramoId].label; let data = tramosData[tramoId].data; let isFinished = tramosData[tramoId].isFinished; let tbody = document.getElementById('tramos-tbody'); tbody.innerHTML = ""; data.forEach((r, idx) => { let m = idx===0?"👑 ":""; let tr = document.createElement("tr"); tr.className = "hover:bg-slate-750/30 border-b border-slate-800"; let pColor = r.pts >= 7 ? 'text-emerald-400' : (r.pts >= 3 ? 'text-amber-400' : 'text-slate-400'); let ptsDisplay = isFinished ? `<span class="${pColor}">${r.pts} pts</span>` : `<span class="text-slate-500 text-xs">${r.pts} pts*</span>`; tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${idx+1}</td><td class="p-3 font-bold text-slate-200">${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.pj}</td><td class="p-3 text-center font-mono text-slate-300">${r.puntuacion.toFixed(1)}%</td><td class="p-3 text-right font-mono font-bold">${ptsDisplay}</td>`; tbody.appendChild(tr); }); }
+        function switchTramo(tramoId) { document.querySelectorAll('.tramo-btn').forEach(btn => { btn.classList.remove('bg-emerald-500', 'text-slate-950'); btn.classList.add('text-slate-400'); }); let activeBtn = document.getElementById('btn-tramo-' + tramoId); if(activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('bg-emerald-500', 'text-slate-950'); } document.getElementById('tramo-subtitle').innerText = tramosData[tramoId].label; let data = tramosData[tramoId].data; let isFinished = tramosData[tramoId].isFinished; let tbody = document.getElementById('tramos-tbody'); tbody.innerHTML = "";             data.forEach((r, idx) => { 
+                let prev = idx > 0 ? data[idx-1] : null;
+                let pos = idx + 1; // Posición por defecto
+                
+                // Si tiene los mismos puntos que el anterior, comparten posición
+                if (prev && r.pts === prev.pts) {
+                    pos = prev.displayPos || idx; // Comparte el puesto (ej: 1, 1, 3, 3)
+                }
+                r.displayPos = pos; // Guardamos para la siguiente iteración
+                
+                let m = pos === 1 ? "👑 " : ""; // Corona para todos los que sean #1
+                
+                let tr = document.createElement("tr"); 
+                tr.className = "hover:bg-slate-750/30 border-b border-slate-800"; 
+                let pColor = r.pts >= 7 ? 'text-emerald-400' : (r.pts >= 3 ? 'text-amber-400' : 'text-slate-400'); 
+                let ptsDisplay = isFinished ? `<span class="${pColor}">${r.pts} pts</span>` : `<span class="text-slate-500 text-xs">${r.pts} pts*</span>`; 
+                tr.innerHTML = `<td class="p-3 text-slate-500 font-bold">${pos}</td><td class="p-3 font-bold text-slate-200">${m}${r.nombre}</td><td class="p-3 text-center text-slate-300">${r.pj}</td><td class="p-3 text-center font-mono text-slate-300">${r.puntuacion.toFixed(1)}%</td><td class="p-3 text-right font-mono font-bold">${ptsDisplay}</td>`; 
+                tbody.appendChild(tr); 
+            }); }
 
         function populateSelectors(jugadores) { let selIds = ['cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2', 'mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; selIds.forEach(id => { let el = document.getElementById(id); let val = el.value; let html = '<option value="">Jugador</option>'; jugadores.forEach(j => html += `<option value="${j}">${j}</option>`); el.innerHTML = html; if(jugadores.includes(val)) el.value = val; }); updateMMSelectors(0); }
         function calculateDeudor(stats, pagos, bolas) { let aportes = {}; let totalMatches = 0; for(let j in stats) { if(stats[j].partidos >= 3 || MANDATORY_PLAYERS.includes(j)) { aportes[j] = { pagos: 0, pj: stats[j].partidos, bolas: 0 }; totalMatches += stats[j].partidos; } } for(let p in pagos) { if(aportes[p]) aportes[p].pagos = pagos[p]; } for(let b in bolas) { if(aportes[b]) aportes[b].bolas = bolas[b]; } let totalPayments = Object.values(pagos).reduce((a, b) => a + b, 0); let maxDebt = -Infinity, deudor = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedPayments = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalPayments : 0; let debt = expectedPayments - aportes[j].pagos; if(debt > maxDebt) { maxDebt = debt; deudor = j; } } document.getElementById('deudor-insight').innerText = `Las matemáticas no mienten. Teniendo en cuenta partidos jugados y pagos realizados, el próximo partido debe pagarlo: 💸 ${deudor}.`; let totalBolas = Object.values(bolas).reduce((a, b) => a + b, 0); let maxDebtBolas = -Infinity, deudorBolas = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedBolas = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalBolas : 0; let debtB = expectedBolas - aportes[j].bolas; if(debtB > maxDebtBolas) { maxDebtBolas = debtB; deudorBolas = j; } } document.getElementById('bolas-insight').innerText = `Teniendo en cuenta partidos jugados y bolas aportadas, al próximo le toca llevar bolas: 🎾 ${deudorBolas}.`; }
@@ -2213,9 +2232,9 @@
             let gWR=0, gSetWR=0, gTBR=0, g3SR=0, gExp=0, count=0;
             for(let j in globalJugadoresStats) { let gs = globalJugadoresStats[j]; let gb = globalBadgeStats ? globalBadgeStats[j] : null; if((gs.partidos >= 3 || MANDATORY_PLAYERS.includes(j)) && gb) { let gd = gs.victorias+gs.derrotas; if(gd>0) gWR += (gs.victorias/gd)*100; let tgs = gs.sf+gs.sc; if(tgs>0) gSetWR += (gs.sf/tgs)*100; if(gb.tb>0) gTBR += ((gb.tbWin||0)/gb.tb)*100; if(gb.s3reach>0) g3SR += (gb.s3win/gb.s3reach)*100; if(gb.pj>0) gExp += (gb.matchesWonIn2/gb.pj)*100; count++; } }
             if(count>0){ gWR/=count; gSetWR/=count; gTBR/=count; g3SR/=count; gExp/=count; }
-            let labels = ['Win Rate', 'Sets', 'Tie Breaks', '3er Set', 'Exprés'];
+            let labels = ['% Victoria', 'Gana Sets', 'Gana TieBreak', 'Gana 3er Set', 'Gana 2-0'];
             let diffData = [pWR - gWR, pSetWR - gSetWR, pTBR - gTBR, p3SR - g3SR, pExp - gExp];
-            chartRadarInstance = new Chart(document.getElementById('chartRadar'), { type: 'radar', data: { labels: labels, datasets: [{ label: player, data: diffData, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 1)', pointBackgroundColor: 'rgba(16, 185, 129, 1)', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: false, min: -40, max: 40, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }, ticks: { display: true, color: '#64748b', backdropColor: 'transparent', stepSize: 20 } } }, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: function(context) { let val = context.raw; let sign = val > 0 ? '+' : ''; return `${context.dataset.label}: ${sign}${val.toFixed(1)}% vs Media`; } } } } } });
+            chartRadarInstance = new Chart(document.getElementById('chartRadar'), { type: 'radar', data: { labels: labels, datasets: [{ label: player, data: diffData, backgroundColor: 'rgba(16, 185, 129, 0.2)', borderColor: 'rgba(16, 185, 129, 1)', pointBackgroundColor: 'rgba(16, 185, 129, 1)', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: false, min: -40, max: 40, grid: { color: '#334155' }, angleLines: { color: '#334155' }, pointLabels: { color: '#94a3b8', font: { size: 11, weight: 'bold' } }, ticks: { display: true, color: '#64748b', backdropColor: 'transparent', stepSize: 20 } } }, plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: function(context) { let val = context.raw; let sign = val > 0 ? '+' : ''; return `${context.label}: ${sign}${val.toFixed(1)}% vs Media`; } } } } } });
         }
 
         function renderPlayerMonthlyChart(player) { if(chartMonthlyInstance) chartMonthlyInstance.destroy(); let monthlyData = {}; rawDataGlobal.forEach(row => { if(String(row.tipo || "").toLowerCase() === "externo") return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let inMatch = [j1A, j1B, j2A, j2B].includes(player); if(!inMatch) return; let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; if(!monthlyData[monthKey]) monthlyData[monthKey] = {pj:0, v:0, e:0}; monthlyData[monthKey].pj += 1; if(isDraw) monthlyData[monthKey].e += 1; else if(ganadores.includes(player)) monthlyData[monthKey].v += 1; }); let labels = [], dataPoints = []; Object.keys(monthlyData).sort().forEach(m => { let s = monthlyData[m]; let pg = s.v, pe = s.e, pj = s.pj;
@@ -2407,17 +2426,137 @@
         let chart1, chart2, chart3;
         function renderCharts(ranking, pagos, bolas) {
             if(chart1)chart1.destroy(); if(chart2)chart2.destroy(); if(chart3)chart3.destroy();
+            // Limpiamos animaciones previas si las hay
+            if (window.chartPulseInterval) clearInterval(window.chartPulseInterval);
+            
             const ctx1 = document.getElementById('rankingChart').getContext('2d');
-            const fireGrad = ctx1.createLinearGradient(0, 0, 600, 0); fireGrad.addColorStop(0, '#8b0000'); fireGrad.addColorStop(0.3, '#dc2626'); fireGrad.addColorStop(0.6, '#f97316'); fireGrad.addColorStop(1, '#facc15');
-            const iceGrad = ctx1.createLinearGradient(0, 0, 600, 0); iceGrad.addColorStop(0, '#0f172a'); iceGrad.addColorStop(0.3, '#2563eb'); iceGrad.addColorStop(0.6, '#93c5fd'); iceGrad.addColorStop(1, '#f0f9ff');
-            const leaderFireGrad = ctx1.createLinearGradient(0, 0, 600, 0); leaderFireGrad.addColorStop(0, '#facc15'); leaderFireGrad.addColorStop(0.5, '#dc2626'); leaderFireGrad.addColorStop(1, '#facc15');
-            const leaderIceGrad = ctx1.createLinearGradient(0, 0, 600, 0); leaderIceGrad.addColorStop(0, '#ecfeff'); leaderIceGrad.addColorStop(0.5, '#0ea5e9'); leaderIceGrad.addColorStop(1, '#ecfeff');
-            let bgColors = ranking.map((r, idx) => { if (idx === 0 && r.streakType === 'fire') return leaderFireGrad; if (idx === 0 && r.streakType === 'ice') return leaderIceGrad; if (r.streakType === 'fire') return fireGrad; if (r.streakType === 'ice') return iceGrad; return PLAYER_COLORS[r.nombre] || '#94a3b8'; });
-            let textStrokeColors = ranking.map((r, idx) => { if(idx===0 && r.streakType) return '#000'; if(r.streakType === 'fire') return '#facc15'; if(r.streakType === 'ice') return '#fff'; return '#fff'; });
             let labelsWithStreaks = ranking.map(r => r.nombre + (r.streak ? " " + r.streak : ""));
-            chart1 = new Chart(ctx1, { type:'bar', data:{labels:labelsWithStreaks,datasets:[{label:'% Puntuación',data:ranking.map(r=>r.puntuacion),backgroundColor:bgColors,borderRadius:6,borderSkipped:false}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'start',color:'#000',font:{weight:'bold',size:12},formatter:(value)=>value+'%',textStrokeColor: textStrokeColors,textStrokeWidth:2}},scales:{x:{grid:{color:'#334155'},ticks:{color:'#94a3b8'},max:100},y:{ticks:{color:'#94a3b8',font:{size:13}}}}}});
-            chart2 = new Chart(document.getElementById('pagosChart'), { type:'doughnut', data:{labels:Object.keys(pagos),datasets:[{data:Object.values(pagos),backgroundColor:['#fbbf24','#38bdf8','#34d399','#a78bfa','#f43f5e','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
-            chart3 = new Chart(document.getElementById('bolasChart'), { type:'doughnut', data:{labels:Object.keys(bolas),datasets:[{data:Object.values(bolas),backgroundColor:['#34d399','#f43f5e','#fbbf24','#38bdf8','#a78bfa','#f97316']}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
+            let textStrokeColors = ranking.map((r, idx) => { 
+                if(idx===0 && r.streakType) return '#000'; 
+                if(r.streakType === 'fire') return '#facc15'; 
+                if(r.streakType === 'ice') return '#fff'; 
+                return '#fff'; 
+            });
+
+            // Función para crear el efecto de barrido (Sweep)
+            const generateSweepColors = () => {
+                // t controla el movimiento del barrido (de 0 a 1 en 2.5 segundos)
+                const t = ((Date.now() / 6000) % 1); 
+                const p = t * 1.6 - 0.3; // Posición del pico de luz (va de -0.3 a 1.3 para entrar y salir completo)
+
+                let bg = ranking.map((r, idx) => {
+                    const isLeader = idx === 0;
+                    const baseAlpha = isLeader ? 0.9 : 0.8;
+
+                    // --- EFECTO FUEGO (Barrido izquierdo-derecho) ---
+                    if (r.streakType === 'fire') {
+                        const grad = ctx1.createLinearGradient(0, 0, 1000, 0); // 1000px cubre el ancho del gráfico
+                        
+                        // Colores de la llama: Base oscura -> Rojo -> Amarillo brillante (Pico) -> Rojo -> Base oscura
+                        const stops = [
+                            { pos: p - 0.3, color: `rgba(139, 0, 0, ${baseAlpha})` }, // Brasas oscuras
+                            { pos: p - 0.1, color: `rgba(220, 38, 38, ${baseAlpha})` }, // Rojo vivo
+                            { pos: p,       color: 'rgba(255, 255, 150, 1)' },         // Pico amarillo/blanco (fuego)
+                            { pos: p + 0.1, color: `rgba(220, 38, 38, ${baseAlpha})` }, // Rojo vivo
+                            { pos: p + 0.3, color: `rgba(139, 0, 0, ${baseAlpha})` }  // Brasas oscuras
+                        ];
+
+                        if (stops[0].pos > 0) grad.addColorStop(0, stops[0].color);
+                        stops.forEach(s => { if (s.pos >= 0 && s.pos <= 1) grad.addColorStop(s.pos, s.color); });
+                        if (stops[stops.length - 1].pos < 1) grad.addColorStop(1, stops[stops.length - 1].color);
+
+                        return grad;
+                    }
+
+                    // --- EFECTO HIELO (Barrido gélido) ---
+                    if (r.streakType === 'ice') {
+                        const grad = ctx1.createLinearGradient(0, 0, 1000, 0);
+                        
+                        // Colores helados: Azul profundo -> Cian -> Blanco cegador (Pico) -> Cian -> Azul profundo
+                        const stops = [
+                            { pos: p - 0.3, color: `rgba(30, 58, 138, ${baseAlpha})` }, // Azul oscuro
+                            { pos: p - 0.1, color: `rgba(34, 211, 238, ${baseAlpha})` }, // Cian
+                            { pos: p,       color: 'rgba(255, 255, 255, 1)' },          // Pico blanco (hielo)
+                            { pos: p + 0.1, color: `rgba(34, 211, 238, ${baseAlpha})` }, // Cian
+                            { pos: p + 0.3, color: `rgba(30, 58, 138, ${baseAlpha})` }  // Azul oscuro
+                        ];
+
+                        if (stops[0].pos > 0) grad.addColorStop(0, stops[0].color);
+                        stops.forEach(s => { if (s.pos >= 0 && s.pos <= 1) grad.addColorStop(s.pos, s.color); });
+                        if (stops[stops.length - 1].pos < 1) grad.addColorStop(1, stops[stops.length - 1].color);
+
+                        return grad;
+                    }
+
+                    return PLAYER_COLORS[r.nombre] || '#94a3b8'; // Los demás estáticos
+                });
+
+                // Borde brillante (se ilumina cuando el barrido pasa por el centro)
+                const pulse = Math.max(0, 1 - Math.abs(p - 0.5) * 4); // Pico de luz cuando p está cerca de 0.5
+                let borders = ranking.map((r, idx) => {
+                    if (r.streakType === 'fire') {
+                        const alpha = 0.3 + pulse * 0.7;
+                        return `rgba(255, 200, 50, ${alpha})`; 
+                    }
+                    if (r.streakType === 'ice') {
+                        const alpha = 0.3 + pulse * 0.7;
+                        return `rgba(200, 240, 255, ${alpha})`; 
+                    }
+                    return 'transparent';
+                });
+
+                return { bg, borders };
+            };
+
+            let initialColors = generateSweepColors();
+
+            chart1 = new Chart(ctx1, { 
+                type:'bar', 
+                data:{
+                    labels:labelsWithStreaks,
+                    datasets:[{
+                        label:'% Puntuación',
+                        data:ranking.map(r=>r.puntuacion),
+                        backgroundColor: initialColors.bg,
+                        borderColor: initialColors.borders,
+                        borderWidth: 2,
+                        borderRadius:6,
+                        borderSkipped:false
+                    }]
+                }, 
+                options:{
+                    indexAxis:'y',
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    plugins:{
+                        legend:{display:false},
+                        datalabels:{
+                            anchor:'end',
+                            align:'start',
+                            color:'#000',
+                            font:{weight:'bold',size:12},
+                            formatter:(value)=>value+'%',
+                            textStrokeColor: textStrokeColors,
+                            textStrokeWidth:2
+                        }
+                    },
+                    scales:{
+                        x:{grid:{color:'#334155'},ticks:{color:'#94a3b8'},max:100},
+                        y:{ticks:{color:'#94a3b8',font:{size:13}}}
+                    }
+                }
+            });
+
+            // Bucle de animación a 30 FPS (más suave para el movimiento)
+            window.chartPulseInterval = setInterval(() => {
+                if (!chart1) return;
+                const colors = generateSweepColors();
+                chart1.data.datasets[0].backgroundColor = colors.bg;
+                chart1.data.datasets[0].borderColor = colors.borders;
+                chart1.update('none'); 
+            }, 33);
+            chart2 = new Chart(document.getElementById('pagosChart'), { type:'doughnut', data:{labels:Object.keys(pagos),datasets:[{data:Object.values(pagos),backgroundColor: Object.keys(pagos).map(p => PLAYER_COLORS[p] || '#94a3b8')}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
+            chart3 = new Chart(document.getElementById('bolasChart'), { type:'doughnut', data:{labels:Object.keys(bolas),datasets:[{data:Object.values(bolas),backgroundColor: Object.keys(bolas).map(p => PLAYER_COLORS[p] || '#94a3b8')}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8'}},datalabels:{display:false}}}});
         }
         // ==========================================
         // LÓGICA DEL MARCADOR (AISLADA)
