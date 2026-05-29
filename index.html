@@ -5128,13 +5128,12 @@
             let wins = 0;
             let totalMatches = 0;
             
-            // Recorremos los 4 cruces posibles (A vs C, A vs D, B vs C, B vs D)
             p1.forEach(attacker => {
                 p2.forEach(defender => {
-                    // Verificamos que globalFaceOffs exista y tenga datos para este par
-                    if (globalFaceOffs && globalFaceOffs[attacker] && globalFaceOffs[attacker][defender] !== undefined) {
-                        let w = globalFaceOffs[attacker][defender] || 0;
-                        let l = (globalFaceOffs[defender] && globalFaceOffs[defender][attacker]) || 0;
+                    // --- CORRECCIÓN AQUÍ: Usar globalH2H_Wins en lugar de globalFaceOffs ---
+                    if (globalH2H_Wins && globalH2H_Wins[attacker] && globalH2H_Wins[attacker][defender] !== undefined) {
+                        let w = globalH2H_Wins[attacker][defender] || 0;
+                        let l = (globalH2H_Wins[defender] && globalH2H_Wins[defender][attacker]) || 0;
                         
                         wins += w;
                         totalMatches += (w + l);
