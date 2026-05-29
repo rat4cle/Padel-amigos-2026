@@ -5269,57 +5269,127 @@
             return comments[0] || "Sin valorar.";
         }
         function calculateMatchProbability(p1, p2) {
-            // ==========================================
-            // 1. INTENTO USAR HISTORIAL DIRECTO (H2H)
-            // ==========================================
-            let wins = 0;
-            let totalMatches = 0;
-            
-            // Recorremos los 4 cruces posibles (A vs C, A vs D, B vs C, B vs D)
-            p1.forEach(attacker => {
-                p2.forEach(defender => {
-                    // Verificamos que globalFaceOffs exista y tenga datos para este par
-                    if (globalFaceOffs && globalFaceOffs[attacker] && globalFaceOffs[attacker][defender] !== undefined) {
-                        let w = globalFaceOffs[attacker][defender] || 0;
-                        let l = (globalFaceOffs[defender] && globalFaceOffs[defender][attacker]) || 0;
+            try {
+                let p1_clean = p1.map(n => (n || "").toLowerCase().trim());
+                let p2_clean = p2.map(n => (n || "").toLowerCase().trim());
+
+                let exact_s1 = 0, exact_s2 = 0;
+                let indiv_s1 = 0, indiv_s2 = 0;
+                let exactMatches = 0;
+
+                if (!filteredDataGlobal || !Array.isArray(filteredDataGlobal)) {
+                    return 50;
+                }
+
+                filteredDataGlobal.forEach(row => {
+                    if (String(row['tipo'] || "").toLowerCase() === "externo") return;
+
+                    let j1A = String(row['p1 - jugador a'] || "").toLowerCase().trim();
+                    let j1B = String(row['p1 - jugador b'] || "").toLowerCase().trim();
+                    let j2A = String(row['p2 - jugador a'] || "").toLowerCase().trim();
+                    let j2B = String(row['p2 - jugador b'] || "").toLowerCase().trim();
+
+                    let s1_p1 = parseInt(row['set 1 - p1']||0) || 0;
+                    let s1_p2 = parseInt(row['set 1 - p2']||0) || 0;
+                    let s2_p1 = parseInt(row['set 2 - p1']||0) || 0;
+                    let s2_p2 = parseInt(row['set 2 - p2']||0) || 0;
+                    let s3_p1 = parseInt(row['set 3 - p1']||0) || 0;
+                    let s3_p2 = parseInt(row['set 3 - p2']||0) || 0;
+
+                    // --- LÓGICA 1: PAREJA EXACTA ---
+                    let p1IsT1 = p1_clean.every(p => p === j1A || p === j1B);
+                    let p2IsT2 = p2_clean.every(p => p === j2A || p === j2B);
+                    let p1IsT2 = p1_clean.every(p => p === j2A || p === j2B);
+                    let p2IsT1 = p2_clean.every(p => p === j1A || p === j1B);
+
+                    if ((p1IsT1 && p2IsT2) || (p1IsT2 && p2IsT1)) {
+                        exactMatches++;
+                        let isSwapped = p1IsT2;
+                        let t1_g = isSwapped ? (s1_p2 + s2_p2 + s3_p2) : (s1_p1 + s2_p1 + s3_p1);
+                        let t2_g = isSwapped ? (s1_p1 + s2_p1 + s3_p1) : (s1_p2 + s2_p2 + s3_p2);
+                        let t1_s = isSwapped ? 
+                                  ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0) :
+                                  ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0);
                         
-                        wins += w;
-                        totalMatches += (w + l);
+                        if (t1_g > t2_g) {
+                            let pts = 10 + (t1_g - t2_g) + (t1_s === 2 ? 5 : 0);
+                            exact_s1 += pts;
+                        } else if (t2_g > t1_g) {
+                            let pts = 10 + (t2_g - t1_g) + ((t1_s === 0 || t1_s === 1) ? 5 : 0); 
+                            exact_s2 += pts;
+                        }
+                    }
+
+                    // --- LÓGICA 2: INDIVIDUAL ---
+                    let p1PlayersInT1 = p1_clean.filter(p => p === j1A || p === j1B);
+                    let p2PlayersInT2 = p2_clean.filter(p => p === j2A || p === j2B);
+                    let p1PlayersInT2 = p1_clean.filter(p => p === j2A || p === j2B);
+                    let p2PlayersInT1 = p2_clean.filter(p => p === j1A || p === j1B);
+
+                    // Caso A: (P1* vs P2*) -> P1 Izquierda, P2 Derecha
+                    if (p1PlayersInT1.length > 0 && p2PlayersInT2.length > 0) {
+                        let games_T1 = s1_p1 + s2_p1 + s3_p1; // Juegos Izquierda
+                        let games_T2 = s1_p2 + s2_p2 + s3_p2; // Juegos Derecha
+                        let sets_T1 = ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0); // Sets Izquierda
+                        let sets_T2 = ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0); // Sets Derecha
+                        
+                        if (sets_T1 > sets_T2) {
+                             indiv_s1 += (games_T1 - games_T2); 
+                        } else {
+                             indiv_s2 += (games_T2 - games_T1);
+                        }
+                    }
+                    // Caso B: (P2* vs P1*) -> P1 Derecha, P2 Izquierda
+                    else if (p1PlayersInT2.length > 0 && p2PlayersInT1.length > 0) {
+                        let games_T1 = s1_p2 + s2_p2 + s3_p2; // P1 está a la derecha
+                        let games_T2 = s1_p1 + s2_p1 + s3_p1; // P2 está a la izquierda
+                        let sets_T1 = ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0); // Sets P1
+                        let sets_T2 = ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0); // Sets P2
+
+                        if (sets_T1 > sets_T2) {
+                            indiv_s1 += (games_T1 - games_T2);
+                        } else {
+                            indiv_s2 += (games_T2 - games_T1);
+                        }
                     }
                 });
-            });
 
-            // Si tenemos suficientes partidos cara a cara, devolvemos ese porcentaje real
-            if (totalMatches > 0) {
-                return Math.round((wins / totalMatches) * 100);
+                // --- CÁLCULOS ---
+                let prob_exact = 50;
+                if ((exact_s1 + exact_s2) > 0) {
+                    prob_exact = (exact_s1 / (exact_s1 + exact_s2)) * 100;
+                }
+
+                let prob_rank = 50;
+                if (typeof globalRankingArray !== 'undefined' && globalRankingArray.length > 0) {
+                    let stats = {};
+                    globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor);
+                    let p1Points = (stats[p1[0]] || 0) + (stats[p1[1]] || 0);
+                    let p2Points = (stats[p2[0]] || 0) + (stats[p2[1]] || 0);
+                    if (p1Points !== p2Points) {
+                        prob_rank = 50 + ((p1Points - p2Points) * 1.5);
+                        if (prob_rank > 90) prob_rank = 90; if (prob_rank < 10) prob_rank = 10;
+                    }
+                }
+
+                let diff_indiv = indiv_s1 - indiv_s2;
+                let prob_indiv = 50 + (diff_indiv * 2.5); 
+                if (prob_indiv > 90) prob_indiv = 90; if (prob_indiv < 10) prob_indiv = 10;
+
+                let final_prob = 0;
+                if (exactMatches > 0) {
+                    final_prob = (prob_exact * 0.60) + (prob_rank * 0.40);
+                } else {
+                    final_prob = (prob_indiv * 0.60) + (prob_rank * 0.40);
+                }
+
+                return Math.round(final_prob);
+
+            } catch (error) {
+                console.error("Error en calculateMatchProbability:", error);
+                alert("Error en predicción. Revisa la consola (F12).");
+                return 50;
             }
-
-            // ==========================================
-            // 2. FALLBACK: USAR PUNTOS DE RANKING (SI NO HAY H2H)
-            // ==========================================
-            // Si nunca se han jugado estos equipos, usamos la lógica:
-            // "Si el Team 1 tiene más puntos, tiene más probabilidad"
-            
-            // Obtenemos los puntos actuales de los jugadores
-            let stats = {};
-            globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor);
-
-            let p1Points = (stats[p1[0]] || 0) + (stats[p1[1]] || 0);
-            let p2Points = (stats[p2[0]] || 0) + (stats[p2[1]] || 0);
-
-            // Si tienen puntos exactamente iguales, es un 50% real
-            if (p1Points === p2Points) return 50;
-
-            // Fórmula simple de desplazamiento desde el 50%
-            // Diferencia de puntos * 1.5 (factor de sensibilidad)
-            let diff = p1Points - p2Points; 
-            let probability = 50 + (diff * 1.5);
-
-            // Limitamos para que no diga 0% o 100% (humildad tecnológica)
-            if (probability > 90) probability = 90;
-            if (probability < 10) probability = 10;
-
-            return Math.round(probability);
         }
     </script>
     <!-- MODAL DE GUARDADO -->
