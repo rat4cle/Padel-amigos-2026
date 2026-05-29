@@ -1560,7 +1560,15 @@
 
         function aplicarFiltrosGlobales() {
             let dStart = document.getElementById('dateStart').value, dEnd = document.getElementById('dateEnd').value;
-            let timeStart = dStart ? new Date(dStart).getTime() : 0, timeEnd = dEnd ? new Date(dEnd).getTime() : Infinity;
+            let timeStart = 0, timeEnd = Infinity;
+            if (dStart) {
+                let p = dStart.split('-');
+                timeStart = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])).getTime();
+            }
+            if (dEnd) {
+                let p = dEnd.split('-');
+                timeEnd = new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])).getTime();
+            }
             let rangeLabel = "Histórico Completo";
             if (dStart && dEnd) rangeLabel = "Filtrado";
             else if (dStart) rangeLabel = "Desde " + dStart;
@@ -5128,12 +5136,13 @@
             let wins = 0;
             let totalMatches = 0;
             
+            // Recorremos los 4 cruces posibles (A vs C, A vs D, B vs C, B vs D)
             p1.forEach(attacker => {
                 p2.forEach(defender => {
-                    // --- CORRECCIÓN AQUÍ: Usar globalH2H_Wins en lugar de globalFaceOffs ---
-                    if (globalH2H_Wins && globalH2H_Wins[attacker] && globalH2H_Wins[attacker][defender] !== undefined) {
-                        let w = globalH2H_Wins[attacker][defender] || 0;
-                        let l = (globalH2H_Wins[defender] && globalH2H_Wins[defender][attacker]) || 0;
+                    // Verificamos que globalFaceOffs exista y tenga datos para este par
+                    if (globalFaceOffs && globalFaceOffs[attacker] && globalFaceOffs[attacker][defender] !== undefined) {
+                        let w = globalFaceOffs[attacker][defender] || 0;
+                        let l = (globalFaceOffs[defender] && globalFaceOffs[defender][attacker]) || 0;
                         
                         wins += w;
                         totalMatches += (w + l);
