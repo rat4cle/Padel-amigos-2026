@@ -1086,7 +1086,7 @@
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-emerald-400">🏅 Rendimiento General</h3><p class="text-xs text-slate-500 mb-4">* % V calculado sin empates. Ordenado por % Puntuación.</p><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-[10px] sm:text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">#</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-center">% Puntuación</th></tr></thead><tbody id="ranking-tbody" class="divide-y divide-slate-700/50 text-xs sm:text-sm"></tbody></table></div></div>
-                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">% V</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-1 text-white flex items-center gap-2">🏁 Puntuación por Tramos</h3><span id="tramo-subtitle" class="text-xs text-slate-500 mb-4 block">Selecciona un tramo</span><div id="tramos-buttons" class="flex gap-2 mb-4 border-b border-slate-700 pb-2 flex-wrap"></div><div class="overflow-x-auto rounded-xl"><table class="w-full text-left border-collapse"><thead><tr class="bg-slate-750 text-slate-300 text-xs uppercase font-bold border-b border-slate-700"><th class="p-3">Pos</th><th class="p-3">Jugador</th><th class="p-3 text-center">PJ</th><th class="p-3 text-center">PG</th><th class="p-3 text-center">PP</th><th class="p-3 text-center">PE</th><th class="p-3 text-center">Dif. S</th><th class="p-3 text-center">% V</th><th class="p-3 text-center">% Punt</th><th class="p-3 text-right">Puntos</th></tr></thead><tbody id="tramos-tbody" class="divide-y divide-slate-700/50 text-sm"></tbody></table></div></div>
                     </div>
                     <!-- GRILLA: Gráfico Puntuación + Matriz de Dominancia -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1111,20 +1111,22 @@
                     </div>
                     <div class="bg-gradient-to-r from-amber-900/10 to-emerald-900/10 border border-slate-700 rounded-2xl overflow-hidden"><button onclick="toggleAdvancedStats()" class="w-full p-6 text-left flex justify-between items-center hover:bg-slate-800/50 transition-colors"><h3 class="text-lg font-bold text-white flex items-center gap-2">🌟 Estadísticas por Meses</h3><span id="adv-stats-icon" class="text-2xl text-emerald-400 transform transition-transform">+</span></button><div id="advanced-stats-container" class="hidden px-6 pb-6 space-y-3"></div></div>
                     <!-- CURIOSIDADES -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🔄 Rotación</h3><p id="cur-rotacion" class="text-sm text-slate-400">Calculando...</p></div>
                         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700"><h3 class="text-md font-bold text-slate-300 mb-2">🎾 Vida de las Bolas</h3><p id="cur-bolas-vida" class="text-sm text-slate-400">Calculando...</p></div>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-slate-800 to-purple-900/10 p-5 rounded-2xl border border-purple-800/30">
+                        <h3 class="text-md font-bold text-slate-300 mb-3 flex items-center gap-2"><span class="text-xl">🎭</span> El Mercado de Insignias</h3>
+                        <div id="cur-insignias-resumen" class="text-sm text-slate-400 mb-4 space-y-1 min-h-[40px]">Calculando...</div>
+                        <button onclick="openBadgeMarketModal()" class="w-full text-xs bg-slate-700 hover:bg-slate-600 text-white font-bold px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 border border-slate-600">
+                            <i class="ri-window-line"></i> Ver Registro Completo
+                        </button>
                     </div>
                 </section>
 
                 <!-- TAB 2: FICHA TÉCNICA -->
                 <section id="tab-ficha" class="tab-content hidden space-y-0">
-                    <div class="mb-6 pl-2 sm:pl-4">
-                        <h1 class="text-2xl sm:text-3xl font-black text-white flex items-center gap-3 tracking-wide">
-                            <span class="text-3xl sm:text-4xl">🗂️</span> Archivo de Jugadores
-                        </h1>
-                        <p class="text-slate-400 mt-1 font-medium text-xs sm:text-sm">Haz clic en las pestañas para extraer la ficha del jugador.</p>
-                    </div>
                     <div id="player-folder-tabs" class="flex items-end pl-2 sm:pl-6 overflow-visible w-full overflow-x-auto hide-scrollbar"></div>
                     <div class="bg-slate-800 border border-slate-600 rounded-b-2xl rounded-tr-2xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] p-6 sm:p-10 relative z-50 -mt-[1px] min-h-[400px] transition-all duration-300">
                         <div id="player-stats-container" class="hidden animate-fade-in">
@@ -1857,6 +1859,118 @@
             document.getElementById('filter-status-label').innerText = "Histórico Completo";
             if(rawDataGlobal.length > 0) aplicarFiltrosGlobales();
         }
+
+        function openBadgeMarketModal() {
+            document.getElementById('badge-market-modal').classList.remove('hidden');
+        }
+
+        function closeBadgeMarketModal() {
+            document.getElementById('badge-market-modal').classList.add('hidden');
+        }
+
+        function filterBadges() {
+            let searchTerm = document.getElementById('badge-search-input').value.toLowerCase();
+            let items = document.querySelectorAll('.badge-item-row');
+            items.forEach(item => {
+                let text = item.innerText.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function renderBadgeMarket() {
+            try {
+                const fv = (val) => typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : val;
+
+                let allBadges = globalBadges || [];
+                let activeBadges = allBadges.filter(b => b.winners && b.winners.length > 0);
+                
+                // Seguridad: asegurarnos de que runnerUps existe
+                activeBadges.forEach(b => { if(!b.runnerUps) { b.runnerUps = []; b.runnerUpVals = {}; } });
+
+                let rarityOrder = {'comun': 0, 'rara': 1, 'epica': 2, 'legendaria': 3};
+                activeBadges.sort((a, b) => (rarityOrder[a.rarity] || 0) - (rarityOrder[b.rarity] || 0));
+
+                // 1. RESUMEN (Solo cambios recientes)
+                let changesHtml = [];
+                activeBadges.forEach(b => {
+                    let prevWinners = window.globalPreviousBadgeWinners[b.id] || [];
+                    let currentWinners = b.winners || [];
+                    let newWinners = currentWinners.filter(w => !prevWinners.includes(w));
+                    let lostWinners = prevWinners.filter(w => !currentWinners.includes(w));
+
+                    if (newWinners.length > 0) {
+                        if (lostWinners.length > 0) {
+                            changesHtml.push(`<div class="flex items-start gap-2 py-1.5 border-b border-slate-700/50 last:border-0"><span class="text-2xl mt-0.5">${b.emoji}</span> <div><span class="text-emerald-400 font-bold">${newWinners.join(', ')}</span> le quitó <span class="text-white font-bold">${b.name}</span> a <span class="text-red-400 font-bold">${lostWinners.join(', ')}</span></div></div>`);
+                        } else if (prevWinners.length > 0) {
+                            changesHtml.push(`<div class="flex items-start gap-2 py-1.5 border-b border-slate-700/50 last:border-0"><span class="text-2xl mt-0.5">${b.emoji}</span> <div><span class="text-emerald-400 font-bold">${newWinners.join(', ')}</span> se unió al club de <span class="text-white font-bold">${b.name}</span> <span class="text-slate-500 text-xs">(empata con ${prevWinners.join(', ')})</span></div></div>`);
+                        }
+                    }
+                });
+
+                if (changesHtml.length > 0) {
+                    document.getElementById('cur-insignias-resumen').innerHTML = changesHtml.join('');
+                } else {
+                    document.getElementById('cur-insignias-resumen').innerHTML = "<div class='text-slate-500 italic text-xs'>Sin movimientos en el mercado respecto al último partido.</div>";
+                }
+
+                // 2. MODAL COMPLETO
+                let fullHtml = "";
+                activeBadges.forEach(b => {
+                    let diffText = "";
+                    if (b.runnerUps.length > 0 && typeof b.winnerValues[b.winners[0]] === 'number') {
+                        let diff = Math.abs(b.winnerValues[b.winners[0]] - b.runnerUpVals[b.runnerUps[0]]);
+                        diffText = `<span class="text-slate-600 text-[10px]">(por ${Number.isInteger(diff) ? diff : diff.toFixed(1)})</span>`;
+                    }
+
+                    let rarityStyles = { 'comun': 'border-slate-700', 'rara': 'border-blue-800/40', 'epica': 'border-purple-800/40', 'legendaria': 'border-amber-600/50' };
+                    let borderStyle = rarityStyles[b.rarity] || rarityStyles['comun'];
+
+                    let prevWinners = window.globalPreviousBadgeWinners[b.id] || [];
+
+                    let winnersHtml = b.winners.map(w => {
+                        let isNew = !prevWinners.includes(w);
+                        let style = isNew ? 'text-emerald-300 ring-1 ring-emerald-500 px-1.5 rounded bg-emerald-900/30' : 'text-emerald-400';
+                        let tag = isNew ? ' <span class="text-[8px] bg-emerald-950 px-1 rounded border border-emerald-800">NEW</span>' : '';
+                        return `<div class="text-sm font-black ${style}">👑 ${w} <span class="font-mono text-xs text-slate-400">(${fv(b.winnerValues[w])})</span>${tag}</div>`;
+                    }).join('');
+
+                    let runnerUpsHtml = b.runnerUps.map(r => {
+                        return `<div class="text-xs font-bold text-red-400/80 mt-1">⚡ ${r} <span class="font-mono text-[10px] text-slate-600">(${fv(b.runnerUpVals[r])})</span></div>`;
+                    }).join('');
+
+                    fullHtml += `
+                    <div class="badge-item-row bg-slate-900/60 p-5 rounded-lg border ${borderStyle} flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                        <div class="flex items-center gap-4 flex-1 min-w-0">
+                            <span class="text-4xl flex-shrink-0">${b.emoji}</span>
+                            <div class="min-w-0">
+                                <div class="text-base font-bold text-white truncate flex items-center">${b.name}</div>
+                                <div class="text-xs text-slate-500 truncate">${b.desc}</div>
+                            </div>
+                        </div>
+                        <div class="text-right flex-shrink-0 pl-2 flex flex-col items-end">
+                            ${winnersHtml}
+                            ${runnerUpsHtml}
+                            ${diffText}
+                        </div>
+                    </div>`;
+                });
+
+                document.getElementById('badge-market-modal-body').innerHTML = fullHtml || '<div class="text-slate-500 text-sm text-center py-10">No hay insignias activas en este periodo</div>';
+                
+                let searchInput = document.getElementById('badge-search-input');
+                if(searchInput) searchInput.value = '';
+
+            } catch(e) {
+                console.error("Error en renderBadgeMarket:", e);
+                document.getElementById('cur-insignias-resumen').innerHTML = "<div class='text-red-400 text-xs'>Error al cargar el mercado.</div>";
+            }
+        }
+
+
         function toggleAdvancedStats() { let el = document.getElementById('advanced-stats-container'); let icon = document.getElementById('adv-stats-icon'); el.classList.toggle('hidden'); icon.innerText = el.classList.contains('hidden') ? '+' : '-'; }
         function showBadgeDetail(id) { let badge = globalBadges.find(b => b.id === id); let player = selectedPlayerName; if(!badge || !player) return; let val = badge.winnerValues[player]; let detailDiv = document.getElementById('badge-detail'); if(!detailDiv.classList.contains('hidden') && detailDiv.dataset.currentId === id) { detailDiv.classList.add('hidden'); return; } detailDiv.dataset.currentId = id; detailDiv.classList.remove('hidden'); let formattedVal = badge.format ? badge.format(val) : val; detailDiv.innerHTML = '<div class="flex items-center gap-2 mb-2"><span class="text-2xl">'+badge.emoji+'</span><span class="text-lg font-bold text-white">'+badge.name+'</span></div><p class="text-sm text-slate-400 mb-3">'+badge.desc+'</p><div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400">'+formattedVal+'</div>'; }
 
@@ -1956,7 +2070,34 @@
             MANDATORY_PLAYERS.forEach(mp => { if(!jugadoresStats[mp]) globalRankingArray.push({ nombre: mp, puntuacionValor: 0, partidos: 0, victorias: 0, empates: 0, derrotas: 0, difSets: 0, winRateVic: 0, puntuacion: 0, streak: "", streakType: "" }); });
             globalRankingArray.sort((a,b) => b.puntuacion - a.puntuacion || b.difSets - a.difSets);
             document.getElementById('kpi-partidos').innerText = totalPartidosInternos; document.getElementById('kpi-lider').innerText = globalRankingArray.length > 0 ? `${globalRankingArray[0].nombre} (${globalRankingArray[0].puntuacion}%)` : "-"; document.getElementById('kpi-pareja').innerText = parejaLetalText;
-            calculateTramos(rawDataGlobal); calculatePlayerOfMonth(filteredDataGlobal); calculateFaceOffs(rawDataGlobal); calculateBadges(rawDataGlobal); calculateDeudor(jugadoresStats, pagosCount, bolasCount);
+            // Guardar el estado de las insignias ANTES de recalcular
+            window.globalPreviousBadgeWinners = {};
+            if (globalBadges && globalBadges.length > 0) {
+                globalBadges.forEach(b => {
+                    window.globalPreviousBadgeWinners[b.id] = b.winners ? [...b.winners] : [];
+                });
+            }
+            calculateTramos(rawDataGlobal); calculatePlayerOfMonth(filteredDataGlobal); calculateFaceOffs(filteredDataGlobal);
+
+            // Calcular insignias "previas" (excluyendo el último día de partidos) para detectar cambios
+            let maxDate = 0;
+            rows.forEach(r => { let d = parseCSVDate(r.fecha); if (d > maxDate) maxDate = d; });
+            let previousRows = rows.filter(r => parseCSVDate(r.fecha) < maxDate);
+
+            if (previousRows.length > 0) {
+                calculateBadges(previousRows);
+                window.globalPreviousBadgeWinners = {};
+                globalBadges.forEach(b => {
+                    window.globalPreviousBadgeWinners[b.id] = b.winners ? [...b.winners] : [];
+                });
+            } else {
+                window.globalPreviousBadgeWinners = {};
+            }
+
+            // Calcular insignias actuales (con todos los partidos, esto sobrescribe las previas y deja el estado real)
+            calculateBadges(rows);
+
+            calculateDeudor(jugadoresStats, pagosCount, bolasCount);
             renderRankingTable(globalRankingArray); renderResultadosHabituales(rows); renderParejasTopBottom(parejasElegibles); displayMatches(filteredDataGlobal); renderCharts(globalRankingArray, pagosCount, bolasCount);
             if (selectedPlayerName === "" && globalRankingArray.length > 0) { selectedPlayerName = globalRankingArray[0].nombre; }
             renderPlayerFolderTabs();
@@ -2097,6 +2238,8 @@
 
             document.getElementById('cur-bolas-vida').innerHTML = bolasVidaText;
             renderHeatmap();
+            renderBadgeMarket();
+            
         }
 
         function calculatePlayerOfMonth(rows) { let monthlyStats = {}; rows.forEach(row => { let isExterno = String(row['tipo'] || "").toLowerCase() === "externo"; if(isExterno) return; let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate"); let j1A = String(row['p1 - jugador a'] || "").trim(), j1B = String(row['p1 - jugador b'] || "").trim(), j2A = String(row['p2 - jugador a'] || "").trim(), j2B = String(row['p2 - jugador b'] || "").trim(); let ganadores = String(row['ganadores'] || ""), fecha = String(row.fecha||"").trim().split(" ")[0]; let setsP1 = parseInt(row['sets p1'] || 0), setsP2 = parseInt(row['sets p2'] || 0); let parts = fecha.includes('/') ? fecha.split('/') : fecha.split('-'); let monthKey; if (parts.length === 3) { if (parts[0].length === 4) monthKey = parts[0] + "-" + parts[1]; else monthKey = parts[2] + "-" + parts[1]; } if(!monthKey) return; [j1A, j1B, j2A, j2B].forEach(j => { if(j && j !== "Playtomic") { if(!monthlyStats[monthKey]) monthlyStats[monthKey] = {}; if(!monthlyStats[monthKey][j]) monthlyStats[monthKey][j] = {pj:0, v:0, e:0, sf:0, sc:0}; } }); [[j1A, j1B, setsP1, setsP2], [j2A, j2B, setsP2, setsP1]].forEach(team => { team.slice(0,2).forEach(j => { if(j && j !== "Playtomic") { monthlyStats[monthKey][j].pj += 1; monthlyStats[monthKey][j].sf += team[2]; monthlyStats[monthKey][j].sc += team[3]; if(isDraw) monthlyStats[monthKey][j].e += 1; else if(ganadores.includes(j)) monthlyStats[monthKey][j].v += 1; } }); }); }); let container = document.getElementById('advanced-stats-container'); container.innerHTML = ""; let sortedMonths = Object.keys(monthlyStats).sort().reverse(); sortedMonths.forEach(monthKey => { let monthPlayers = []; for(let j in monthlyStats[monthKey]) { let s = monthlyStats[monthKey][j]; if(s.pj < 3) continue; let pg = s.v, pe = s.e, pj = s.pj;
@@ -2236,35 +2379,43 @@
             });
 
             let alternations = {};
-            for(let j in playerHistory) { let hist = playerHistory[j]; let trans = 0; for(let i=1; i<hist.length; i++) { if(hist[i] !== hist[i-1]) trans++; } alternations[j] = hist.length > 1 ? trans / (hist.length - 1) : 0; }
+            for(let j in playerHistory) { 
+                let hist = playerHistory[j].filter(r => r !== 'D'); // Ignorar empates
+                let trans = 0; 
+                for(let i=1; i<hist.length; i++) { 
+                    if(hist[i] !== hist[i-1]) trans++; 
+                } 
+                alternations[j] = hist.length > 1 ? trans / (hist.length - 1) : 0; 
+            }
             let maxPairCount = 0, maxPairName = ""; for(let pair in pairMatchesCount) { if(pairMatchesCount[pair] > maxPairCount) { maxPairCount = pairMatchesCount[pair]; maxPairName = pair; } }
             let verdugoCount = {}; for(let j in bs) { if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue; let maxD=0, nems=[]; for(let r in bs[j].defeatsBy) { if(bs[j].defeatsBy[r]>maxD){maxD=bs[j].defeatsBy[r];nems=[r];}else if(bs[j].defeatsBy[r]===maxD)nems.push(r); } if(maxD>0) nems.forEach(n => verdugoCount[n]=(verdugoCount[n]||0)+1); }
-            // Cálculo Ave Fénix (Racha V seguida de Racha D)
+            // Cálculo Ave Fénix (Racha D seguida de Racha V -> Resurgir de las cenizas)
             let phoenixMax = {};
             for(let j in playerHistory) {
                 let hist = playerHistory[j];
-                let maxWStreak = 0;
-                let curW = 0;
+                let maxWStreakAfterL = 0;
+                let curL = 0;
                 for(let i=0; i<hist.length; i++) {
-                    if(hist[i] === 'W') {
-                        curW++;
-                    } else if(hist[i] === 'L' && curW >= 3) {
-                        let lCount = 0;
+                    if(hist[i] === 'L') {
+                        curL++;
+                    } else if(hist[i] === 'W' && curL >= 3) {
+                        // Venimos de 3+ derrotas, ahora contamos las victorias consecutivas
+                        let wCount = 0;
                         let tempI = i;
-                        while(tempI < hist.length && hist[tempI] === 'L') {
-                            lCount++;
+                        while(tempI < hist.length && hist[tempI] === 'W') {
+                            wCount++;
                             tempI++;
                         }
-                        if(lCount >= 3) {
-                            if(curW > maxWStreak) maxWStreak = curW;
+                        if(wCount >= 3) {
+                            if(wCount > maxWStreakAfterL) maxWStreakAfterL = wCount;
                         }
-                        curW = 0;
+                        curL = 0;
                         i = tempI - 1; 
                     } else {
-                        curW = 0; // Empates u otras cosas rompen la racha
+                        curL = 0; // Empates rompen la racha de derrotas
                     }
                 }
-                phoenixMax[j] = maxWStreak;
+                phoenixMax[j] = maxWStreakAfterL;
             }
 
             globalBadges = [
@@ -2311,7 +2462,7 @@
                 { id:'upset_king', name:'Rompepronósticos', emoji:'🧐', rarity:'epica', desc:'El que más veces ha ganado cuando la predicción de la IA estaba en su contra', findMax: (b) => b.upsetWins > 0 ? b.upsetWins : null, format: (v) => `${v} victorias contra pronóstico` },
 
                 // 🟡 LEGENDARIAS
-                { id:'phoenix', name:'Ave Fénix', emoji:'🐦‍🔥', rarity:'legendaria', desc:'Racha de 3+ victorias seguida inmediatamente de racha de 3+ derrotas (Gana el de mayor racha V)', findMax: (b, name) => (phoenixMax[name] || 0) >= 3 ? phoenixMax[name] : null, format: (v) => `Resurgió con una racha de ${v} victorias seguidas` },
+                { id:'phoenix', name:'Ave Fénix', emoji:'🐦‍🔥', rarity:'legendaria', desc:'Racha de 3+ derrotas seguida inmediatamente de una racha de 3+ victorias (Gana el de mayor racha V)', findMax: (b, name) => (phoenixMax[name] || 0) >= 3 ? phoenixMax[name] : null, format: (v) => `Resurgió con una racha de ${v} victorias seguidas` },
                 { id:'adaptable', name:'Camaleón', emoji:'🦎', rarity:'legendaria', desc:'Ha ganado con TODOS los fijos. En caso de empate en victorias, gana el que lo hizo en menos partidos', findMax: (b, name) => { 
                     let group = MANDATORY_PLAYERS.filter(p => p !== name); 
                     if(group.length === 0) return null; 
@@ -2331,30 +2482,52 @@
             ];
 
             globalBadges.forEach(badge => {
-                badge.winners = []; badge.winnerValues = {}; let bestVal = badge.findMax ? -Infinity : Infinity;
+                badge.winners = []; badge.winnerValues = {}; 
+                badge.runnerUps = []; badge.runnerUpVals = {}; // Cambiado a arrays para empates
+                let candidates = [];
                 for(let j in bs) {
                     if(bs[j].pj < 3 && !MANDATORY_PLAYERS.includes(j)) continue;
                     let val = badge.findMax ? badge.findMax(bs[j], j) : badge.findMin(bs[j], j);
                     if(val === null || val === undefined) continue;
                     let displayVal = (badge.id === 'talisman_bolas' && val > 0) ? `${val}/${bs[j].bolasPj}` : val;
-                    if(badge.findMax && val > bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; }
-                    else if(badge.findMax && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = displayVal; }
-                    if(badge.findMin && val < bestVal) { bestVal = val; badge.winners = [j]; badge.winnerValues = {[j]: displayVal}; }
-                    else if(badge.findMin && val === bestVal) { badge.winners.push(j); badge.winnerValues[j] = displayVal; }
-                    globalBadgeStats = bs;
+                    candidates.push({ name: j, val: val, displayVal: displayVal });
+                }
+                if (candidates.length === 0) return;
+                if (badge.findMax) candidates.sort((a, b) => b.val - a.val);
+                else candidates.sort((a, b) => a.val - b.val);
+                
+                let bestVal = candidates[0].val;
+                candidates.forEach(c => {
+                    if (c.val === bestVal) {
+                        badge.winners.push(c.name);
+                        badge.winnerValues[c.name] = c.displayVal;
+                    }
+                });
+                
+                // Encontrar TODOS los subcampeones (empate en el segundo mejor valor)
+                let secondCandidates = candidates.filter(c => c.val !== bestVal);
+                if (secondCandidates.length > 0) {
+                    let secondVal = secondCandidates[0].val;
+                    secondCandidates.forEach(c => {
+                        if (c.val === secondVal) {
+                            badge.runnerUps.push(c.name);
+                            badge.runnerUpVals[c.name] = c.displayVal;
+                        }
+                    });
                 }
             });
+            globalBadgeStats = bs;
         }
 
         function calculateTramos(rows) { let internalMatches = rows.filter(r => String(r['tipo'] || "").toLowerCase() !== "externo"); internalMatches.sort((a,b) => parseCSVDate(a.fecha) - parseCSVDate(b.fecha)); tramosData = {}; let tramo1Matches = []; let restMatches = []; internalMatches.forEach(m => { if (parseCSVDate(m.fecha) <= TRAMO1_END_DATE) tramo1Matches.push(m); else restMatches.push(m); }); processTramoChunk(1, tramo1Matches, true); let chunkIndex = 2; for (let i = 0; i < restMatches.length; i += TRAMO_SIZE) { processTramoChunk(chunkIndex, restMatches.slice(i, i + TRAMO_SIZE), false); chunkIndex++; } 
-        let totalPts = {}; let totalPj = {}; let totalPg = {}; let totalPp = {}; let totalPe = {}; let totalPunt = {};
-            for(let t in tramosData) { tramosData[t].data.forEach(r => { totalPj[r.nombre] = (totalPj[r.nombre] || 0) + r.pj; totalPg[r.nombre] = (totalPg[r.nombre] || 0) + (r.pg || 0); totalPp[r.nombre] = (totalPp[r.nombre] || 0) + (r.pp || 0); totalPe[r.nombre] = (totalPe[r.nombre] || 0) + (r.pe || 0); totalPunt[r.nombre] = r.puntuacion; if (tramosData[t].isFinished) totalPts[r.nombre] = (totalPts[r.nombre] || 0) + r.pts; }); }
+        let totalPts = {}; let totalPj = {}; let totalPg = {}; let totalPp = {}; let totalPe = {}; let totalPunt = {}; let totalDifSets = {};
+            for(let t in tramosData) { tramosData[t].data.forEach(r => { totalPj[r.nombre] = (totalPj[r.nombre] || 0) + r.pj; totalPg[r.nombre] = (totalPg[r.nombre] || 0) + (r.pg || 0); totalPp[r.nombre] = (totalPp[r.nombre] || 0) + (r.pp || 0); totalPe[r.nombre] = (totalPe[r.nombre] || 0) + (r.pe || 0); totalPunt[r.nombre] = r.puntuacion; totalDifSets[r.nombre] = (totalDifSets[r.nombre] || 0) + (r.difSets || 0); if (tramosData[t].isFinished) totalPts[r.nombre] = (totalPts[r.nombre] || 0) + r.pts; }); }
             let totalData = [];
             for(let j in totalPts) {
                 let pj = totalPj[j] || 0, pg = totalPg[j] || 0, pp = totalPp[j] || 0, pe = totalPe[j] || 0;
                 let partidosDecisivos = pg + pp;
                 let winRateVic = partidosDecisivos > 0 ? ((pg / partidosDecisivos) * 100).toFixed(1) : 0;
-                totalData.push({ nombre: j, pj: pj, pg: pg, pp: pp, pe: pe, winRateVic: parseFloat(winRateVic), puntuacion: totalPunt[j], pts: totalPts[j] });
+                totalData.push({ nombre: j, pj: pj, pg: pg, pp: pp, pe: pe, difSets: totalDifSets[j] || 0, winRateVic: parseFloat(winRateVic), puntuacion: totalPunt[j], pts: totalPts[j] });
             } totalData.sort((a,b) => b.pts - a.pts || b.puntuacion - a.puntuacion); tramosData['total'] = { label: "🏆 Total Acumulado", data: totalData, isFinished: true }; renderTramoButtons(chunkIndex-1); switchTramo(chunkIndex-1); }
         function processTramoChunk(tramoNum, chunk, isTramo1) { 
             let stats = {}, firstDate = null, lastDate = null; 
@@ -2443,14 +2616,15 @@
                 let ptsDisplay = isFinished ? `<span class="${pColor} font-bold">${r.pts} pts</span>` : `<span class="text-slate-500 font-bold">${r.pts} pts*</span>`;
                 
                 tr.innerHTML = `<td class="p-3 text-slate-500">${idx+1}</td>
-                                <td class="p-3 text-slate-300">${m}${r.nombre}</td>
-                                <td class="p-3 text-center text-slate-400">${r.pj}</td>
-                                <td class="p-3 text-center text-slate-400">${r.pg}</td>
-                                <td class="p-3 text-center text-slate-400">${r.pp}</td>
-                                <td class="p-3 text-center text-slate-400">${r.pe}</td>
-                                <td class="p-3 text-center text-slate-400">${r.winRateVic}%</td>
-                                <td class="p-3 text-center text-slate-400">${r.puntuacion.toFixed(1)}%</td>
-                                <td class="p-3 text-right font-bold">${ptsDisplay}</td>`; 
+                <td class="p-3 text-slate-300">${m}${r.nombre}</td>
+                <td class="p-3 text-center text-slate-400">${r.pj}</td>
+                <td class="p-3 text-center text-slate-400">${r.pg}</td>
+                <td class="p-3 text-center text-slate-400">${r.pp}</td>
+                <td class="p-3 text-center text-slate-400">${r.pe}</td>
+                <td class="p-3 text-center text-slate-400">${r.difSets > 0 ? '+' : ''}${r.difSets}</td>
+                <td class="p-3 text-center text-slate-400">${r.winRateVic}%</td>
+                <td class="p-3 text-center text-slate-400">${r.puntuacion.toFixed(1)}%</td>
+                <td class="p-3 text-right font-bold">${ptsDisplay}</td>`;
                 tbody.appendChild(tr); 
             }); }
 
@@ -5701,6 +5875,24 @@
             <div class="flex gap-3">
                 <button onclick="closeSaveModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded">Cancelar</button>
                 <button onclick="saveAndDownload()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded">Descargar Datos (JSON)</button>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL DEL MERCADO DE INSIGNIAS -->
+    <div id="badge-market-modal" onclick="closeBadgeMarketModal()" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+            <div class="p-5 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-3 flex-shrink-0">
+                <h2 class="text-xl font-black text-white flex items-center gap-2">
+                    <span class="text-amber-400 text-2xl">🎭</span> Registro de Insignias
+                </h2>
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="badge-search-input" onkeyup="filterBadges()" placeholder="Buscar insignia..." class="w-full bg-slate-900 border border-slate-700 text-white text-sm rounded-lg px-3 py-2 pl-8 focus:outline-none focus:border-emerald-500">
+                    <i class="ri-search-line absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                </div>
+                <button onclick="closeBadgeMarketModal()" class="text-slate-400 hover:text-white text-3xl leading-none transition"><i class="ri-close-line"></i></button>
+            </div>
+            <div id="badge-market-modal-body" class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-3">
+                <!-- El contenido se inyecta desde JS -->
             </div>
         </div>
     </div>
