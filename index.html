@@ -1302,8 +1302,8 @@
                         </div>
                         <div id="mm-result" class="hidden bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center"></div>
                     </div>
-                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-amber-400">⚖️ Comparador de Parejas</h3><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-2"><div><label class="text-xs text-slate-400 block mb-1">P1 (J1)</label><select id="cmp-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(1)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P1 (J2)</label><select id="cmp-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex justify-center text-2xl font-black text-red-500 py-2">VS</div><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-4"><div><label class="text-xs text-slate-400 block mb-1">P2 (J3)</label><select id="cmp-p3" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(2)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P2 (J4)</label><select id="cmp-p4" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex items-center gap-3 mb-6 bg-slate-900/50 p-3 rounded-lg border border-slate-700"><input type="checkbox" id="cmp-respectOrder" class="w-5 h-5 bg-slate-900 border-slate-700 rounded text-emerald-500 focus:ring-emerald-500 cursor-pointer"><label for="cmp-respectOrder" class="text-xs text-slate-300 cursor-pointer font-bold">Respetar posición exacta</label></div><button onclick="compararParejas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-2 rounded-xl transition-colors">Comparar Histórico</button><div id="cmp-result" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Historial</h4><div id="cmp-historial" class="text-2xl font-black text-center py-4"></div></div><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Sets Habituales</h4><div id="cmp-sets" class="text-center py-4 space-y-1"></div></div></div></div>
-                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-sky-400">🎾 Resultado Habitual de Pareja</h3><div class="flex flex-col sm:flex-row gap-4 items-end mb-4"><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 1</label><select id="hab-p1" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center text-xl font-bold text-slate-500 pt-4 px-2">&</div><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 2</label><select id="hab-p2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><button onclick="calcHabPareja()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">Ver Resultado</button></div><div id="hab-pareja-result" class="hidden mt-4 bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center font-mono"></div></div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-amber-400">⚖️ Comparador de Parejas</h3><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-2"><div><label class="text-xs text-slate-400 block mb-1">P1 (J1)</label><select id="cmp-p1" onchange="updateCmpSelectors()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(1)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P1 (J2)</label><select id="cmp-p2" onchange="updateCmpSelectors()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex justify-center text-2xl font-black text-red-500 py-2">VS</div><div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-end mb-4"><div><label class="text-xs text-slate-400 block mb-1">P2 (J3)</label><select id="cmp-p3" onchange="updateCmpSelectors()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center pt-5"><button onclick="swapCmp(2)" class="text-slate-400 hover:text-emerald-400 text-xl font-bold">↔</button></div><div><label class="text-xs text-slate-400 block mb-1">P2 (J4)</label><select id="cmp-p4" onchange="updateCmpSelectors()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div></div><div class="flex items-center gap-3 mb-6 bg-slate-900/50 p-3 rounded-lg border border-slate-700"><input type="checkbox" id="cmp-respectOrder" class="w-5 h-5 bg-slate-900 border-slate-700 rounded text-emerald-500 focus:ring-emerald-500 cursor-pointer"><label for="cmp-respectOrder" class="text-xs text-slate-300 cursor-pointer font-bold">Respetar posición exacta</label></div><button onclick="compararParejas()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-2 rounded-xl transition-colors">Comparar Histórico</button><div id="cmp-result" class="hidden mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Historial</h4><div id="cmp-historial" class="text-2xl font-black text-center py-4"></div></div><div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800"><h4 class="text-sm font-bold text-slate-400 uppercase mb-2 border-b border-slate-700 pb-2">Sets Habituales</h4><div id="cmp-sets" class="text-center py-4 space-y-1"></div></div></div></div>
+                    <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700"><h3 class="text-lg font-bold mb-4 text-sky-400">🎾 Resultado Habitual de Pareja</h3><div class="flex flex-col sm:flex-row gap-4 items-end mb-4"><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 1</label><select id="hab-p1" onchange="updateHabSelectors()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><div class="flex items-center justify-center text-xl font-bold text-slate-500 pt-4 px-2">&</div><div class="flex-1 w-full"><label class="text-xs text-slate-400 block mb-1">Jugador 2</label><select id="hab-p2" onchange="updateHabSelectors()" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-2 text-sm focus:outline-none focus:border-emerald-500"></select></div><button onclick="calcHabPareja()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">Ver Resultado</button></div><div id="hab-pareja-result" class="hidden mt-4 bg-slate-900/50 p-4 rounded-lg border border-slate-700 text-center font-mono"></div></div>
                 </section>
 
                 <!-- TAB 5: HISTORIAL -->
@@ -1693,8 +1693,8 @@
             'claro': 'ri-sun-line',
             'neon': 'ri-flashlight-line',
             'bosque': 'ri-plant-line',
-            'tierra': 'ri-landscape-fill',
-            'retro': 'ri-vip-crown-line', // Icono cambiado a corona
+            'tierra': 'ri-landscape-line',
+            'retro': 'ri-vip-crown-line',
             'oceano': 'ri-water-flash-line',
             'amoled': 'ri-contrast-2-line',
             'aurora': 'ri-sparkling-line',
@@ -1702,15 +1702,33 @@
             'terminal': 'ri-terminal-box-line',
             'sakura': 'ri-flower-line'
         };
+        const themeNames = {
+            'oscuro': 'Oscuro',
+            'claro': 'Claro',
+            'neon': 'Neón',
+            'bosque': 'Bosque',
+            'tierra': 'Tierra',
+            'retro': 'Club Clásico',
+            'oceano': 'Océano',
+            'amoled': 'Amoled',
+            'aurora': 'Aurora',
+            'arcade': 'Arcade',
+            'terminal': 'Terminal',
+            'sakura': 'Sakura'
+        };
         let currentThemeIdx = 0;
 
         function applyTheme(themeName) {
             document.body.setAttribute('data-theme', themeName);
             localStorage.setItem('padelTheme', themeName); // Guarda la preferencia
             
-            // Cambiar el icono del botón
+            // 1. Cambiar el icono
             const iconEl = document.querySelector('#nav-theme .icon i');
             if(iconEl) iconEl.className = themeIcons[themeName];
+            
+            // 2. Cambiar el texto del menú
+            const labelEl = document.querySelector('#nav-theme .label');
+            if(labelEl) labelEl.innerText = `Tema: ${themeNames[themeName]}`;
         }
 
         function cycleTheme() {
@@ -1721,7 +1739,6 @@
         // Inicializar el tema al cargar (recuperar del localStorage)
         const savedTheme = localStorage.getItem('padelTheme') || 'oscuro';
         currentThemeIdx = themes.indexOf(savedTheme);
-        // Aplicar cuando cargue
         window.addEventListener('DOMContentLoaded', () => {
             applyTheme(savedTheme);
         });
@@ -2110,7 +2127,7 @@
             let curseBreaks = {};
 
             const init = (j) => {
-                if(!bs[j]) bs[j] = { pj:0, tb:0, remontadas:0, bolasW:0, bolasPj:0, posRev:0, posDriv:0, mates:{}, maxW:0, maxL:0, curW:0, curL:0, s3reach:0, s3win:0, matchesWonIn2:0, s1win:0, s1lose:0, s2lose:0, s3lose:0, cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{}, firstHalf: {w:0, p:0}, secondHalf: {w:0, p:0}, defeatsBy:{}, tbWin:0, zaragozaW:0, allTbMatches:0 };
+                if(!bs[j]) bs[j] = { pj:0, tb:0, remontadas:0, bolasW:0, bolasPj:0, posRev:0, posDriv:0, mates:{}, maxW:0, maxL:0, curW:0, curL:0, s3reach:0, s3win:0, matchesWonIn2:0, s1win:0, s1lose:0, s2lose:0, s3lose:0, cleanSets:0, extComebacks:0, closeSetWins:0, closeSetPlayed:0, chokeJobs:0, winsWith:{}, kryptoWins:0, courts:{}, firstHalf: {w:0, p:0}, secondHalf: {w:0, p:0}, defeatsBy:{}, tbWin:0, zaragozaW:0, allTbMatches:0, upsetWins:0 }; 
             };
 
             let midIndex = Math.floor(rows.length / 2);
@@ -2125,6 +2142,22 @@
                 let isTB = [s1p1+'-'+s1p2, s2p1+'-'+s2p2, s3p1+'-'+s3p2].some(s => s === '7-6' || s === '6-7');
                 let has3Set = s3p1 > 0 || s3p2 > 0;
                 let winT1 = ganadores.includes(j1A) && ganadores.includes(j1B); let winT2 = ganadores.includes(j2A) && ganadores.includes(j2B);
+                // Lógica de Upsets (Ganar con predicción en contra)
+                if (!isDraw && (winT1 || winT2)) {
+                    try {
+                        let probT1 = calculateMatchProbability([j1A, j1B], [j2A, j2B]);
+                        // Si ganó el Equipo 1 y la IA le daba menos del 50%
+                        if (winT1 && probT1 < 50) {
+                            [j1A, j1B].forEach(jz => { if(jz && jz!=="Playtomic") { init(jz); bs[jz].upsetWins++; } });
+                        } 
+                        // Si ganó el Equipo 2 y la IA le daba menos del 50% (es decir, probT1 > 50)
+                        else if (winT2 && probT1 > 50) {
+                            [j2A, j2B].forEach(jz => { if(jz && jz!=="Playtomic") { init(jz); bs[jz].upsetWins++; } });
+                        }
+                    } catch(e) {
+                        console.warn("Error calculando probabilidad para insignia", e);
+                    }
+                }
                 let court = String(row['pista']||"").trim();
                 // Lógica 777 (3 Tie Breaks en un partido)
                 let s1IsTb = (s1p1===7 && s1p2===6) || (s1p1===6 && s1p2===7);
@@ -2273,6 +2306,9 @@
                 { id:'streak_w', name:'Racha Dorada', emoji:'🔥', rarity:'epica', desc:'Racha más larga de victorias', findMax: (b) => b.maxW >= 3 ? b.maxW : null, format: (v) => `${v} partidos seguidos` },
                 { id:'streak_l', name:'Mala Racha', emoji:'💀', rarity:'epica', desc:'Racha más larga de derrotas', findMax: (b) => b.maxL >= 3 ? b.maxL : null, format: (v) => `${v} partidos seguidos` },
                 { id:'evolucion', name:'La Evolución', emoji:'📈', rarity:'epica', desc:'Mayor mejora de % victoria comparando 1ª y 2ª mitad de temporada', findMax: (b) => { let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; if(wr1 === null || wr2 === null) return null; return wr2 - wr1; }, format: (v) => `+${v.toFixed(1)}% de mejora` },
+                { id:'involucion', name:'La Involución', emoji:'📉', rarity:'epica', desc:'Mayor bajada de % victoria comparando 1ª y 2ª mitad de temporada', findMin: (b) => { let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; if(wr1 === null || wr2 === null) return null; return wr2 - wr1; }, format: (v) => `${Math.abs(v).toFixed(1)}% de bajada` },
+                { id:'estable', name:'Punto de Equilibrio', emoji:'⚖️', rarity:'epica', desc:'El jugador cuyo % de victoria menos ha variado entre la 1ª y 2ª mitad', findMin: (b) => { let wr1 = b.firstHalf.p >= 3 ? (b.firstHalf.w / b.firstHalf.p) * 100 : null; let wr2 = b.secondHalf.p >= 3 ? (b.secondHalf.w / b.secondHalf.p) * 100 : null; if(wr1 === null || wr2 === null) return null; return Math.abs(wr2 - wr1); }, format: (v) => `Solo ${v.toFixed(1)}% de variación` },
+                { id:'upset_king', name:'Rompepronósticos', emoji:'🧐', rarity:'epica', desc:'El que más veces ha ganado cuando la predicción de la IA estaba en su contra', findMax: (b) => b.upsetWins > 0 ? b.upsetWins : null, format: (v) => `${v} victorias contra pronóstico` },
 
                 // 🟡 LEGENDARIAS
                 { id:'phoenix', name:'Ave Fénix', emoji:'🐦‍🔥', rarity:'legendaria', desc:'Racha de 3+ victorias seguida inmediatamente de racha de 3+ derrotas (Gana el de mayor racha V)', findMax: (b, name) => (phoenixMax[name] || 0) >= 3 ? phoenixMax[name] : null, format: (v) => `Resurgió con una racha de ${v} victorias seguidas` },
@@ -2319,7 +2355,7 @@
                 let partidosDecisivos = pg + pp;
                 let winRateVic = partidosDecisivos > 0 ? ((pg / partidosDecisivos) * 100).toFixed(1) : 0;
                 totalData.push({ nombre: j, pj: pj, pg: pg, pp: pp, pe: pe, winRateVic: parseFloat(winRateVic), puntuacion: totalPunt[j], pts: totalPts[j] });
-            } totalData.sort((a,b) => b.pts - a.pts || b.puntuacion - a.puntuacion); tramosData['total'] = { label: "🏆 Total Acumulado", data: totalData, isFinished: true }; renderTramoButtons(chunkIndex-1); switchTramo(1); }
+            } totalData.sort((a,b) => b.pts - a.pts || b.puntuacion - a.puntuacion); tramosData['total'] = { label: "🏆 Total Acumulado", data: totalData, isFinished: true }; renderTramoButtons(chunkIndex-1); switchTramo(chunkIndex-1); }
         function processTramoChunk(tramoNum, chunk, isTramo1) { 
             let stats = {}, firstDate = null, lastDate = null; 
             chunk.forEach(row => { 
@@ -2418,10 +2454,50 @@
                 tbody.appendChild(tr); 
             }); }
 
-        function populateSelectors(jugadores) { let selIds = ['cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2', 'mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; selIds.forEach(id => { let el = document.getElementById(id); let val = el.value; let html = '<option value="">Jugador</option>'; jugadores.forEach(j => html += `<option value="${j}">${j}</option>`); el.innerHTML = html; if(jugadores.includes(val)) el.value = val; }); updateMMSelectors(0); }
+        function populateSelectors(jugadores) { let selIds = ['cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4', 'hab-p1', 'hab-p2', 'mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; selIds.forEach(id => { let el = document.getElementById(id); let val = el.value; let html = '<option value="">Jugador</option>'; jugadores.forEach(j => html += `<option value="${j}">${j}</option>`); el.innerHTML = html; if(jugadores.includes(val)) el.value = val; }); updateMMSelectors(0); updateCmpSelectors(); updateHabSelectors(); }
         function calculateDeudor(stats, pagos, bolas) { let aportes = {}; let totalMatches = 0; for(let j in stats) { if(stats[j].partidos >= 3 || MANDATORY_PLAYERS.includes(j)) { aportes[j] = { pagos: 0, pj: stats[j].partidos, bolas: 0 }; totalMatches += stats[j].partidos; } } for(let p in pagos) { if(aportes[p]) aportes[p].pagos = pagos[p]; } for(let b in bolas) { if(aportes[b]) aportes[b].bolas = bolas[b]; } let totalPayments = Object.values(pagos).reduce((a, b) => a + b, 0); let maxDebt = -Infinity, deudor = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedPayments = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalPayments : 0; let debt = expectedPayments - aportes[j].pagos; if(debt > maxDebt) { maxDebt = debt; deudor = j; } } document.getElementById('deudor-insight').innerText = `Las matemáticas no mienten. Teniendo en cuenta partidos jugados y pagos realizados, el próximo partido debe pagarlo: 💸 ${deudor}.`; let totalBolas = Object.values(bolas).reduce((a, b) => a + b, 0); let maxDebtBolas = -Infinity, deudorBolas = "Nadie"; for(let j in aportes) { if(aportes[j].pj === 0) continue; let expectedBolas = totalMatches > 0 ? (aportes[j].pj / totalMatches) * totalBolas : 0; let debtB = expectedBolas - aportes[j].bolas; if(debtB > maxDebtBolas) { maxDebtBolas = debtB; deudorBolas = j; } } document.getElementById('bolas-insight').innerText = `Teniendo en cuenta partidos jugados y bolas aportadas, al próximo le toca llevar bolas: 🎾 ${deudorBolas}.`; }
 
         function updateMMSelectors(changedId) { let ids = ['mm-p1', 'mm-p2', 'mm-p3', 'mm-p4']; let selectedValues = {}; ids.forEach(id => { selectedValues[id] = document.getElementById(id).value; }); ids.forEach(id => { let el = document.getElementById(id); let currentVal = selectedValues[id]; let html = '<option value="">Jugador</option>'; jugadoresGlobales.forEach(j => { let isSelectedElsewhere = ids.some(otherId => otherId !== id && selectedValues[otherId] === j); let disabledAttr = isSelectedElsewhere ? 'disabled class="text-slate-600"' : ''; let selectedAttr = j === currentVal ? 'selected' : ''; html += `<option value="${j}" ${disabledAttr} ${selectedAttr}>${j}</option>`; }); el.innerHTML = html; el.value = currentVal; }); }
+        
+        function updateCmpSelectors() {
+            let ids = ['cmp-p1', 'cmp-p2', 'cmp-p3', 'cmp-p4'];
+            let selectedValues = {};
+            ids.forEach(id => { selectedValues[id] = document.getElementById(id).value; });
+            
+            ids.forEach(id => {
+                let el = document.getElementById(id);
+                let currentVal = selectedValues[id];
+                let html = '<option value="">Jugador</option>';
+                jugadoresGlobales.forEach(j => {
+                    let isSelectedElsewhere = ids.some(otherId => otherId !== id && selectedValues[otherId] === j);
+                    let disabledAttr = isSelectedElsewhere ? 'disabled class="text-slate-600"' : '';
+                    let selectedAttr = j === currentVal ? 'selected' : '';
+                    html += `<option value="${j}" ${disabledAttr} ${selectedAttr}>${j}</option>`;
+                });
+                el.innerHTML = html;
+                el.value = currentVal;
+            });
+        }
+
+        function updateHabSelectors() {
+            let ids = ['hab-p1', 'hab-p2'];
+            let selectedValues = {};
+            ids.forEach(id => { selectedValues[id] = document.getElementById(id).value; });
+            
+            ids.forEach(id => {
+                let el = document.getElementById(id);
+                let currentVal = selectedValues[id];
+                let html = '<option value="">Jugador</option>';
+                jugadoresGlobales.forEach(j => {
+                    let isSelectedElsewhere = ids.some(otherId => otherId !== id && selectedValues[otherId] === j);
+                    let disabledAttr = isSelectedElsewhere ? 'disabled class="text-slate-600"' : '';
+                    let selectedAttr = j === currentVal ? 'selected' : '';
+                    html += `<option value="${j}" ${disabledAttr} ${selectedAttr}>${j}</option>`;
+                });
+                el.innerHTML = html;
+                el.value = currentVal;
+            });
+        }
         function resetMMSelectors() { ['mm-p1', 'mm-p2', 'mm-p3', 'mm-p4'].forEach(id => document.getElementById(id).value = ""); updateMMSelectors(0); document.getElementById('mm-result').classList.add('hidden'); }
 
         function createTeams(mode) {
@@ -2443,6 +2519,20 @@
                 renderTeams(options, title);
             }
         }
+
+        function sendToComparador(n1, n2, n3, n4) {
+            document.getElementById('cmp-p1').value = n1;
+            document.getElementById('cmp-p2').value = n2;
+            document.getElementById('cmp-p3').value = n3;
+            document.getElementById('cmp-p4').value = n4;
+            
+            updateCmpSelectors(); // Bloquea los duplicados visualmente
+            compararParejas();    // Lanza la comparación automáticamente
+            
+            // Scroll suave hacia la sección del comparador
+            document.getElementById('cmp-p1').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
         function renderTeams(options, title) {
             let stats = {};
             globalRankingArray.forEach(r => stats[r.nombre] = r.puntuacionValor);
@@ -2521,8 +2611,18 @@
                 </div>`;
 
                 html += predictionBlock;
+                
+                // Botón enviar al comparador
+                html += `
+                <div class="col-span-2 mt-2 flex justify-center">
+                    <button onclick="sendToComparador('${n1}', '${n2}', '${n3}', '${n4}')" class="text-xs bg-cyan-900/40 hover:bg-cyan-800/60 text-cyan-300 font-bold px-4 py-2 rounded-lg border border-cyan-800/50 transition flex items-center gap-2">
+                        <i class="ri-scales-3-line"></i> Enviar al Comparador
+                    </button>
+                </div>`;
+                
                 html += `</div>`;
             });
+            ;
 
             document.getElementById('mm-result').innerHTML = html;
         }
