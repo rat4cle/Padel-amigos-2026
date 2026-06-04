@@ -970,6 +970,332 @@
 
         /* --- TEMA BOSQUE --- */
         body[data-theme="bosque"] { background: #052e16 !important; color: #ecfdf5 !important; font-family: 'Quicksand', sans-serif !important; }
+        /* ==========================================
+        FIX: PERMITIR CLIC EN MODAL DE TIPOS DE GOLPE
+        ========================================== */
+        /* Esto sobreescribe la regla global de 'is-selecting' para los botones dentro del modal */
+        body.is-selecting #shot-type-modal button {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+
+        /* Asegura que el fondo oscuro no bloquee el cursor */
+        body.is-selecting #shot-type-modal {
+            pointer-events: auto !important;
+        }
+        /* ==========================================
+        ESTILOS VISUALES MERCADO DE INSIGNIAS (NUEVO)
+        ========================================== */
+
+        /* Contenedor Principal del Mercado */
+        #badge-market-modal-body {
+            padding: 1rem;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+        }
+
+        /* Cabecera de categoría de Rareza */
+        .rarity-header {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 900;
+        }
+        .rarity-header:first-child { margin-top: 0; }
+
+        /* Tarjeta de Insignia */
+        .badge-card {
+            background: rgba(30, 41, 59, 0.4); /* Fondo base translúcido */
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-height: 160px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            z-index: 10;
+            background: rgba(30, 41, 59, 0.6);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .badge-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 16px;
+            padding: 2px; /* Grosor del borde gradiente */
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+            pointer-events: none;
+        }
+
+        /* Icono Grande */
+        .badge-icon {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            transition: transform 0.3s;
+        }
+        .badge-card:hover .badge-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Nombre y Descripción */
+        .badge-name {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .badge-desc {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            line-height: 1.2;
+            margin-bottom: auto; /* Empuja el contenido inferior hacia abajo */
+        }
+
+        /* Ganadores */
+        .badge-winners {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            width: 100%;
+        }
+        .badge-winner-row {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: 99px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* ==============================
+        TEMAS POR RAREZA
+        ============================== */
+
+        /* COMÚN (Gray/Slate) */
+        .badge-card.rarity-comun .badge-icon { color: #94a3b8; text-shadow: 0 0 10px rgba(148, 163, 184, 0.2); }
+        .badge-card.rarity-comun::before { background: linear-gradient(135deg, #475569, #1e293b); }
+        .badge-card.rarity-comun .rarity-header { color: #94a3b8; border-color: #475569; }
+        .badge-card.rarity-comun:hover { box-shadow: 0 0 15px rgba(148, 163, 184, 0.2); border-color: #94a3b8; }
+
+        /* RARA (Blue) */
+        .badge-card.rarity-rara .badge-icon { color: #60a5fa; text-shadow: 0 0 15px rgba(96, 165, 250, 0.4); }
+        .badge-card.rarity-rara::before { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+        .badge-card.rarity-rara .rarity-header { color: #60a5fa; border-color: #3b82f6; }
+        .badge-card.rarity-rara:hover { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); border-color: #60a5fa; }
+
+        /* ÉPICA (Purple) */
+        .badge-card.rarity-epica .badge-icon { color: #c084fc; text-shadow: 0 0 20px rgba(192, 132, 252, 0.4); }
+        .badge-card.rarity-epica::before { background: linear-gradient(135deg, #a855f7, #6b21a8); }
+        .badge-card.rarity-epica .rarity-header { color: #c084fc; border-color: #a855f7; }
+        .badge-card.rarity-epica:hover { box-shadow: 0 0 25px rgba(168, 85, 247, 0.4); border-color: #c084fc; }
+
+        /* LEGENDARIA (Gold/Orange) */
+        .badge-card.rarity-legendaria {
+            background: linear-gradient(180deg, rgba(234, 179, 8, 0.1) 0%, rgba(30, 41, 59, 0.4) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+        .badge-card.rarity-legendaria .badge-icon { 
+            color: #fbbf24; 
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.6), 0 0 5px rgba(255, 255, 255, 0.8);
+            animation: pulse-legendary 2s infinite;
+        }
+        .badge-card.rarity-legendaria::before { background: linear-gradient(135deg, #f59e0b, #b45309); }
+        .badge-card.rarity-legendaria .rarity-header { color: #fbbf24; border-color: #f59e0b; }
+        .badge-card.rarity-legendaria:hover { 
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.5); 
+            border-color: #fbbf24;
+            background: linear-gradient(180deg, rgba(234, 179, 8, 0.2) 0%, rgba(30, 41, 59, 0.6) 100%);
+        }
+
+        @keyframes pulse-legendary {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+
+        /* Grid System */
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Media Queries */
+        @media (max-width: 640px) {
+            .market-grid { grid-template-columns: 1fr; } /* 1 columna en móvil */
+            .badge-card { flex-direction: row; justify-content: flex-start; text-align: left; padding: 1rem; }
+            .badge-icon { margin-bottom: 0; margin-right: 1rem; font-size: 2.5rem; }
+        }
+        /* ESTILOS RESUMEN DE CAMBIOS DE INSIGNIAS */
+        #badge-changes-modal {
+            padding: 1rem;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+
+        .change-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .change-badge-icon {
+            font-size: 1.5rem;
+            margin-right: 0.75rem;
+            width: 30px;
+            text-align: center;
+        }
+
+        .change-detail {
+            flex: 1;
+            color: #e2e8f0;
+        }
+        .change-diff {
+            font-weight: 700;
+            text-align: right;
+        }
+        .change-diff.positive { color: #34d399; } /* Nuevo ganador */
+        .change-diff.negative { color: #f87171; } /* Perdió insignia */
+        .change-diff.neutral { color: #94a3b8; } /* Mantuvo */
+
+        /* MODAL DETALLE INSIGNIA */
+        #badge-detail-modal {
+            z-index: 10000;
+        }
+        .detail-table th {
+            text-align: left;
+            padding: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .detail-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #1e293b;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+        .detail-rank-1 { color: #fbbf24; font-weight: 900; } /* Oro */
+        .detail-rank-2 { color: #94a3b8; font-weight: 800; } /* Plata */
+        .detail-rank-3 { color: #b45309; font-weight: 700; } /* Bronce */
+        /* ==========================================
+        ESTILOS ESPECÍFICOS PARA FICHA TÉCNICA
+        (Sobreescribe los estilos del Mercado para estas)
+        ========================================== */
+
+        #profile-tab-insignias .badge-card {
+            /* Dimensiones más compactas */
+            min-height: 110px !important; 
+            padding: 0.75rem !important;
+            border-radius: 12px !important;
+            
+            /* Fondo más sólido, menos "efecto cristal" */
+            background: #1e293b !important; 
+            backdrop-filter: none !important;
+            box-shadow: none !important;
+            
+            /* Sin movimiento de hover para que no moleste al leer */
+            transition: border-color 0.2s ease !important;
+            transform: none !important;
+        }
+
+        #profile-tab-insignias .badge-card:hover {
+            border-color: #34d399 !important; /* Borde verde al pasar el mouse */
+            background: #263344 !important;
+            transform: translateY(-2px) !important; /* Pequeño levantamiento sutil */
+        }
+
+        #profile-tab-insignias .badge-icon {
+            font-size: 2.2rem !important; /* Icono más pequeño */
+            margin-bottom: 0.25rem !important;
+            filter: none !important;
+        }
+
+        #profile-tab-insignias .badge-name {
+            font-size: 0.8rem !important; /* Texto más pequeño */
+            margin-bottom: 0.1rem !important;
+        }
+
+        #profile-tab-insignias .badge-desc {
+            display: none; /* Ocultar la descripción larga en la ficha para ahorrar espacio */
+        }
+
+        #profile-tab-insignias .badge-winners {
+            margin-top: 0.25rem !important;
+            gap: 0.1rem !important;
+        }
+
+        #profile-tab-insignias .badge-winner-row {
+            padding: 0.15rem 0.5rem !important;
+            font-size: 0.65rem !important;
+            background: rgba(255,255,255,0.05) !important;
+            border: none !important;
+        }
+
+        /* Eliminar el borde gradiente "fancy" en la ficha */
+        #profile-tab-insignias .badge-card::before {
+            display: none !important; 
+        }
+        #badge-market-modal-body .badge-card {
+            /* Aseguramos que el cursor sea puntero y reciba eventos */
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+        /* ESTILO GOLDEN POINT (NUEVO) */
+        .score-gp-active {
+            color: #fbbf24 !important; /* Color dorado */
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.4); /* Resplandor */
+            animation: pulse-gold 1.5s infinite ease-in-out; /* Animación de pulso */
+            font-size: 2.5rem !important; 
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1.05);
+            }
+            50% { 
+                opacity: 0.85; 
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -1511,6 +1837,9 @@
                                         <button onclick="toggleTimerPause()" id="sb-pause-btn" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Pausar">
                                             <i class="ri-pause-line text-xl"></i>
                                         </button>
+                                        <button onclick="openSettings()" class="w-12 h-12 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 flex items-center justify-center transition" title="Configuración del Partido">
+                                            <i class="ri-settings-4-line text-xl"></i>
+                                        </button>
                                     </div>
 
                                 <div id="sb-status-banner" class="hidden mt-4 text-center font-black text-sm uppercase tracking-widest py-2 rounded"></div>
@@ -1627,6 +1956,7 @@
                                                     <th class="p-2 text-left border-b border-slate-700">Marcador</th>
                                                     <th class="p-2 text-left border-b border-slate-700">Acción</th>
                                                     <th class="p-2 text-left border-b border-slate-700">Detalle / Jugador</th>
+                                                    <th class="p-2"></th>
                                                 </tr>
                                             </thead>
                                             <tbody id="history-tbody" class="text-slate-300 divide-y divide-slate-800"></tbody>
@@ -1651,6 +1981,31 @@
     </div><!-- /app-body -->
 
     <script>
+        let scoreMode = 'standard'; // 'standard', 'golden', 'tennis'
+        let shotTypeMode = 'always';  // 'always', 'winners', 'never'
+        // Variables temporales para la selección de golpe
+        let pendingLogEntry = null;  // ¡CRUCIAL! Necesario para elegir el golpe
+        let editLogIndex = -1;      // ¡CRUCIAL! Necesario para editar puntos
+        
+        const SHOT_ICONS = {
+            'Volea': 'ri-basketball-line',
+            'Víbora': 'ri-flashlight-line',
+            'X3': 'ri-shuffle-line',
+            'Remate': 'ri-arrow-up-double-line',
+            'Globo': 'ri-cloud-windy-line',
+            'Resto': 'ri-run-line',
+            'X4': 'ri-sparkling-2-line' // <--- AÑADIR
+        };
+
+        const SHOT_COLORS = {
+            'Volea': '#38bdf8',     // Sky
+            'Víbora': '#34d399',    // Emerald
+            'X3': '#a855f7',        // Purple
+            'Remate': '#ef4444',    // Red
+            'Globo': '#f59e0b',     // Amber
+            'Resto': '#94a3b8',    // Slate
+            'X4': '#ec4899'         // Pink
+        };
         const urlGoogleSheets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTe6pQbD3p4NroFXhb1ypqFS9JmXeJjZq90ebqDEleUkR80fvdVarM1cXyaXU8CDY1BwTwuWV1OBCaB/pub?gid=2133685853&single=true&output=csv";
         const MANDATORY_PLAYERS = ["Garrido", "Pablo", "David", "Jordi", "Vijay"];
         const POINTS_SYS = [10, 7, 5, 3, 1]; const TRAMO_SIZE = 20;
@@ -1862,6 +2217,9 @@
 
         function openBadgeMarketModal() {
             document.getElementById('badge-market-modal').classList.remove('hidden');
+            
+            // Renderizar directamente el mercado sin el resumen de cambios
+            renderBadgeMarket();
         }
 
         function closeBadgeMarketModal() {
@@ -1870,11 +2228,13 @@
 
         function filterBadges() {
             let searchTerm = document.getElementById('badge-search-input').value.toLowerCase();
-            let items = document.querySelectorAll('.badge-item-row');
+            // Ahora busca las filas que creamos en el Paso 2
+            let items = document.querySelectorAll('.badge-item-row'); 
             items.forEach(item => {
+                // Ocultamos toda la tarjeta si no coincide
                 let text = item.innerText.toLowerCase();
                 if (text.includes(searchTerm)) {
-                    item.style.display = 'flex';
+                    item.style.display = 'flex'; // Flex porque el badge-card es flex
                 } else {
                     item.style.display = 'none';
                 }
@@ -1883,96 +2243,220 @@
 
         function renderBadgeMarket() {
             try {
-                const fv = (val) => typeof val === 'number' ? (Number.isInteger(val) ? val : val.toFixed(1)) : val;
+                // ==========================================
+                // CORRECCIÓN: Limitar a 2 decimales y quitar ceros
+                // ==========================================
+                const fv = (val) => {
+                    if (typeof val !== 'number') return val;
+                    // Limita a 2 decimales y elimina ceros finales (ej. 4.50 -> 4.5, 6.00 -> 6)
+                    return parseFloat(val.toFixed(1));
+                };
 
                 let allBadges = globalBadges || [];
                 let activeBadges = allBadges.filter(b => b.winners && b.winners.length > 0);
                 
-                // Seguridad: asegurarnos de que runnerUps existe
-                activeBadges.forEach(b => { if(!b.runnerUps) { b.runnerUps = []; b.runnerUpVals = {}; } });
+                // 1. AGRUPAR POR RAREZA
+                let groupedBadges = {
+                    'comun': [],
+                    'rara': [],
+                    'epica': [],
+                    'legendaria': []
+                };
 
-                let rarityOrder = {'comun': 0, 'rara': 1, 'epica': 2, 'legendaria': 3};
-                activeBadges.sort((a, b) => (rarityOrder[a.rarity] || 0) - (rarityOrder[b.rarity] || 0));
-
-                // 1. RESUMEN (Solo cambios recientes)
-                let changesHtml = [];
                 activeBadges.forEach(b => {
-                    let prevWinners = window.globalPreviousBadgeWinners[b.id] || [];
-                    let currentWinners = b.winners || [];
-                    let newWinners = currentWinners.filter(w => !prevWinners.includes(w));
-                    let lostWinners = prevWinners.filter(w => !currentWinners.includes(w));
-
-                    if (newWinners.length > 0) {
-                        if (lostWinners.length > 0) {
-                            changesHtml.push(`<div class="flex items-start gap-2 py-1.5 border-b border-slate-700/50 last:border-0"><span class="text-2xl mt-0.5">${b.emoji}</span> <div><span class="text-emerald-400 font-bold">${newWinners.join(', ')}</span> le quitó <span class="text-white font-bold">${b.name}</span> a <span class="text-red-400 font-bold">${lostWinners.join(', ')}</span></div></div>`);
-                        } else if (prevWinners.length > 0) {
-                            changesHtml.push(`<div class="flex items-start gap-2 py-1.5 border-b border-slate-700/50 last:border-0"><span class="text-2xl mt-0.5">${b.emoji}</span> <div><span class="text-emerald-400 font-bold">${newWinners.join(', ')}</span> se unió al club de <span class="text-white font-bold">${b.name}</span> <span class="text-slate-500 text-xs">(empata con ${prevWinners.join(', ')})</span></div></div>`);
-                        }
+                    if (groupedBadges[b.rarity]) {
+                        groupedBadges[b.rarity].push(b);
+                    } else {
+                        groupedBadges['comun'].push(b); // Fallback
                     }
                 });
 
-                if (changesHtml.length > 0) {
-                    document.getElementById('cur-insignias-resumen').innerHTML = changesHtml.join('');
-                } else {
-                    document.getElementById('cur-insignias-resumen').innerHTML = "<div class='text-slate-500 italic text-xs'>Sin movimientos en el mercado respecto al último partido.</div>";
-                }
+                // 2. ORDEN DE RENDERIZADO Y NOMBRES
+                const rarityOrder = ['legendaria', 'epica', 'rara', 'comun'];
+                const rarityNames = {
+                    'comun': '⚪ Insignias Comunes',
+                    'rara': '💎 Insignias Raras',
+                    'epica': '🔮 Insignias Épicas',
+                    'legendaria': '👑 Insignias Legendarias'
+                };
 
-                // 2. MODAL COMPLETO
-                let fullHtml = "";
-                activeBadges.forEach(b => {
-                    let diffText = "";
-                    if (b.runnerUps.length > 0 && typeof b.winnerValues[b.winners[0]] === 'number') {
-                        let diff = Math.abs(b.winnerValues[b.winners[0]] - b.runnerUpVals[b.runnerUps[0]]);
-                        diffText = `<span class="text-slate-600 text-[10px]">(por ${Number.isInteger(diff) ? diff : diff.toFixed(1)})</span>`;
-                    }
-
-                    let rarityStyles = { 'comun': 'border-slate-700', 'rara': 'border-blue-800/40', 'epica': 'border-purple-800/40', 'legendaria': 'border-amber-600/50' };
-                    let borderStyle = rarityStyles[b.rarity] || rarityStyles['comun'];
-
-                    let prevWinners = window.globalPreviousBadgeWinners[b.id] || [];
-
-                    let winnersHtml = b.winners.map(w => {
-                        let isNew = !prevWinners.includes(w);
-                        let style = isNew ? 'text-emerald-300 ring-1 ring-emerald-500 px-1.5 rounded bg-emerald-900/30' : 'text-emerald-400';
-                        let tag = isNew ? ' <span class="text-[8px] bg-emerald-950 px-1 rounded border border-emerald-800">NEW</span>' : '';
-                        return `<div class="text-sm font-black ${style}">👑 ${w} <span class="font-mono text-xs text-slate-400">(${fv(b.winnerValues[w])})</span>${tag}</div>`;
-                    }).join('');
-
-                    let runnerUpsHtml = b.runnerUps.map(r => {
-                        return `<div class="text-xs font-bold text-red-400/80 mt-1">⚡ ${r} <span class="font-mono text-[10px] text-slate-600">(${fv(b.runnerUpVals[r])})</span></div>`;
-                    }).join('');
-
-                    fullHtml += `
-                    <div class="badge-item-row bg-slate-900/60 p-5 rounded-lg border ${borderStyle} flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                        <div class="flex items-center gap-4 flex-1 min-w-0">
-                            <span class="text-4xl flex-shrink-0">${b.emoji}</span>
-                            <div class="min-w-0">
-                                <div class="text-base font-bold text-white truncate flex items-center">${b.name}</div>
-                                <div class="text-xs text-slate-500 truncate">${b.desc}</div>
-                            </div>
-                        </div>
-                        <div class="text-right flex-shrink-0 pl-2 flex flex-col items-end">
-                            ${winnersHtml}
-                            ${runnerUpsHtml}
-                            ${diffText}
-                        </div>
-                    </div>`;
-                });
-
-                document.getElementById('badge-market-modal-body').innerHTML = fullHtml || '<div class="text-slate-500 text-sm text-center py-10">No hay insignias activas en este periodo</div>';
+                let container = document.getElementById('badge-market-modal-body');
                 
+                // 3. GENERAR HTML
+                let html = "";
+                
+                rarityOrder.forEach(rarity => {
+                    let badges = groupedBadges[rarity];
+                    if (badges.length === 0) return; // Skip si no hay de este tipo
+
+                    // Cabecera de Categoría
+                    html += `<div class="rarity-header rarity-${rarity}">
+                                <i class="ri-${getRarityIcon(rarity)}-fill"></i>
+                                <span>${rarityNames[rarity]}</span>
+                                <span style="font-size:0.7em; opacity:0.6; font-weight:400;">(${badges.length})</span>
+                            </div>`;
+
+                    // Grid de Insignias
+                    html += `<div class="market-grid">`;
+                    
+                    badges.forEach(b => {
+                        let diffText = "";
+                        if (b.runnerUps.length > 0 && typeof b.winnerValues[b.winners[0]] === 'number') {
+                            let diff = Math.abs(b.winnerValues[b.winners[0]] - b.runnerUpVals[b.runnerUps[0]]);
+                            diffText = `<span class="text-slate-500 text-[10px] mt-1 block">(por ${Number.isInteger(diff) ? diff : diff.toFixed(1)})</span>`;
+                        }
+
+                        // Frontera y Clases
+                        let borderClass = `rarity-${b.rarity}`;
+                        let label = rarityNames[b.rarity];
+                        let isNew = false; // Lógica visual de 'NEW' si la quisieras implementar
+
+                        // Renderizar Ganadores
+                        let winnersHtml = b.winners.map(w => {
+                            let diffText = "";
+                            if (b.runnerUps.length > 0 && typeof b.winnerValues[w] === 'number') {
+                                let diff = Math.abs(b.winnerValues[w] - b.runnerUpVals[b.runnerUps[0]]);
+                                diffText = `<span class="text-slate-500 text-[10px] mt-1 block">(por ${Number.isInteger(diff) ? diff : diff.toFixed(1)})</span>`;
+                            }
+
+                            // AQUÍ APLICAMOS fv() PARA FORMATEAR EL VALOR
+                            let valDisplay = fv(b.winnerValues[w]); 
+                            
+                            return `<div class="badge-winner-row">
+                                👑 ${w} 
+                                <span class="font-mono text-xs text-slate-400 ml-1">(${valDisplay})</span>
+                            </div>`;
+                        }).join('');
+
+                        // Renderizar Subcampeones
+                        let runnerUpsHtml = b.runnerUps.map(r => {
+                            return `<div class="text-xs text-red-400/80 mt-1 font-bold flex items-center gap-1">
+                                <i class="ri-arrow-right-s-line"></i> ${r} 
+                                <span class="font-mono text-[10px] text-slate-600">(${fv(b.runnerUpVals[r])})</span>
+                            </div>`;
+                        }).join('');
+
+                        // HTML de la Tarjeta Individual
+                        html += `
+                        <div onclick="showMarketBadgeDetail('${b.id}')" class="badge-item-row badge-card ${borderClass}">
+                            <div class="badge-icon">${b.emoji}</div>
+                            <div class="badge-name">${b.name}</div>
+                            <div class="badge-desc">${b.desc}</div>
+                            
+                            <div class="badge-winners">
+                                ${winnersHtml}
+                            </div>
+                            ${diffText}
+                            <div class="runner-ups">
+                                ${runnerUpsHtml}
+                            </div>
+                        </div>`;
+                    });
+
+                    html += `</div>`; // Cierre Grid
+                });
+
+                container.innerHTML = html || '<div class="text-slate-500 text-sm text-center py-10">No hay insignias activas en este periodo</div>';
+                
+                // Limpiar input de búsqueda si estaba lleno
                 let searchInput = document.getElementById('badge-search-input');
                 if(searchInput) searchInput.value = '';
 
             } catch(e) {
                 console.error("Error en renderBadgeMarket:", e);
-                document.getElementById('cur-insignias-resumen').innerHTML = "<div class='text-red-400 text-xs'>Error al cargar el mercado.</div>";
+                document.getElementById('badge-market-modal-body').innerHTML = "<div class='text-red-400 text-sm text-center py-10'>Error al cargar el mercado.</div>";
             }
+        }
+
+        // Helper para iconos de rareza
+        function getRarityIcon(rarity) {
+            const map = {
+                'comun': 'checkbox-circle',
+                'rara': 'diamond-line',
+                'epica': 'planet-line',
+                'legendaria': 'star-smile-line'
+            };
+            return map[rarity] || 'checkbox-circle';
         }
 
 
         function toggleAdvancedStats() { let el = document.getElementById('advanced-stats-container'); let icon = document.getElementById('adv-stats-icon'); el.classList.toggle('hidden'); icon.innerText = el.classList.contains('hidden') ? '+' : '-'; }
-        function showBadgeDetail(id) { let badge = globalBadges.find(b => b.id === id); let player = selectedPlayerName; if(!badge || !player) return; let val = badge.winnerValues[player]; let detailDiv = document.getElementById('badge-detail'); if(!detailDiv.classList.contains('hidden') && detailDiv.dataset.currentId === id) { detailDiv.classList.add('hidden'); return; } detailDiv.dataset.currentId = id; detailDiv.classList.remove('hidden'); let formattedVal = badge.format ? badge.format(val) : val; detailDiv.innerHTML = '<div class="flex items-center gap-2 mb-2"><span class="text-2xl">'+badge.emoji+'</span><span class="text-lg font-bold text-white">'+badge.name+'</span></div><p class="text-sm text-slate-400 mb-3">'+badge.desc+'</p><div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400">'+formattedVal+'</div>'; }
+        function showBadgeDetail(id) {
+            let badge = globalBadges.find(b => b.id === id);
+            if (!badge || !globalBadgeStats) return;
+
+            let detailDiv = document.getElementById('badge-detail');
+            if(!detailDiv.classList.contains('hidden') && detailDiv.dataset.currentId === id) {
+                detailDiv.classList.add('hidden'); return;
+            }
+            detailDiv.dataset.currentId = id;
+            detailDiv.classList.remove('hidden');
+
+            // --- NUEVA LÓGICA: CALCULAR VALOR PARA TODOS ---
+            let rankingList = [];
+            
+            // Recorremos todos los jugadores con estadísticas
+            for (let jugador in globalBadgeStats) {
+                let stats = globalBadgeStats[jugador];
+                if(!stats) continue; // Saltar si no tiene datos
+
+                // Ejecutamos la lógica de la insignia para este jugador
+                let val = badge.findMax ? badge.findMax(stats, jugador) : badge.findMin(stats, jugador);
+                
+                if (val !== null && val !== undefined) {
+                    rankingList.push({
+                        name: jugador,
+                        value: val,
+                        formatted: badge.format ? badge.format(val) : val
+                    });
+                }
+            }
+
+            // Ordenar: Ascendente o Descendente según la insignia
+            if (badge.findMax) {
+                rankingList.sort((a, b) => b.value - a.value); // Mayor valor primero
+            } else {
+                rankingList.sort((a, b) => a.value - b.value); // Menor valor primero
+            }
+
+            // --- RENDERIZADO DE LA TABLA ---
+            let html = `
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-2xl">${badge.emoji}</span>
+                <span class="text-lg font-bold text-white">${badge.name}</span>
+            </div>
+            <p class="text-sm text-slate-400 mb-3">${badge.desc}</p>
+            
+            <div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400">
+                Top 1: ${rankingList.length > 0 ? rankingList[0].formatted : '-'}
+            </div>
+
+            <table class="w-full text-left border-collapse text-sm mt-4">
+                <thead class="bg-slate-900/50 text-slate-400">
+                    <tr>
+                        <th class="p-2">#</th>
+                        <th class="p-2">Jugador</th>
+                        <th class="p-2 text-right">Puntuación</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700/50">
+            `;
+
+            rankingList.forEach((r, idx) => {
+                let highlight = (idx === 0) ? 'text-emerald-400 font-black' : 'text-slate-300';
+                html += `
+                    <tr>
+                        <td class="p-2 text-slate-500">${idx + 1}</td>
+                        <td class="p-2 ${highlight}">${r.name}</td>
+                        <td class="p-2 text-right font-mono ${highlight}">${r.formatted}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            
+            detailDiv.innerHTML = html;
+        }
 
         window.onload = function() {
             Papa.parse(urlGoogleSheets, { download: true, header: true, skipEmptyLines: true, complete: function(results) {
@@ -2229,6 +2713,96 @@
             document.getElementById('cur-bolas-vida').innerHTML = bolasVidaText;
             renderHeatmap();
             renderBadgeMarket();
+                // ==========================================
+            // CÓDIGO NUEVO: RESUMEN DE CAMBIOS EN PANTALLA PRINCIPAL
+            // ==========================================
+                function renderBadgeChangesSummary() {
+                    let container = document.getElementById('cur-insignias-resumen');
+                    if(!container) return;
+                    
+                    let html = '';
+
+                    if (!window.globalPreviousBadgeWinners) {
+                        container.innerHTML = '<div class="text-slate-500 text-xs text-center py-4 flex flex-col items-center gap-2"><i class="ri-shield-star-line text-2xl opacity-50"></i> Sin datos previos para comparar.</div>';
+                        return;
+                    }
+
+                    globalBadges.forEach(badge => {
+                        let oldWinners = window.globalPreviousBadgeWinners[badge.id] || [];
+                        let newWinners = badge.winners || [];
+
+                        // 1. Detectar NUEVOS POSEEDORES (Unión al club)
+                        let newOwners = newWinners.filter(w => !oldWinners.includes(w));
+                        newOwners.forEach(w => {
+                            let others = newWinners.filter(n => n !== w);
+                            let empateText = others.length > 0 ? `(empata con ${others.join(' y ')})` : '';
+                            
+                            html += `
+                            <div class="flex items-center gap-3 p-2.5 mb-2 rounded-lg border border-slate-700 bg-slate-900/40 hover:bg-slate-800/60 transition-colors animate-fade-in group">
+                                <!-- Icono de la Insignia a la izquierda -->
+                                <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                                    ${badge.emoji}
+                                </div>
+
+                                <!-- Mensaje -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">${badge.name}</div>
+                                    <div class="text-sm font-medium text-slate-200 leading-snug">
+                                        <span class="font-bold text-emerald-300 bg-emerald-900/20 px-1.5 py-0.5 rounded border border-emerald-800/30">${w}</span>
+                                        se unió al club de 
+                                        <span class="font-bold text-white">${badge.name}</span>
+                                        ${empateText ? `<span class="text-[10px] text-slate-500 ml-1 italic">(${empateText})</span>` : ''}
+                                    </div>
+                                </div>
+                            </div>`;
+                        });
+
+                        // 2. Detectar PERDEDORES (Abandono del club)
+                        let lost = oldWinners.filter(w => !newWinners.includes(w));
+                        lost.forEach(w => {
+                            html += `
+                            <div class="flex items-center gap-3 p-2.5 mb-2 rounded-lg border border-slate-700 bg-slate-900/40 hover:bg-slate-800/60 transition-colors animate-fade-in group">
+                                <!-- Icono de la Insignia a la izquierda -->
+                                <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 text-2xl shadow-inner opacity-50 group-hover:opacity-100 transition-opacity">
+                                    ${badge.emoji}
+                                </div>
+
+                                <!-- Mensaje -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-0.5">${badge.name}</div>
+                                    <div class="text-sm font-medium text-slate-200 leading-snug">
+                                        <span class="font-bold text-white bg-slate-800/50 px-1.5 py-0.5 rounded">${w}</span>
+                                        abandonó el club de 
+                                        <span class="font-bold text-red-400">${badge.name}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        });
+                    });
+
+                    if (html === '') {
+                        html = `
+                        <div class="flex flex-col items-center justify-center py-6 text-slate-500 gap-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+                                <i class="ri-emotion-happy-line text-xl"></i>
+                            </div>
+                            <div class="text-xs font-bold">Sin cambios esta semana.</div>
+                        </div>`;
+                    }
+
+                    // Estructura Card (Mantiene el contenedor oscuro, título y botón)
+                    let cardHTML = `
+                        
+                        <div class="p-3 max-h-56 overflow-y-auto custom-scrollbar">
+                            ${html}
+                        </div>
+                    `;
+
+                    container.innerHTML = cardHTML;
+                }
+
+            // LLAMAMOS A LA FUNCIÓN AL FINAL DE PROCESAR DATOS
+            renderBadgeChangesSummary();
             
         }
 
@@ -2278,8 +2852,13 @@
                 // Lógica de Upsets (Ganar con predicción en contra)
                 if (!isDraw && (winT1 || winT2)) {
                     try {
-                        let probT1 = calculateMatchProbability([j1A, j1B], [j2A, j2B]);
-                        // Si ganó el Equipo 1 y la IA le daba menos del 50%
+                        // OBTENEMOS LA FECHA DEL PARTIDO ACTUAL
+                        let currentMatchTimestamp = parseCSVDate(row.fecha);
+                        
+                        // PASAMOS LA FECHA COMO 3er PARÁMETRO
+                        let probT1 = calculateMatchProbability([j1A, j1B], [j2A, j2B], currentMatchTimestamp);
+                        
+                        // Si ganó el Equipo 1 y la IA le daba menos del 50% (basado en HISTORIAL ANTERIOR)
                         if (winT1 && probT1 < 50) {
                             [j1A, j1B].forEach(jz => { if(jz && jz!=="Playtomic") { init(jz); bs[jz].upsetWins++; } });
                         } 
@@ -2815,8 +3394,7 @@
                     let label = rarityLabels[b.rarity] || rarityLabels['comun'];
 
                     htmlBadges += `
-                    <div onclick="showBadgeDetail('${b.id}')" class="bg-slate-900/60 border ${style} p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105 animate-fade-in relative overflow-hidden group">
-                        <span class="text-4xl z-10">${b.emoji}</span>
+                    <div onclick="showProfileBadgeDetail('${b.id}')" class="bg-slate-900/60 border ${style} p-4 rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105 animate-fade-in relative overflow-hidden group">                        <span class="text-4xl z-10">${b.emoji}</span>
                         <span class="text-xs font-bold text-center leading-tight uppercase tracking-wider z-10">${b.name}</span>
                         <div class="mt-1 z-10">${label}</div>
                     </div>`; 
@@ -3367,13 +3945,16 @@
 
         const sbScoreMap = ["0", "15", "30", "40", "AD"];
         let scoreboardHistory = [];
+        let currentGameDeuces = 0;
         let scoreboardState = {
             t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "JUGADOR A", p2: "JUGADOR B" },
             t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2", p1: "JUGADOR C", p2: "JUGADOR D" }, 
             server: 1,
             matchFinished: false,
             isTieBreak: false,
-            setHistory: [] // <--- NUEVO: Aquí guardaremos [ {s1:6, s2:4}, {s1:6, s2:2} ]
+            setHistory: [], 
+            starPointStage: 0,
+            mode: scoreMode // <--- AÑADE ESTO
         };
         let scoreboardSeconds = 0;
         let scoreboardTimerInterval = null;
@@ -3467,28 +4048,84 @@
             setTimeout(() => hideScoreboardBanner(), 2000);
         }
         function updateScoreboardUI() {
-            // ... (Código de actualización de números igual que antes) ...
+            // 1. Actualizar Sets y Juegos
             document.getElementById('sb-s1').innerText = scoreboardState.t1.sets;
             document.getElementById('sb-g1').innerText = scoreboardState.t1.games;
-            document.getElementById('sb-p1').innerText = sbScoreMap[scoreboardState.t1.pIdx];
-
             document.getElementById('sb-s2').innerText = scoreboardState.t2.sets;
             document.getElementById('sb-g2').innerText = scoreboardState.t2.games;
-            document.getElementById('sb-p2').innerText = sbScoreMap[scoreboardState.t2.pIdx];
-            // Mostrar Puntuación (SCORE)
-            if (scoreboardState.isTieBreak) {
-                // Si es Tie-Break, mostramos el número directo (0, 1, 2, 3...)
-                document.getElementById('sb-p1').innerText = scoreboardState.t1.pIdx;
-                document.getElementById('sb-p2').innerText = scoreboardState.t2.pIdx;
-            } else {
-                // Si es juego normal, mostramos 15, 30, 40, AD
-                document.getElementById('sb-p1').innerText = sbScoreMap[scoreboardState.t1.pIdx];
-                document.getElementById('sb-p2').innerText = sbScoreMap[scoreboardState.t2.pIdx];
+
+            // 2. Variables para el texto del score
+            let scoreText1, scoreText2;
+            let isGoldenPoint = false; 
+
+            const getStandardScore = (idx) => sbScoreMap[idx] || idx.toString();
+
+            // ==========================================
+            // 3. CÁLCULO DE TEXTO SEGÚN MODO
+            // ==========================================
+            
+            // --- MODO GOLDEN POINT ---
+            if (scoreboardState.mode === 'golden' && scoreboardState.t1.pIdx === 3 && scoreboardState.t2.pIdx === 3) { // <--- CAMBIO AQUÍ
+                isGoldenPoint = true;
+                scoreText1 = "GP";
+                scoreText2 = "GP";
+            } 
+            // --- MODO STAR POINT ---
+            else if (scoreboardState.mode === 'star') { // <--- CAMBIO AQUÍ
+                // ... (resto del código de lógica Star Point se mantiene igual, solo cambia la condición if) ...
+                let p1 = scoreboardState.t1.pIdx;
+                let p2 = scoreboardState.t2.pIdx;
+                let stage = scoreboardState.starPointStage;
+
+                if (p1 === 3 && p2 === 3) {
+                    if (stage === 1) { scoreText1 = "D1"; scoreText2 = "D1"; }
+                    else if (stage === 3) { scoreText1 = "D2"; scoreText2 = "D2"; }
+                    else if (stage === 5) { 
+                        isGoldenPoint = true; 
+                        scoreText1 = "SP"; scoreText2 = "SP"; 
+                    }
+                    else { scoreText1 = "40"; scoreText2 = "40"; }
+                }
+                else if (p1 === 4 && p2 === 3) { 
+                    if (stage === 2) { scoreText1 = "AD1"; scoreText2 = "40"; }
+                    else if (stage === 4) { scoreText1 = "AD2"; scoreText2 = "40"; }
+                    else { scoreText1 = "AD"; scoreText2 = "40"; }
+                }
+                else if (p1 === 3 && p2 === 4) { 
+                    if (stage === 2) { scoreText1 = "40"; scoreText2 = "AD1"; }
+                    else if (stage === 4) { scoreText1 = "40"; scoreText2 = "AD2"; }
+                    else { scoreText1 = "40"; scoreText2 = "AD"; }
+                }
+                else {
+                    scoreText1 = getStandardScore(p1);
+                    scoreText2 = getStandardScore(p2);
+                }
+            } 
+            // --- MODO ESTÁNDAR ---
+            else {
+                scoreText1 = getStandardScore(scoreboardState.t1.pIdx);
+                scoreText2 = getStandardScore(scoreboardState.t2.pIdx);
             }
-            // Estilos de Saque
-                    // === LÓGICA DE BOLITAS (SAQUE) ===
-        
-            // 1. Primero, reseteamos TODAS las bolitas a gris
+
+            // ... (Resto de la función updateScoreboardUI se mantiene igual) ...
+            
+            const p1El = document.getElementById('sb-p1');
+            const p2El = document.getElementById('sb-p2');
+            
+            p1El.innerText = scoreText1;
+            p2El.innerText = scoreText2;
+
+            if (isGoldenPoint) {
+                p1El.classList.add('score-gp-active');
+                p2El.classList.add('score-gp-active');
+            } else {
+                p1El.classList.remove('score-gp-active');
+                p2El.classList.remove('score-gp-active');
+            }
+
+            // ... (Resto del código de bolitas de saque y botones) ...
+             // 5. ESTILOS DE BOLITAS (SAQUE)
+            // Resetear todas las bolitas a gris
             for(let t=1; t<=2; t++) {
                 let dots = document.getElementById(`sb-serve-indicator-${t}`).children;
                 for(let i=0; i<dots.length; i++) {
@@ -3496,63 +4133,307 @@
                 }
             }
 
-            // 2. Calculamos el lado
+            // Calcular lado y encender bolita correspondiente
             let totalPoints = scoreboardState.t1.pIdx + scoreboardState.t2.pIdx;
-            
-            // Usamos 'serveSide' en vez de 'side' para evitar el error
             let serveSide = (totalPoints % 2 === 0) ? 'right' : 'left';
-
-            // 3. Encendemos la bolita correspondiente del equipo que SACA
             let activeTeam = scoreboardState.server; 
-            let activeDots = document.getElementById(`sb-serve-indicator-${activeTeam}`).children;
             
+            let activeDots = document.getElementById(`sb-serve-indicator-${activeTeam}`).children;
             let dotIndex = (serveSide === 'left') ? 0 : 1; 
             
-            activeDots[dotIndex].className = 'w-2 h-2 rounded-full sb-ball-active';
+            if(activeDots && activeDots[dotIndex]) {
+                activeDots[dotIndex].className = 'w-2 h-2 rounded-full sb-ball-active';
+            }
 
-            // Clase para controlar el tamaño del botón Winner (Recibe vs Saca)
+            // 6. LÓGICA VISUAL DE RECEPCIÓN
             const actions1 = document.getElementById('sb-actions-1');
             const actions2 = document.getElementById('sb-actions-2');
 
-            if(scoreboardState.server === 1) {
-                actions1.classList.remove('sb-receiving'); // Saca: Winner normal
-                actions2.classList.add('sb-receiving');    // Recibe: Winner grande
-            } else {
-                actions1.classList.add('sb-receiving');    // Recibe: Winner grande
-                actions2.classList.remove('sb-receiving'); // Saca: Winner normal
+            if(actions1 && actions2) {
+                if(scoreboardState.server === 1) {
+                    actions1.classList.remove('sb-receiving');
+                    actions2.classList.add('sb-receiving');
+                } else {
+                    actions1.classList.add('sb-receiving');
+                    actions2.classList.remove('sb-receiving');
+                }
             }
 
-            // Indicador de pelotas
-            const renderBalls = (teamNum, side) => {
-                const dots = document.getElementById(`sb-serve-indicator-${teamNum}`).children;
-                for(let i=0; i<dots.length; i++) {
-                    dots[i].className = 'w-2 h-2 rounded-full bg-slate-600';
-                }
-                if (side === 'left' || side === 'right') {
-                    const idx = side === 'right' ? 0 : 1;
-                    dots[idx].className = 'w-2 h-2 rounded-full sb-ball-active';
-                }
-            };
-
-            let side = (scoreboardState.t1.pIdx + scoreboardState.t2.pIdx) % 2 !== 0 ? 'right' : 'left';
-            if (scoreboardState.server === 1) renderBalls(1, side);
-            else renderBalls(2, side);
-
-            // Botones de Falta
+            // 7. BOTONES DE FALTA
             const f1 = document.getElementById('sb-f1');
+            const f2 = document.getElementById('sb-f2');
+            
+            // Configuración texto botón T1
             f1.innerText = scoreboardState.t1.faults === 1 ? "DOBLE FALTA" : "FALTA";
             f1.className = scoreboardState.t1.faults === 1 
                 ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
                 : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
+            f1.style.display = (scoreboardState.server === 1) ? 'block' : 'none';
 
-            const f2 = document.getElementById('sb-f2');
+            // Configuración texto botón T2
             f2.innerText = scoreboardState.t2.faults === 1 ? "DOBLE FALTA" : "FALTA";
             f2.className = scoreboardState.t2.faults === 1 
                 ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
                 : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
+            f2.style.display = (scoreboardState.server === 2) ? 'block' : 'none';
+        }        function updateScoreboardUI() {
+            // 1. Actualizar Sets y Juegos
+            document.getElementById('sb-s1').innerText = scoreboardState.t1.sets;
+            document.getElementById('sb-g1').innerText = scoreboardState.t1.games;
+            document.getElementById('sb-s2').innerText = scoreboardState.t2.sets;
+            document.getElementById('sb-g2').innerText = scoreboardState.t2.games;
 
-            // Mostrar botón de falta si el equipo saca
+            // 2. Variables para el texto del score
+            let scoreText1, scoreText2;
+            let isGoldenPoint = false; 
+
+            const getStandardScore = (idx) => sbScoreMap[idx] || idx.toString();
+
+            // ==========================================
+            // 3. CÁLCULO DE TEXTO SEGÚN MODO
+            // ==========================================
+            
+            // --- MODO GOLDEN POINT ---
+            if (scoreboardState.mode === 'golden' && scoreboardState.t1.pIdx === 3 && scoreboardState.t2.pIdx === 3) { // <--- CAMBIO AQUÍ
+                isGoldenPoint = true;
+                scoreText1 = "GP";
+                scoreText2 = "GP";
+            } 
+            // --- MODO STAR POINT ---
+            else if (scoreboardState.mode === 'star') { // <--- CAMBIO AQUÍ
+                // ... (resto del código de lógica Star Point se mantiene igual, solo cambia la condición if) ...
+                let p1 = scoreboardState.t1.pIdx;
+                let p2 = scoreboardState.t2.pIdx;
+                let stage = scoreboardState.starPointStage;
+
+                if (p1 === 3 && p2 === 3) {
+                    if (stage === 1) { scoreText1 = "D1"; scoreText2 = "D1"; }
+                    else if (stage === 3) { scoreText1 = "D2"; scoreText2 = "D2"; }
+                    else if (stage === 5) { 
+                        isGoldenPoint = true; 
+                        scoreText1 = "SP"; scoreText2 = "SP"; 
+                    }
+                    else { scoreText1 = "40"; scoreText2 = "40"; }
+                }
+                else if (p1 === 4 && p2 === 3) { 
+                    if (stage === 2) { scoreText1 = "AD1"; scoreText2 = "40"; }
+                    else if (stage === 4) { scoreText1 = "AD2"; scoreText2 = "40"; }
+                    else { scoreText1 = "AD"; scoreText2 = "40"; }
+                }
+                else if (p1 === 3 && p2 === 4) { 
+                    if (stage === 2) { scoreText1 = "40"; scoreText2 = "AD1"; }
+                    else if (stage === 4) { scoreText1 = "40"; scoreText2 = "AD2"; }
+                    else { scoreText1 = "40"; scoreText2 = "AD"; }
+                }
+                else {
+                    scoreText1 = getStandardScore(p1);
+                    scoreText2 = getStandardScore(p2);
+                }
+            } 
+            // --- MODO ESTÁNDAR ---
+            else {
+                scoreText1 = getStandardScore(scoreboardState.t1.pIdx);
+                scoreText2 = getStandardScore(scoreboardState.t2.pIdx);
+            }
+
+            // ... (Resto de la función updateScoreboardUI se mantiene igual) ...
+            
+            const p1El = document.getElementById('sb-p1');
+            const p2El = document.getElementById('sb-p2');
+            
+            p1El.innerText = scoreText1;
+            p2El.innerText = scoreText2;
+
+            if (isGoldenPoint) {
+                p1El.classList.add('score-gp-active');
+                p2El.classList.add('score-gp-active');
+            } else {
+                p1El.classList.remove('score-gp-active');
+                p2El.classList.remove('score-gp-active');
+            }
+
+            // ... (Resto del código de bolitas de saque y botones) ...
+             // 5. ESTILOS DE BOLITAS (SAQUE)
+            // Resetear todas las bolitas a gris
+            for(let t=1; t<=2; t++) {
+                let dots = document.getElementById(`sb-serve-indicator-${t}`).children;
+                for(let i=0; i<dots.length; i++) {
+                    dots[i].className = 'w-2 h-2 rounded-full bg-slate-600';
+                }
+            }
+
+            // Calcular lado y encender bolita correspondiente
+            let totalPoints = scoreboardState.t1.pIdx + scoreboardState.t2.pIdx;
+            let serveSide = (totalPoints % 2 === 0) ? 'right' : 'left';
+            let activeTeam = scoreboardState.server; 
+            
+            let activeDots = document.getElementById(`sb-serve-indicator-${activeTeam}`).children;
+            let dotIndex = (serveSide === 'left') ? 0 : 1; 
+            
+            if(activeDots && activeDots[dotIndex]) {
+                activeDots[dotIndex].className = 'w-2 h-2 rounded-full sb-ball-active';
+            }
+
+            // 6. LÓGICA VISUAL DE RECEPCIÓN
+            const actions1 = document.getElementById('sb-actions-1');
+            const actions2 = document.getElementById('sb-actions-2');
+
+            if(actions1 && actions2) {
+                if(scoreboardState.server === 1) {
+                    actions1.classList.remove('sb-receiving');
+                    actions2.classList.add('sb-receiving');
+                } else {
+                    actions1.classList.add('sb-receiving');
+                    actions2.classList.remove('sb-receiving');
+                }
+            }
+
+            // 7. BOTONES DE FALTA
+            const f1 = document.getElementById('sb-f1');
+            const f2 = document.getElementById('sb-f2');
+            
+            // Configuración texto botón T1
+            f1.innerText = scoreboardState.t1.faults === 1 ? "DOBLE FALTA" : "FALTA";
+            f1.className = scoreboardState.t1.faults === 1 
+                ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
+                : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
             f1.style.display = (scoreboardState.server === 1) ? 'block' : 'none';
+
+            // Configuración texto botón T2
+            f2.innerText = scoreboardState.t2.faults === 1 ? "DOBLE FALTA" : "FALTA";
+            f2.className = scoreboardState.t2.faults === 1 
+                ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
+                : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
+            f2.style.display = (scoreboardState.server === 2) ? 'block' : 'none';
+        }        
+        function updateScoreboardUI() {
+            // 1. Actualizar Sets y Juegos
+            document.getElementById('sb-s1').innerText = scoreboardState.t1.sets;
+            document.getElementById('sb-g1').innerText = scoreboardState.t1.games;
+            document.getElementById('sb-s2').innerText = scoreboardState.t2.sets;
+            document.getElementById('sb-g2').innerText = scoreboardState.t2.games;
+
+            // 2. Variables para el texto del score
+            let scoreText1, scoreText2;
+            let isGoldenPoint = false; 
+
+            const getStandardScore = (idx) => sbScoreMap[idx] || idx.toString();
+
+            // ==========================================
+            // 3. CÁLCULO DE TEXTO SEGÚN MODO
+            // ==========================================
+            
+            // --- MODO GOLDEN POINT ---
+            if (scoreboardState.mode === 'golden' && scoreboardState.t1.pIdx === 3 && scoreboardState.t2.pIdx === 3) { // <--- CAMBIO AQUÍ
+                isGoldenPoint = true;
+                scoreText1 = "GP";
+                scoreText2 = "GP";
+            } 
+            // --- MODO STAR POINT ---
+            else if (scoreboardState.mode === 'star') { // <--- CAMBIO AQUÍ
+                // ... (resto del código de lógica Star Point se mantiene igual, solo cambia la condición if) ...
+                let p1 = scoreboardState.t1.pIdx;
+                let p2 = scoreboardState.t2.pIdx;
+                let stage = scoreboardState.starPointStage;
+
+                if (p1 === 3 && p2 === 3) {
+                    if (stage === 1) { scoreText1 = "D1"; scoreText2 = "D1"; }
+                    else if (stage === 3) { scoreText1 = "D2"; scoreText2 = "D2"; }
+                    else if (stage === 5) { 
+                        isGoldenPoint = true; 
+                        scoreText1 = "SP"; scoreText2 = "SP"; 
+                    }
+                    else { scoreText1 = "40"; scoreText2 = "40"; }
+                }
+                else if (p1 === 4 && p2 === 3) { 
+                    if (stage === 2) { scoreText1 = "AD1"; scoreText2 = "40"; }
+                    else if (stage === 4) { scoreText1 = "AD2"; scoreText2 = "40"; }
+                    else { scoreText1 = "AD"; scoreText2 = "40"; }
+                }
+                else if (p1 === 3 && p2 === 4) { 
+                    if (stage === 2) { scoreText1 = "40"; scoreText2 = "AD1"; }
+                    else if (stage === 4) { scoreText1 = "40"; scoreText2 = "AD2"; }
+                    else { scoreText1 = "40"; scoreText2 = "AD"; }
+                }
+                else {
+                    scoreText1 = getStandardScore(p1);
+                    scoreText2 = getStandardScore(p2);
+                }
+            } 
+            // --- MODO ESTÁNDAR ---
+            else {
+                scoreText1 = getStandardScore(scoreboardState.t1.pIdx);
+                scoreText2 = getStandardScore(scoreboardState.t2.pIdx);
+            }
+
+            // ... (Resto de la función updateScoreboardUI se mantiene igual) ...
+            
+            const p1El = document.getElementById('sb-p1');
+            const p2El = document.getElementById('sb-p2');
+            
+            p1El.innerText = scoreText1;
+            p2El.innerText = scoreText2;
+
+            if (isGoldenPoint) {
+                p1El.classList.add('score-gp-active');
+                p2El.classList.add('score-gp-active');
+            } else {
+                p1El.classList.remove('score-gp-active');
+                p2El.classList.remove('score-gp-active');
+            }
+
+            // ... (Resto del código de bolitas de saque y botones) ...
+             // 5. ESTILOS DE BOLITAS (SAQUE)
+            // Resetear todas las bolitas a gris
+            for(let t=1; t<=2; t++) {
+                let dots = document.getElementById(`sb-serve-indicator-${t}`).children;
+                for(let i=0; i<dots.length; i++) {
+                    dots[i].className = 'w-2 h-2 rounded-full bg-slate-600';
+                }
+            }
+
+            // Calcular lado y encender bolita correspondiente
+            let totalPoints = scoreboardState.t1.pIdx + scoreboardState.t2.pIdx;
+            let serveSide = (totalPoints % 2 === 0) ? 'right' : 'left';
+            let activeTeam = scoreboardState.server; 
+            
+            let activeDots = document.getElementById(`sb-serve-indicator-${activeTeam}`).children;
+            let dotIndex = (serveSide === 'left') ? 0 : 1; 
+            
+            if(activeDots && activeDots[dotIndex]) {
+                activeDots[dotIndex].className = 'w-2 h-2 rounded-full sb-ball-active';
+            }
+
+            // 6. LÓGICA VISUAL DE RECEPCIÓN
+            const actions1 = document.getElementById('sb-actions-1');
+            const actions2 = document.getElementById('sb-actions-2');
+
+            if(actions1 && actions2) {
+                if(scoreboardState.server === 1) {
+                    actions1.classList.remove('sb-receiving');
+                    actions2.classList.add('sb-receiving');
+                } else {
+                    actions1.classList.add('sb-receiving');
+                    actions2.classList.remove('sb-receiving');
+                }
+            }
+
+            // 7. BOTONES DE FALTA
+            const f1 = document.getElementById('sb-f1');
+            const f2 = document.getElementById('sb-f2');
+            
+            // Configuración texto botón T1
+            f1.innerText = scoreboardState.t1.faults === 1 ? "DOBLE FALTA" : "FALTA";
+            f1.className = scoreboardState.t1.faults === 1 
+                ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
+                : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
+            f1.style.display = (scoreboardState.server === 1) ? 'block' : 'none';
+
+            // Configuración texto botón T2
+            f2.innerText = scoreboardState.t2.faults === 1 ? "DOBLE FALTA" : "FALTA";
+            f2.className = scoreboardState.t2.faults === 1 
+                ? "bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm sb-double-fault" 
+                : "hidden bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded transition text-sm";
             f2.style.display = (scoreboardState.server === 2) ? 'block' : 'none';
         }
 
@@ -3562,36 +4443,57 @@
             // Arrancar timer al primer toque
             if (!timerHasStarted) startTimer();
             
-            if (type === 'winner' || type === 'fault' || type === 'error' || type === 'error_forced' || type === 'error_unforced') {
-                window.currentActionType = type; 
-                showScorerSelection(team);
+            // --- CASO: FALTAS ---
+            if (type === 'fault') {
+                // 1. Aumentar contador
+                scoreboardState['t' + team].faults++;
+
+                // 2. ACTUALIZAR UI (Importante para ver "DOBLE FALTA")
+                updateScoreboardUI();
+
+                // 3. Comprobar si ya son 2 faltas
+                if (scoreboardState['t' + team].faults >= 2) {
+                    // Es Doble Falta -> Punto para el rival
+                    logAction('double_fault', team, null, 'DOBLE FALTA'); 
+                    scoreboardState['t' + team].faults = 0; // Resetear
+                    addScoreboardPoint((team === 1) ? 2 : 1);
+                    
+                    // Actualizamos la UI de nuevo tras el punto
+                    updateScoreboardUI();
+                }
+
+                // 4. RETORNAR: No abrir modales de selección ni de tipos de golpe
                 return; 
             }
+
+            // --- CASO NORMAL: WINNER / ERROR ---
+            // Aquí SI queremos abrir el menú de selección (Drive / Reves)
+            window.currentActionType = type;
+            showScorerSelection(team);
         }
         // ✅ CORREGIDO
         function winScoreboardSet(teamNum) {
-            // 1. GUARDAR PRIMERO
-            scoreboardState.setHistory.push({
-                s1: scoreboardState.t1.games,
-                s2: scoreboardState.t2.games
-            });
-            // 2. SUMAR SET
+            // Añadir set
             scoreboardState['t' + teamNum].sets++;
-            // 3. DESPUÉS resetear
-            scoreboardState.t1.pIdx = 0;
-            scoreboardState.t2.pIdx = 0;
+            
+            // Resetear juegos y puntos
             scoreboardState.t1.games = 0;
             scoreboardState.t2.games = 0;
+            scoreboardState.t1.pIdx = 0;
+            scoreboardState.t2.pIdx = 0;
             scoreboardState.isTieBreak = false;
             
-            if(scoreboardState['t' + teamNum].sets === 2) {
+            if (scoreboardState['t' + teamNum].sets === 2) {
                 scoreboardState.matchFinished = true;
                 showScoreboardBanner(`PARTIDO TERMINADO - TEAM ${teamNum} GANA`, 'bg-red-600');
             } else {
                 showScoreboardBanner(`SET PARA TEAM ${teamNum}`, 'bg-emerald-600');
                 setTimeout(() => hideScoreboardBanner(), 2000);
             }
+            // Si no gana set, cambiamos saque (cada set termina, se cambia saque)
             scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+            
+            updateScoreboardUI();
         }
         function addScoreboardPoint(teamNum) {
             if (!isRecalculating) saveScoreboardState();
@@ -3599,60 +4501,123 @@
             let winner = scoreboardState['t' + teamNum];
             let loser = scoreboardState['t' + (teamNum === 1 ? 2 : 1)];
 
+            // Resetear faltas para el nuevo punto
             scoreboardState.t1.faults = 0;
             scoreboardState.t2.faults = 0;
 
-            if (scoreboardState.isTieBreak) {
-                winner.pIdx++;
-                if (winner.pIdx >= 7 && (winner.pIdx - loser.pIdx) >= 2) {
-                    winScoreboardSet(teamNum);
-                } else {
-                    if ((winner.pIdx + loser.pIdx) % 2 !== 0) {
-                        scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
-                    }
-                }
-            } else {
-                if (winner.pIdx === 3 && loser.pIdx === 4) {
-                    loser.pIdx = 3;
-                } else if (winner.pIdx >= 3 && winner.pIdx > loser.pIdx) {
+            // Determinar la acción real (quién gana realmente el punto)
+            let action = window.currentActionType || 'winner';
+            let trueWinner = (action === 'winner') ? teamNum : (teamNum === 1 ? 2 : 1);
+
+            // ==========================================
+            // 1. MODO GOLDEN POINT (PRIORIDAD ABSOLUTA)
+            // ==========================================
+            if (scoreboardState.mode === 'golden' && scoreboardState.t1.pIdx === 3 && scoreboardState.t2.pIdx === 3) {
+                // En Golden Point, el siguiente punto gana el juego directamente
+                winScoreboardGame(teamNum);
+                scoreboardState.starPointStage = 0; // Reset por seguridad
+                return; // DETENEMOS LA EJECUCIÓN AQUÍ. No sumamos +1 ni damos ventaja.
+            }
+
+            // ==========================================
+            // 2. MODO STAR POINT (Etapa 5 = Muerte Súbita)
+            // ==========================================
+            if (scoreboardState.mode === 'star') {
+                // Regla: Si estamos en Etapa 5 (Tercer 40-40/Star Point), el siguiente punto gana el juego.
+                if (scoreboardState.starPointStage === 5) {
                     winScoreboardGame(teamNum);
-                } else {
-                    winner.pIdx++;
-                    if (winner.pIdx === 4 && loser.pIdx < 3) winScoreboardGame(teamNum);
+                    scoreboardState.starPointStage = 0; // Reset para el próximo juego
+                    return;
                 }
             }
+
+            // ==========================================
+            // 3. LÓGICA ESTÁNDAR DE PUNTOS (Sin reglas especiales)
+            // ==========================================
+            
+            // 1. Si estábamos en AD (4) y perdimos -> Volvemos a 3 (40)
+            if (winner.pIdx === 3 && loser.pIdx === 4) {
+                loser.pIdx = 3;
+            } 
+            // 2. Si tenemos ventaja de 2 puntos o más -> GANAMOS JUEGO
+            else if (winner.pIdx >= 3 && winner.pIdx > loser.pIdx) {
+                winScoreboardGame(teamNum);
+            } 
+            // 3. Punto Normal (0->15, 15->30, 30->40, 40->AD)
+            else {
+                winner.pIdx++;
+                
+                // 3b. Caso especial: Si llegamos a 4 y el rival < 3, ganamos inmediatamente (ej. 40-15)
+                if (winner.pIdx === 4 && loser.pIdx < 3) winScoreboardGame(teamNum);
+            }
+
+            // ==========================================
+            // 4. ACTUALIZACIÓN DE ESTADO STAR POINT (DESPUÉS DE PUNTUAR)
+            // ==========================================
+            if (scoreboardState.mode === 'star' && !scoreboardState.matchFinished) {
+                let p1 = scoreboardState.t1.pIdx;
+                let p2 = scoreboardState.t2.pIdx;
+                let stage = scoreboardState.starPointStage;
+
+                // Detectamos transiciones de estado para Star Point
+                
+                // A. Entramos a 40-40 (3-3)
+                if (p1 === 3 && p2 === 3) {
+                    if (stage === 0) {
+                        scoreboardState.starPointStage = 1; // Primer Deuce
+                    } else if (stage === 2) {
+                        scoreboardState.starPointStage = 3; // Volvimos de Ventaja -> Segundo Deuce
+                    } else if (stage === 4) {
+                        scoreboardState.starPointStage = 5; // Volvimos de Ventaja -> Tercer Deuce (STAR POINT)
+                    }
+                }
+                // B. Entramos a Ventaja (3-4 o 4-3)
+                else if (Math.abs(p1 - p2) === 1 && (p1 === 4 || p2 === 4)) {
+                    if (stage === 1) {
+                        scoreboardState.starPointStage = 2; // Primer Deuce -> Primera Ventaja
+                    } else if (stage === 3) {
+                        scoreboardState.starPointStage = 4; // Segundo Deuce -> Segunda Ventaja
+                    }
+                }
+                // C. Si alguien gana un juego normal (ej. 40-30), reseteamos la etapa de Star Point
+                else if (winner.pIdx >= loser.pIdx + 1 && winner.pIdx !== 3) {
+                    scoreboardState.starPointStage = 0;
+                }
+            }
+
+            updateScoreboardUI();
         }
 
         function winScoreboardGame(teamNum) {
-            // Reseteamos puntos del juego actual
+            // 1. Resetear puntos del juego actual
             scoreboardState.t1.pIdx = 0;
             scoreboardState.t2.pIdx = 0;
             
-            // Sumamos juego al ganador
+            // 2. Resetear estados especiales para el siguiente juego
+            scoreboardState.starPointStage = 0; // <--- FIX: Reset Star Point
+            scoreboardState.isTieBreak = false; // <--- FIX: Asegurar que no se queda activo
+
+            // 3. Sumar juego al ganador
             scoreboardState['t' + teamNum].games++;
             
-            // Datos para comprobaciones
-            let g1 = scoreboardState.t1.games;
-            let g2 = scoreboardState.t2.games;
-            let winnerGames = scoreboardState['t' + teamNum].games;
-            let loserGames = scoreboardState['t' + (teamNum === 1 ? 2 : 1)].games;
+            // 4. Determinar puntuaciones actuales
+            let wGames = scoreboardState['t' + teamNum].games;
+            let lGames = scoreboardState['t' + (teamNum === 1 ? 2 : 1)].games;
 
-            // LÓGICA DE SET:
-            // 1. Si ganador tiene 6 y perdedor menos de 5 -> Gana Set (6-0, 6-1... 6-4)
-            if (winnerGames === 6 && loserGames < 5) {
+            // 5. Lógica para ganar SET (6-0 a 6-4, o 7-5 a 7-6)
+            if ((wGames === 6 && lGames < 5) || (wGames === 7 && lGames <= 5)) {
                 winScoreboardSet(teamNum);
-            }
-            // 2. Si ganador tiene 7 y perdedor 5 o menos -> Gana Set (7-5)
-            else if (winnerGames === 7 && loserGames <= 5) {
-                winScoreboardSet(teamNum);
-            }
-            // 3. Si van 6-6 -> ¡TIE BREAK!
-            else if (g1 === 6 && g2 === 6) {
+            } 
+            // 6. Lógica para TIE BREAK (6-6)
+            else if (wGames === 6 && lGames === 6) {
                 startTieBreak();
-            }
-            // 4. Si no, seguimos jugando el set normalmente (cambiamos saque)
+            } 
+            // 7. Si no gana set ni va a Tie Break, cambiamos saque (cada 2 juegos en pádel)
+            //    NOTA: El saque cambia para el PRÓXIMO juego.
             else {
                 scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+                currentGameDeuces = 0; // Reset por seguridad
+                updateScoreboardUI();
             }
         }
 
@@ -3780,9 +4745,12 @@
                     server: 1,
                     matchFinished: false,
                     isTieBreak: false,
-                    setHistory: []
+                    setHistory: [],
+                    mode: scoreMode, // <--- AÑADE ESTO
+                    starPointStage: 0
                 };
                 scoreboardHistory = [];
+                currentGameDeuces = 0;
                 playByPlayLog = [];
                 hideScoreboardBanner();
                 updateScoreboardUI();
@@ -3799,56 +4767,128 @@
             document.body.classList.add('is-selecting');
         }
 
+        // ==========================================
+        // FUNCIÓN ACTUALIZADA: CONFIRMAR GANADOR
+        // ==========================================
         function confirmWinner(team, playerPos) {
+            // 1. Preparar datos básicos
             let action = window.currentActionType || 'winner';
-            let opponent = (team === 1) ? 2 : 1;
-            let container = document.getElementById(`sb-actions-${team}`);
+            let trueWinner = null;
 
-            saveScoreboardState();
+            // 2. Determinar qué equipo anota el punto realmente
+            if (action === 'error_forced' || action === 'error_unforced' || action === 'error') {
+                trueWinner = (team === 1) ? 2 : 1;
+            } else {
+                trueWinner = team;
+            }
 
-            // 1. LÓGICA DE FALTAS
-            if (action === 'fault') {
-                scoreboardState['t' + team].faults++;
+            // 3. Guardar estado pendiente
+            pendingLogEntry = {
+                action: action,
+                team: team, // El equipo que hizo la acción
+                pointScore: "pending",
+                winner: trueWinner,
+                pos: playerPos
+            };
 
-                if (scoreboardState['t' + team].faults >= 2) {
-                    // DOBLE FALTA → gana el rival
-                    // Log ANTES de sumar (aquí ya estaba correcto)
-                    logAction('double_fault', team, playerPos);
-                    scoreboardState['t' + team].faults = 0;
-                    addScoreboardPoint(opponent);   
+            // 4. Etiquetas dinámicas para el botón de Resto (Saque vs Receptor)
+            let dynamicLabel = "RESTO"; 
+            if (action !== 'fault' && action !== 'double_fault') {
+                if (trueWinner === scoreboardState.server) {
+                    dynamicLabel = "SAQUE";
                 } else {
-                    // Falta simple (no cambia el score, orden da igual)
-                    logAction('fault', team, playerPos);
+                    dynamicLabel = "RESTO";
                 }
+            } else {
+                dynamicLabel = (action === 'double_fault') ? "DOBLE FALTA" : "FALTA";
+            }
 
-                container.classList.remove('selecting-scorer');
-                document.body.classList.remove('is-selecting');
-                updateScoreboardUI();
+            let restoBtn = document.getElementById('btn-shot-resto');
+            if(restoBtn) {
+                let span = restoBtn.querySelector('span');
+                let icon = restoBtn.querySelector('i');
+                if(span) span.innerText = dynamicLabel;
+                if(icon) {
+                    if (action === 'double_fault') {
+                        icon.className = "ri-alarm-warning-line text-3xl group-hover:scale-110 transition-transform text-red-500";
+                    } else if (action === 'fault') {
+                        icon.className = "ri-error-warning-line text-3xl group-hover:scale-110 transition-transform text-orange-500";
+                    } else if (dynamicLabel === "SAQUE") {
+                        icon.className = "ri-skip-forward-line text-3xl group-hover:scale-110 transition-transform text-amber-400";
+                    } else {
+                        icon.className = "ri-run-line text-3xl group-hover:scale-110 transition-transform text-slate-300";
+                    }
+                }
+            }
+
+            // ==========================================
+            // 5. LÓGICA DE CONFIGURACIÓN (SHOT TYPE MODE)
+            // ==========================================
+            
+            let shouldOpenModal = false;
+            let finalShotType = null; 
+
+            if (shotTypeMode === 'always') {
+                // MODO SIEMPRE: Abrir para todo excepto faltas
+                if (action === 'fault' || action === 'double_fault') {
+                    shouldOpenModal = false;
+                    // El punto ya se sumó en handleScoreboardAction (para dobles faltas) o es solo visual (simple falta).
+                    // Solo nos aseguramos de limpiar la UI.
+                    // Nota: Si llegamos aquí por recálculo histórico, logamos la acción.
+                    if (action === 'double_fault') {
+                        logAction('double_fault', team, playerPos, finalShotType);
+                        // addScoreboardPoint ya se llamó en handleScoreboardAction
+                    } else {
+                        logAction('fault', team, playerPos, 'FALTA');
+                    }
+                    finishPointAction(action, team, playerPos);
+                    return;
+                } else {
+                    shouldOpenModal = true;
+                }
+            } 
+            else if (shotTypeMode === 'winners') {
+                // MODO SOLO WINNERS
+                if (action === 'winner') {
+                    shouldOpenModal = true;
+                } else {
+                    shouldOpenModal = false;
+                    // 1. Guardar en historial
+                    logAction(action, team, playerPos, finalShotType);
+                    
+                    // 2. ACTUALIZAR MARCADOR (LA CORRECCIÓN CLAVE)
+                    // Si es error, el punto es para el oponente (trueWinner)
+                    addScoreboardPoint(trueWinner);
+                    
+                    // 3. Limpiar UI
+                    finishPointAction(action, team, playerPos);
+                    return;
+                }
+            } 
+            else if (shotTypeMode === 'never') {
+                // MODO NUNCA
+                shouldOpenModal = false;
+                // 1. Guardar en historial
+                logAction(action, team, playerPos, finalShotType);
+                
+                // 2. ACTUALIZAR MARCADOR
+                addScoreboardPoint(trueWinner);
+                
+                // 3. Limpiar UI
+                finishPointAction(action, team, playerPos);
                 return;
             }
 
-            // 2. WINNER o ERRORES
-            let scoringTeam = team;
-            if (action === 'error' || action === 'error_forced' || action === 'error_unforced') {
-                scoringTeam = opponent;   
+            // ==========================================
+            // 6. ABRIR MODAL (SI CORRESPONDE)
+            // ==========================================
+            if (shouldOpenModal) {
+                document.getElementById('shot-type-modal').classList.remove('hidden');
+                document.body.classList.add('is-selecting');
             }
-
-            // ✅ CORRECCIÓN: Log ANTES de sumar el punto
-            // Así se captura el score PREVIO (el estado real al jugar el punto)
-            if (action === 'winner') {
-                logAction('winner', scoringTeam, playerPos);
-            } else {
-                logAction(action, team, playerPos); // team = quien cometió el error
-            }
-
-            // Sumar punto DESPUÉS del log
-            addScoreboardPoint(scoringTeam);
-
-            container.classList.remove('selecting-scorer');
-            document.body.classList.remove('is-selecting');
-            updateScoreboardUI();
         }
-        function logAction(actionType, teamNum, playerPos) {
+
+        function logAction(actionType, teamNum, playerPos, shotType) {
             if (!matchStartTime) matchStartTime = Date.now();
             
             let now = Date.now();
@@ -3896,7 +4936,8 @@
                 score: `${p1ScoreText}-${p2ScoreText}`,
                 games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
                 sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`,
-                server: scoreboardState.server
+                server: scoreboardState.server,
+                shotType: shotType // <--- ESTA ES LA LÍNEA QUE TE FALTABA
             };
 
             playByPlayLog.push(event);
@@ -4459,6 +5500,7 @@
         function renderAdvancedStats() {
             let container = document.getElementById('stats-tab-advanced');
 
+            // 1. Estructura base si no existe
             if (!document.getElementById('adv-mvp-card')) {
                 container.innerHTML = `
                     <div id="adv-mvp-card"></div>
@@ -4467,14 +5509,6 @@
                         <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-1">📈 Flujo del Partido</h4>
                         <p class="text-[10px] text-slate-500 mb-3">La línea sube con cada punto de Equipo 1 y baja con cada punto de Equipo 2</p>
                         <div class="relative h-52" id="momentum-wrapper"><canvas id="adv-momentum-chart"></canvas></div>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">📈 Contribución Neta por Jugador</h4>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mb-4">Winner = +1 · Error No Forzado = -1 · Doble Falta = -1</p>
-                        <div class="h-80 relative"><canvas id="adv-contribution-chart"></canvas></div>
                     </div>
 
                     <!-- RECUADRO MEJORADO: CONTROL DEL PARTIDO -->
@@ -4493,6 +5527,18 @@
                         <h4 class="text-sm font-bold text-purple-400 uppercase tracking-wider mb-1">🎯 Arma de Cada Equipo</h4>
                         <p class="text-[10px] text-slate-500 mb-3">Qué lado de la pista genera más winners y cuál comete más errores</p>
                         <div id="adv-pos-content" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                    </div>
+
+                    <!-- NUEVA SECCIÓN: ARMERÍA (TIPOS DE GOLPE) -->
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-pink-400 uppercase tracking-wider">🎾 Armería del Partido</h4>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mb-3">Distribución de los golpes ganadores (Voleas, Víbora, etc.)</p>
+                        <div class="h-64 relative flex items-center justify-center">
+                            <canvas id="adv-shot-chart"></canvas>
+                            <div id="shot-chart-placeholder" class="absolute text-slate-600 text-xs">Sin winners registrados aún</div>
+                        </div>
                     </div>
 
                     <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
@@ -4517,14 +5563,132 @@
                 `;
             }
 
+            // 2. Llamadas a las funciones auxiliares
             renderMVP();
             renderMomentumChart();
-            renderStreaks();           // ← Ahora más completo
+            renderStreaks();
             renderSalvationPoints();
             renderDriveVsReverse();
+            
+            // 3. NUEVA LÓGICA: Gráfico de Tipos de Golpe
+            renderShotTypeChart();
+
             renderSetBySet();
-            renderAdvContributionChart();
             renderAdvHistogram();
+        }
+
+        // ----------------------------------------------------------------
+        // FUNCIÓN NUEVA: Renderizado del Gráfico de Tipos de Golpe
+        // ----------------------------------------------------------------
+        function renderShotTypeChart() {
+            const ctx = document.getElementById('adv-shot-chart');
+            const placeholder = document.getElementById('shot-chart-placeholder');
+            let chartCanvas = document.getElementById('adv-shot-chart');
+            if (chartCanvas) {
+                // Borrar el contenido del canvas manualmente (método drástico para asegurar limpieza)
+                chartCanvas.innerHTML = "";
+            }
+            // IMPORTANTE: Destruir gráfico anterior para evitar superposiciones visuales (bug de doble render)
+            if (window.advShotChartInstance) {
+                window.advShotChartInstance.destroy();
+                window.advShotChartInstance = null;
+            }
+
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                if(ctx) ctx.style.display = 'none';
+                if(placeholder) placeholder.style.display = 'block';
+                return;
+            }
+
+            // Calcular datos de golpes (Solo Winners, para que sea la "Armería" real)
+            let shotCounts = {};
+            let totalWinners = 0;
+
+            playByPlayLog.forEach(log => {
+                // Filtramos estricto: Solo si es WINNER
+                if (log.action === 'winner' && log.shotType) {
+                    shotCounts[log.shotType] = (shotCounts[log.shotType] || 0) + 1;
+                    totalWinners++;
+                }
+            });
+
+            if (totalWinners === 0) {
+                if(ctx) ctx.style.display = 'none';
+                if(placeholder) {
+                    placeholder.style.display = 'block';
+                    placeholder.innerText = "Sin winners registrados aún";
+                }
+                return;
+            }
+
+            // Preparar datos para Chart.js
+            let labels = Object.keys(shotCounts);
+            let data = Object.values(shotCounts);
+            
+            // Usamos colores definidos en SHOT_COLORS
+            let bgColors = labels.map(l => (SHOT_COLORS[l] || '#94a3b8') + 'CC'); 
+            let borderColors = labels.map(l => SHOT_COLORS[l] || '#94a3b8');
+
+            if(ctx) ctx.style.display = 'block';
+            if(placeholder) placeholder.style.display = 'none';
+
+            window.advShotChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: bgColors,
+                        borderColor: '#0f172a', 
+                        borderWidth: 2,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { 
+                            position: 'right', 
+                            labels: { 
+                                color: '#94a3b8', 
+                                font: { size: 11, weight: 'bold' }, 
+                                usePointStyle: true, 
+                                pointStyle: 'circle',
+                                boxWidth: 8
+                            } 
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            formatter: (value, ctx) => {
+                                let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                let percentage = ((value / sum) * 100).toFixed(0) + "%";
+                                return value > 0 ? percentage : ''; 
+                            },
+                            textStrokeColor: '#000',
+                            textStrokeWidth: 2
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    let value = context.raw;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = ((value / total) * 100).toFixed(1) + "%";
+                                    return label + value + ' (' + percentage + ')';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function renderAdvContributionChart() {
@@ -5297,11 +6461,15 @@
             tbody.innerHTML = '';
             
             if (!playByPlayLog || playByPlayLog.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">No hay puntos registrados en este partido.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay puntos registrados en este partido.</td></tr>';
                 return;
             }
 
-            playByPlayLog.slice().reverse().forEach(log => {
+            // Invertimos el array para ver lo más reciente arriba
+            playByPlayLog.slice().reverse().forEach((log, i) => {
+                // Calcular el índice REAL en el array original para la edición
+                let originalIndex = playByPlayLog.length - 1 - i;
+
                 let rowClass = "";
                 let actionDisplay = "";
                 let detailDisplay = "";
@@ -5328,10 +6496,10 @@
                     actionDisplay = (log.action || "PUNTO").toUpperCase();
                 }
 
-                // ==================== CORRECCIÓN PRINCIPAL ====================
+                // Obtener nombre del jugador
                 let playerName = log.scorer || "";
 
-                // Si no tenemos el nombre guardado en el log, lo resolvemos de nuevo
+                // Si no hay nombre en el log (partidos antiguos cargados de GitHub), lo intentamos inferir
                 if (!playerName || playerName.includes("Equipo") || playerName === "DRIVE" || playerName === "REVÉS") {
                     const teamNum = log.team || log.winner;
                     const pos = log.pos || 'p1';
@@ -5350,15 +6518,17 @@
                     }
                 }
 
-                // Fallback final
                 if (!playerName || playerName.trim() === "") {
                     playerName = `Equipo ${log.team || '?'}`;
                 }
 
                 detailDisplay = playerName;
-                // ============================================================
+                // Añadir tipo de golpe si existe
+                if (log.shotType) {
+                    detailDisplay += ` <span class="text-[10px] text-slate-500 ml-1">(${log.shotType})</span>`;
+                }
 
-                let tr = document.createElement("tr");
+                const tr = document.createElement("tr");
                 tr.className = "border-b border-slate-800/50 hover:bg-slate-750/20 transition";
                 
                 tr.innerHTML = `
@@ -5366,6 +6536,13 @@
                     <td class="p-3 text-white font-bold text-xs font-mono whitespace-nowrap">${log.sets || "0-0"} (${log.games || "0-0"}) | ${log.score || "0-0"}</td>
                     <td class="p-3 font-bold uppercase text-xs tracking-wider whitespace-nowrap ${rowClass}">${actionDisplay}</td>
                     <td class="p-3 text-slate-300 text-xs text-right">${detailDisplay}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="openEditModal(${originalIndex})" 
+                                class="text-amber-400 hover:text-amber-200 transition p-1 rounded hover:bg-amber-900/20" 
+                                title="Editar este punto">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -5375,7 +6552,7 @@
         // ==========================================
 
         function undoScoreboard() {
-            if (isRecalculating) return; // Ignorar durante recálculo
+            if (isRecalculating) return; 
 
             // CASO 1: Partido en vivo (historial en memoria)
             if (scoreboardHistory.length > 0) {
@@ -5385,12 +6562,20 @@
                     scoreboardState.matchFinished = false;
                 }
                 scoreboardState = scoreboardHistory.pop();
+                
+                // IMPORTANTE: Sincronizar el modo global con el estado restaurado
+                scoreMode = scoreboardState.mode; 
+                
                 updateScoreboardUI();
             }
             // CASO 2: Partido cargado de GitHub
             else if (playByPlayLog.length > 0) {
                 playByPlayLog.pop();
                 recalculateStateFromLog();
+                
+                // IMPORTANTE: Sincronizar el modo global
+                scoreMode = scoreboardState.mode;
+                
                 updateScoreboardUI();
             }
         }
@@ -5399,24 +6584,54 @@
         function recalculateStateFromLog() {
             isRecalculating = true;
             
-            scoreboardState.t1.sets = 0;
-            scoreboardState.t2.sets = 0;
-            scoreboardState.t1.games = 0;
-            scoreboardState.t2.games = 0;
-            scoreboardState.t1.pIdx = 0;
-            scoreboardState.t2.pIdx = 0;
-            scoreboardState.t1.faults = 0;
-            scoreboardState.t2.faults = 0;
-            scoreboardState.isTieBreak = false;
-            scoreboardState.setHistory = [];
-            scoreboardState.matchFinished = false;
-            scoreboardState.server = 1;
+            // Resetear estado base
+            scoreboardState = {
+                t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "", p2: "" }, 
+                t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2", p1: "", p2: "" }, 
+                server: 1,
+                matchFinished: false,
+                isTieBreak: false,
+                setHistory: [],
+                mode: scoreMode, // Usa el modo actual de configuración
+                starPointStage: 0
+            };
+
+            // Funciones auxiliares internas para no depender de globales que puedan fallar en contexto
+            const winGame = (teamNum) => {
+                scoreboardState['t' + teamNum].games++;
+                scoreboardState.t1.pIdx = 0;
+                scoreboardState.t2.pIdx = 0;
+                scoreboardState.starPointStage = 0;
+                scoreboardState.isTieBreak = false;
+                
+                let wGames = scoreboardState['t' + teamNum].games;
+                let lGames = scoreboardState['t' + (teamNum === 1 ? 2 : 1)].games;
+
+                if ((wGames === 6 && lGames < 5) || (wGames === 7 && lGames <= 5)) {
+                    winSet(teamNum);
+                } else if (wGames === 6 && lGames === 6) {
+                    scoreboardState.isTieBreak = true;
+                    scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+                } else {
+                    scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+                }
+            };
+
+            const winSet = (teamNum) => {
+                scoreboardState['t' + teamNum].sets++;
+                scoreboardState.t1.games = 0;
+                scoreboardState.t2.games = 0;
+                scoreboardState.t1.pIdx = 0;
+                scoreboardState.t2.pIdx = 0;
+                scoreboardState.isTieBreak = false;
+                scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
+                scoreboardState.matchFinished = (scoreboardState['t' + teamNum].sets === 2);
+            };
 
             playByPlayLog.forEach(log => {
                 let winningTeam = log.winner;
                 if (!winningTeam) {
                     // Inferir ganador del tipo de acción
-                    if (log.action === 'fault') return; // Falta simple no da punto
                     if (log.action === 'double_fault') {
                         winningTeam = (log.team === 1) ? 2 : 1;
                     } else if (log.action === 'winner') {
@@ -5427,27 +6642,90 @@
                 }
                 if (!winningTeam) return;
 
+                // --- LÓGICA DE TIE BREAK ---
                 if (scoreboardState.isTieBreak) {
                     scoreboardState['t' + winningTeam].pIdx++;
                     let p1 = scoreboardState.t1.pIdx, p2 = scoreboardState.t2.pIdx;
                     if ((p1 >= 7 || p2 >= 7) && Math.abs(p1 - p2) >= 2) {
-                        winSetLogic(winningTeam);
+                        winSet(winningTeam);
                     } else {
                         if ((p1 + p2) % 2 !== 0) {
                             scoreboardState.server = scoreboardState.server === 1 ? 2 : 1;
                         }
                     }
-                } else {
+                } 
+                // --- LÓGICA DE JUEGO NORMAL (ACTUALIZADA CON STAR POINT) ---
+                else {
                     let w = scoreboardState['t' + winningTeam];
                     let l = scoreboardState['t' + (winningTeam === 1 ? 2 : 1)];
 
+                    // 1. MODO STAR POINT (Se evalúa antes que la lógica estándar)
+                    if (scoreboardState.mode === 'star') {
+                        // A) Si estamos en Stage 5 (Star Point), el punto gana el juego
+                        if (scoreboardState.starPointStage === 5) {
+                            winGame(winningTeam);
+                        } 
+                        // B) Si estamos en 40-40, avanzamos etapa pero NO sumamos punto (D1, D2...)
+                        else if (w.pIdx === 3 && l.pIdx === 3) {
+                            if (scoreboardState.starPointStage === 0) scoreboardState.starPointStage = 1;
+                            else if (scoreboardState.starPointStage === 2) scoreboardState.starPointStage = 3;
+                            else if (scoreboardState.starPointStage === 4) scoreboardState.starPointStage = 5;
+                            // IMPORTANTE: Usamos 'return' para evitar que el código de abajo sume +1 al punto
+                            return; 
+                        }
+                        // C) Si estábamos en ventaja y perdimos, volvemos a 40-40 y avanzamos etapa
+                        // Esto se maneja en la lógica estándar de abajo (l.pIdx = 3), pero necesitamos actualizar stage aquí
+                    }
+                    
+                    // 2. MODO GOLDEN POINT (Si es GP y 40-40, gana directo)
+                    else if (scoreboardState.mode === 'golden' && w.pIdx === 3 && l.pIdx === 3) {
+                        winGame(winningTeam);
+                        return;
+                    }
+                    
+                    // 3. LÓGICA ESTÁNDAR (Se ejecuta si no entramos en los 'return' de arriba)
+                    
+                    // Si estábamos en AD y perdimos -> Volvemos a 3 (40)
                     if (w.pIdx === 3 && l.pIdx === 4) {
                         l.pIdx = 3;
-                    } else if (w.pIdx >= 3 && w.pIdx > l.pIdx) {
-                        winGameLogic(winningTeam);
-                    } else {
+                        // En Star Point, si volvemos de ventaja a 40-40, avanzamos etapa
+                        if (scoreboardState.mode === 'star') {
+                             if (scoreboardState.starPointStage === 2) scoreboardState.starPointStage = 3;
+                             else if (scoreboardState.starPointStage === 4) scoreboardState.starPointStage = 5;
+                        }
+                    } 
+                    // Si tenemos ventaja -> GANAMOS JUEGO
+                    else if (w.pIdx >= 3 && w.pIdx > l.pIdx) {
+                        winGame(winningTeam);
+                    } 
+                    // Punto Normal (0->15, 15->30...)
+                    else {
                         w.pIdx++;
-                        if (w.pIdx === 4 && l.pIdx < 3) winGameLogic(winningTeam);
+                        // Si llegamos a 4 y el rival < 3, ganamos inmediatamente
+                        if (w.pIdx === 4 && l.pIdx < 3) winGame(winningTeam);
+                    }
+
+                    // Actualización posterior de Star Point Stage (para detectar nuevas entradas a 40-40 o ventajas)
+                    if (scoreboardState.mode === 'star' && !scoreboardState.matchFinished) {
+                        let p1 = scoreboardState.t1.pIdx;
+                        let p2 = scoreboardState.t2.pIdx;
+                        let stage = scoreboardState.starPointStage;
+
+                        if (p1 === 3 && p2 === 3) {
+                            // Si entramos a 40-40 (D -> 40-40 o Perdida de AD)
+                            if (stage === 0) scoreboardState.starPointStage = 1; // Primer Deuce
+                            else if (stage === 2) scoreboardState.starPointStage = 3; // Segundo Deuce
+                            else if (stage === 4) scoreboardState.starPointStage = 5; // Tercer Deuce (SP)
+                        }
+                        else if (Math.abs(p1 - p2) === 1 && (p1 === 4 || p2 === 4)) {
+                            // Si entramos en Ventaja
+                            if (stage === 1) scoreboardState.starPointStage = 2; // Primera Ventaja
+                            else if (stage === 3) scoreboardState.starPointStage = 4; // Segunda Ventaja
+                        }
+                        else if (w.pIdx >= l.pIdx + 1 && w.pIdx !== 3) {
+                            // Si alguien gana un juego normal (ej. 40-30), reseteamos
+                            scoreboardState.starPointStage = 0;
+                        }
                     }
                 }
             });
@@ -5843,8 +7121,9 @@
 
             return comments[0] || "Sin valorar.";
         }
-        function calculateMatchProbability(p1, p2) {
+        function calculateMatchProbability(p1, p2, fechaCorte = Infinity) {
             try {
+                // ... (código de limpieza de nombres igual que antes) ...
                 let p1_clean = p1.map(n => (n || "").toLowerCase().trim());
                 let p2_clean = p2.map(n => (n || "").toLowerCase().trim());
 
@@ -5856,7 +7135,21 @@
                     return 50;
                 }
 
-                filteredDataGlobal.forEach(row => {
+                        // ============================================================
+                // CORRECCIÓN: Filtramos el historial
+                // Excluimos: Partidos Externos, Empates, y Futuros
+                // ============================================================
+                let historyData = filteredDataGlobal.filter(row => {
+                    let isExterno = String(row['tipo'] || "").toLowerCase() === "externo";
+                    let isDraw = String(row['ganadores'] || "").toLowerCase().includes("empate");
+                    let rowDate = parseCSVDate(row.fecha);
+                    
+                    // Solo cuenta si NO es externo, NO es empate y es ANTERIOR a la fecha de corte
+                    return !isExterno && !isDraw && rowDate < fechaCorte;
+                });
+
+                // Iteramos sobre los datos filtrados (historyData) en lugar de filteredDataGlobal
+                historyData.forEach(row => {
                     if (String(row['tipo'] || "").toLowerCase() === "externo") return;
 
                     let j1A = String(row['p1 - jugador a'] || "").toLowerCase().trim();
@@ -5871,7 +7164,7 @@
                     let s3_p1 = parseInt(row['set 3 - p1']||0) || 0;
                     let s3_p2 = parseInt(row['set 3 - p2']||0) || 0;
 
-                    // --- LÓGICA 1: PAREJA EXACTA ---
+                    // (El resto de la lógica interna de la función sigue igual...)
                     let p1IsT1 = p1_clean.every(p => p === j1A || p === j1B);
                     let p2IsT2 = p2_clean.every(p => p === j2A || p === j2B);
                     let p1IsT2 = p1_clean.every(p => p === j2A || p === j2B);
@@ -5883,8 +7176,8 @@
                         let t1_g = isSwapped ? (s1_p2 + s2_p2 + s3_p2) : (s1_p1 + s2_p1 + s3_p1);
                         let t2_g = isSwapped ? (s1_p1 + s2_p1 + s3_p1) : (s1_p2 + s2_p2 + s3_p2);
                         let t1_s = isSwapped ? 
-                                  ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0) :
-                                  ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0);
+                                ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0) :
+                                ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0);
                         
                         if (t1_g > t2_g) {
                             let pts = 10 + (t1_g - t2_g) + (t1_s === 2 ? 5 : 0);
@@ -5895,31 +7188,28 @@
                         }
                     }
 
-                    // --- LÓGICA 2: INDIVIDUAL ---
                     let p1PlayersInT1 = p1_clean.filter(p => p === j1A || p === j1B);
                     let p2PlayersInT2 = p2_clean.filter(p => p === j2A || p === j2B);
                     let p1PlayersInT2 = p1_clean.filter(p => p === j2A || p === j2B);
                     let p2PlayersInT1 = p2_clean.filter(p => p === j1A || p === j1B);
 
-                    // Caso A: (P1* vs P2*) -> P1 Izquierda, P2 Derecha
                     if (p1PlayersInT1.length > 0 && p2PlayersInT2.length > 0) {
-                        let games_T1 = s1_p1 + s2_p1 + s3_p1; // Juegos Izquierda
-                        let games_T2 = s1_p2 + s2_p2 + s3_p2; // Juegos Derecha
-                        let sets_T1 = ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0); // Sets Izquierda
-                        let sets_T2 = ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0); // Sets Derecha
+                        let games_T1 = s1_p1 + s2_p1 + s3_p1; 
+                        let games_T2 = s1_p2 + s2_p2 + s3_p2; 
+                        let sets_T1 = ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0); 
+                        let sets_T2 = ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0); 
                         
                         if (sets_T1 > sets_T2) {
-                             indiv_s1 += (games_T1 - games_T2); 
+                            indiv_s1 += (games_T1 - games_T2); 
                         } else {
-                             indiv_s2 += (games_T2 - games_T1);
+                            indiv_s2 += (games_T2 - games_T1);
                         }
                     }
-                    // Caso B: (P2* vs P1*) -> P1 Derecha, P2 Izquierda
                     else if (p1PlayersInT2.length > 0 && p2PlayersInT1.length > 0) {
-                        let games_T1 = s1_p2 + s2_p2 + s3_p2; // P1 está a la derecha
-                        let games_T2 = s1_p1 + s2_p1 + s3_p1; // P2 está a la izquierda
-                        let sets_T1 = ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0); // Sets P1
-                        let sets_T2 = ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0); // Sets P2
+                        let games_T1 = s1_p2 + s2_p2 + s3_p2; 
+                        let games_T2 = s1_p1 + s2_p1 + s3_p1; 
+                        let sets_T1 = ((s1_p2 > s1_p1)?1:0) + ((s2_p2 > s2_p1)?1:0) + ((s3_p2 > s3_p1)?1:0); 
+                        let sets_T2 = ((s1_p1 > s1_p2)?1:0) + ((s2_p1 > s2_p2)?1:0) + ((s3_p1 > s3_p2)?1:0); 
 
                         if (sets_T1 > sets_T2) {
                             indiv_s1 += (games_T1 - games_T2);
@@ -5929,7 +7219,7 @@
                     }
                 });
 
-                // --- CÁLCULOS ---
+                // (Cálculo final igual que antes...)
                 let prob_exact = 50;
                 if ((exact_s1 + exact_s2) > 0) {
                     prob_exact = (exact_s1 / (exact_s1 + exact_s2)) * 100;
@@ -5962,9 +7252,367 @@
 
             } catch (error) {
                 console.error("Error en calculateMatchProbability:", error);
-                alert("Error en predicción. Revisa la consola (F12).");
                 return 50;
             }
+        }
+        // ==========================================
+        // FUNCIÓN ACTUALIZADA: SELECCIONAR TIPO DE GOLPE
+        // ==========================================
+        function selectShotType(shotType, event) {
+            if(event) event.stopPropagation();
+
+            if (!pendingLogEntry) {
+                console.error("Error: No hay punto pendiente.");
+                closeShotTypeModal();
+                return;
+            }
+
+            let team = pendingLogEntry.team;
+            let pos = pendingLogEntry.pos;
+            let action = pendingLogEntry.action;
+            
+            // Calcular equipo anotador (para errores, es el rival)
+            let scoringTeam = team;
+            if (action === 'error' || action === 'error_unforced' || action === 'error_forced') {
+                scoringTeam = (team === 1) ? 2 : 1;
+            }
+
+            // 1. Registrar en historial
+            logAction(action, team, pos, shotType);
+
+            // 2. Actualizar marcador (Puntos)
+            addScoreboardPoint(scoringTeam);
+
+            // 3. Finalizar UI
+            finishPointAction(action, team, pos);
+        }
+
+        // ==========================================
+        // FUNCIÓN: CERRAR MODAL DE TIPO DE GOLPE
+        // ==========================================
+        function closeShotTypeModal() {
+            document.getElementById('shot-type-modal').classList.add('hidden');
+            document.body.classList.remove('is-selecting');
+            
+            // Limpiar selección visual de jugador (Drive/Reverse)
+            document.querySelectorAll('.selecting-scorer').forEach(el => el.classList.remove('selecting-scorer'));
+            
+            pendingLogEntry = null;
+        }
+        function openEditModal(index) {
+            let log = playByPlayLog[index];
+            if(!log) return;
+
+            editLogIndex = index;
+
+            // Llenar selects
+            let actionSelect = document.getElementById('edit-action');
+            actionSelect.value = log.action;
+
+            // Generar lista de jugadores
+            let scorerSelect = document.getElementById('edit-scorer');
+            scorerSelect.innerHTML = '';
+            
+            // Generamos opciones basadas en los nombres actuales del marcador
+            let p1 = scoreboardState.t1.p1 || "DRIVE";
+            let p2 = scoreboardState.t1.p2 || "REVÉS";
+            let p3 = scoreboardState.t2.p1 || "DRIVE";
+            let p4 = scoreboardState.t2.p2 || "REVÉS";
+
+            [p1, p2, p3, p4].forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name;
+                opt.innerText = name;
+                scorerSelect.appendChild(opt);
+            });
+
+            // Intentar seleccionar el que estaba guardado (si coincide)
+            if(p1 === log.scorer) scorerSelect.value = p1;
+            else if(p2 === log.scorer) scorerSelect.value = p2;
+            else if(p3 === log.scorer) scorerSelect.value = p3;
+            else if(p4 === log.scorer) scorerSelect.value = p4;
+
+            document.getElementById('edit-point-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-point-modal').classList.add('hidden');
+            editLogIndex = -1;
+        }
+
+        function saveEditedPoint() {
+            if(editLogIndex === -1) return;
+
+            let newAction = document.getElementById('edit-action').value;
+            let newScorerName = document.getElementById('edit-scorer').value;
+            
+            // Actualizamos la entrada en el log
+            // NOTA: Solo cambiamos 'action', 'scorer'. 
+            // Para cambiar 'team' y 'winner' tendríamos que recalcular quiénes son los jugadores,
+            // pero para ediciones rápidas, esto suele bastar.
+            
+            playByPlayLog[editLogIndex].action = newAction;
+            playByPlayLog[editLogIndex].scorer = newScorerName;
+            
+            // Opcional: Si cambia de 'winner' a 'error_forzado', debemos inferir el nuevo ganador.
+            // El sistema de recalcularación lo arreglará, pero el log original necesita estar coherente.
+            // Aquí simplificamos: el recálculo restablecerá los sets/juegos correctamente.
+
+            // 1. Recalcular todo el estado del partido desde el punto 0
+            recalculateStateFromLog();
+            
+            // 2. Actualizar UI
+            updateScoreboardUI();
+            
+            // 3. Si estamos en la pestaña de historial, refrescarla
+            renderHistoryStats();
+
+            // 4. Si estamos en resumen o avanzado, refrescar gráficos
+            if(!document.getElementById('tab-partido-stats').classList.contains('hidden')){
+                switchStatsTab('summary'); // Recargar stats
+            }
+
+            closeEditModal();
+        }
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            // Cargar valores actuales
+            document.getElementById('setting-score-mode').value = scoreMode;
+            document.getElementById('setting-shot-mode').value = shotTypeMode;
+            updateScoreModeDesc();
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function updateScoreModeDesc() {
+            const mode = document.getElementById('setting-score-mode').value;
+            const desc = document.getElementById('score-mode-desc');
+            if(mode === 'standard') desc.innerText = "Se juega a 40-40 con ventajas (AD).";
+            if(mode === 'golden') desc.innerText = "A 40-40 (Deuce), el siguiente punto gana el juego.";
+            if(mode === 'tenis') desc.innerText = "Ventajas ilimitadas (40-15, 40-30...).";
+        }
+
+        // Escuchar cambio de descripción cuando se selecciona opción
+        document.getElementById('setting-score-mode').addEventListener('change', updateScoreModeDesc);
+
+        function saveSettings() {
+            let newMode = document.getElementById('setting-score-mode').value;
+            let newShotMode = document.getElementById('setting-shot-mode').value;
+
+            // ==========================================
+            // 1. VALIDACIONES DE COMPATIBILIDAD
+            // ==========================================
+
+            // A. Intentando activar GOLDEN POINT
+            if (newMode === 'golden') {
+                // Permitir cambio SOLO si estamos en el primer juego (0-0 en juegos)
+                // Esto permite cambiar en 0-0, 15-0, 30-15, etc.
+                if (scoreboardState.t1.games > 0 || scoreboardState.t2.games > 0) {
+                    alert("⚠️ No se puede cambiar a Golden Point a mitad de juego (sets/juegos ya comenzados).");
+                    return; // Cancelar y cerrar modal
+                }
+
+                // Porque el punto que hizo el empate ya se jugó con otras reglas
+                if (scoreboardState.t1.pIdx > 3 && scoreboardState.t2.pIdx > 3 || scoreboardState.starPointStage > 0) {
+                    alert("⚠️ No se puede activar Golden Point habiendo superado el 40-40. El punto que definió la paridad ya se jugó.");
+                    return;
+                }
+            }
+
+            // B. Intentando activar ESTÁNDAR
+            if (newMode === 'standard') {
+                // Si estamos en una fase avanzada de Star Point (D1, D2, SP), no podemos volver a estándar
+                if (scoreboardState.starPointStage > 0) {
+                    alert("⚠️ No se puede volver a modo Estándar estando en una fase de Star Point (D1, D2, SP).");
+                    return;
+                }
+            }
+
+            // ==========================================
+            // 2. APLICAR CAMBIOS (Si pasó la validación)
+            // ==========================================
+            
+            scoreMode = newMode;
+            shotTypeMode = newShotMode;
+            
+            // Sincronizar el estado actual con el nuevo modo
+            scoreboardState.mode = scoreMode;
+
+            // Si salimos de modo Star Point, reseteamos la etapa por seguridad
+            if (newMode !== 'star') {
+                scoreboardState.starPointStage = 0;
+            }
+
+            // Recalcular marcador con las nuevas reglas
+            recalculateStateFromLog();
+            updateScoreboardUI();
+            
+            closeSettingsModal();
+        }
+        // Función específica para mostrar el detalle DENTRO del Mercado
+        function showMarketBadgeDetail(id) {
+            let badge = globalBadges.find(b => b.id === id);
+            if (!badge || !globalBadgeStats) return;
+
+            let detailDiv = document.getElementById('market-badge-detail'); // Nota el cambio de ID
+            if(!detailDiv.classList.contains('hidden')) {
+                detailDiv.classList.add('hidden'); 
+                return;
+            }
+            detailDiv.classList.remove('hidden');
+
+            // (Lógica de cálculo idéntica a la original, pero guardamos en 'market-badge-detail')
+            let rankingList = [];
+            
+            for (let jugador in globalBadgeStats) {
+                let stats = globalBadgeStats[jugador];
+                if(!stats) continue;
+
+                let val = badge.findMax ? badge.findMax(stats, jugador) : badge.findMin(stats, jugador);
+                
+                if (val !== null && val !== undefined) {
+                    rankingList.push({
+                        name: jugador,
+                        value: val,
+                        formatted: badge.format ? badge.format(val) : val
+                    });
+                }
+            }
+
+            if (badge.findMax) {
+                rankingList.sort((a, b) => b.value - a.value);
+            } else {
+                rankingList.sort((a, b) => a.value - b.value);
+            }
+
+            let bestVal = rankingList.length > 0 ? rankingList[0].value : null;
+            rankingList.forEach(c => {
+                if (c.val === bestVal) {
+                    badge.winners.push(c.name); // Esto actualiza la lista de ganadores visualmente si quisieras
+                }
+            });
+            
+            // --- RENDERIZADO (Adaptado para Mercado) ---
+            let html = `
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">${badge.emoji}</span>
+                    <div>
+                        <span class="text-xl font-bold text-white leading-none">${badge.name}</span>
+                        <div class="text-sm text-slate-400 mt-1">${badge.desc}</div>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('market-badge-detail').classList.add('hidden')" 
+                        class="text-slate-400 hover:text-white transition">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400 mb-4">
+                Top 1: ${rankingList.length > 0 ? rankingList[0].formatted : '-'}
+            </div>
+
+            <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-900/50 text-slate-400">
+                    <tr>
+                        <th class="p-2">#</th>
+                        <th class="p-2">Jugador</th>
+                        <th class="p-2 text-right">Puntuación</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700/50">
+            `;
+
+            rankingList.forEach((r, idx) => {
+                let highlight = (idx === 0) ? 'text-emerald-400 font-black' : 'text-slate-300';
+                html += `
+                    <tr>
+                        <td class="p-2 text-slate-500">${idx + 1}</td>
+                        <td class="p-2 ${highlight}">${r.name}</td>
+                        <td class="p-2 text-right font-mono ${highlight}">${r.formatted}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            
+            detailDiv.innerHTML = html;
+        }
+        // Función para ver solo TU valor en la Ficha Técnica
+        function showProfileBadgeDetail(badgeId) {
+            let badge = globalBadges.find(b => b.id === badgeId);
+            let player = selectedPlayerName;
+            
+            // Si no hay jugador seleccionado o no existe la insignia, salimos
+            if (!badge || !player) return;
+
+            let stats = globalBadgeStats[player];
+            
+            // Si el jugador no tiene estadísticas suficientes
+            if (!stats) {
+                let detailDiv = document.getElementById('badge-detail');
+                detailDiv.classList.remove('hidden');
+                detailDiv.innerHTML = `
+                    <div class="text-center text-slate-500 py-8">
+                        <div class="text-4xl mb-2 opacity-50">📊</div>
+                        <p>No hay datos suficientes para calcular esto aún.</p>
+                    </div>`;
+                return;
+            }
+
+            // Calculamos el valor solo para este jugador usando la lógica de la insignia
+            let val = null;
+            if (badge.findMax) {
+                val = badge.findMax(stats, player);
+            } else {
+                val = badge.findMin(stats, player);
+            }
+
+            let detailDiv = document.getElementById('badge-detail');
+            detailDiv.classList.remove('hidden');
+            
+            // Si el valor es null (no cumple requisitos), mostramos mensaje
+            if (val === null || val === undefined) {
+                detailDiv.innerHTML = `
+                    <div class="text-center py-8 animate-fade-in">
+                        <div class="text-5xl mb-3 grayscale opacity-50">${badge.emoji}</div>
+                        <h3 class="text-lg font-black text-slate-300 uppercase">${badge.name}</h3>
+                        <p class="text-slate-500 text-sm mt-2">¡Aún no has desbloqueado esta insignia!</p>
+                        <button onclick="document.getElementById('badge-detail').classList.add('hidden')" 
+                                class="mt-4 text-xs text-slate-500 hover:text-white underline">
+                            Cerrar
+                        </button>
+                    </div>`;
+            } 
+            // Si tiene valor, lo mostramos bonito
+            else {
+                let formattedVal = badge.format ? badge.format(val) : val;
+                
+                detailDiv.innerHTML = '<div class="flex items-center gap-2 mb-2"><span class="text-2xl">'+badge.emoji+'</span><span class="text-lg font-bold text-white">'+badge.name+'</span></div><p class="text-sm text-slate-400 mb-3">'+badge.desc+'</p><div class="bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 inline-block font-mono font-bold text-emerald-400">'+formattedVal+'</div>';
+            }
+        }
+        // ==========================================
+        // FUNCIÓN AUXILIAR: FINALIZAR PUNTO (UI Y LIMPIEZA)
+        // ==========================================
+        // Esta función centraliza la limpieza de la interfaz y la actualización visual.
+        function finishPointAction(action, team, pos) {
+            let opponent = (team === 1) ? 2 : 1;
+            
+            // 1. Cerrar UI de selección de jugador (Drive/Reverse)
+            const container = document.getElementById(`sb-actions-${team}`);
+            if(container) container.classList.remove('selecting-scorer');
+            document.body.classList.remove('is-selecting');
+            
+            // 2. Cerrar UI de selección de tipo de golpe
+            document.getElementById('shot-type-modal').classList.add('hidden');
+            
+            // 3. Limpiar variable pendiente
+            pendingLogEntry = null;
+            
+            // 4. Forzar actualización visual del marcador
+            updateScoreboardUI();
         }
     </script>
     <!-- MODAL DE GUARDADO -->
@@ -5997,7 +7645,9 @@
     </div>
     <!-- MODAL DEL MERCADO DE INSIGNIAS -->
     <div id="badge-market-modal" onclick="closeBadgeMarketModal()" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-sm p-4">
+    
         <div class="bg-slate-800 border border-slate-600 rounded-xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+ 
             <div class="p-5 border-b border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-3 flex-shrink-0">
                 <h2 class="text-xl font-black text-white flex items-center gap-2">
                     <span class="text-amber-400 text-2xl">🎭</span> Registro de Insignias
@@ -6009,7 +7659,143 @@
                 <button onclick="closeBadgeMarketModal()" class="text-slate-400 hover:text-white text-3xl leading-none transition"><i class="ri-close-line"></i></button>
             </div>
             <div id="badge-market-modal-body" class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-3">
-                <!-- El contenido se inyecta desde JS -->
+                    <!-- Aquí el JS inyectará el grid -->
+                </div>
+
+                <!-- 📌 PEGA ESTO AQUÍ (Nuevo contenedor para el detalle en el Mercado) -->
+                <div id="market-badge-detail" class="hidden p-5 border-t border-slate-700 bg-slate-900/50 animate-fade-in">
+                    <!-- Aquí aparecerán las tablas -->
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- MODAL: SELECCIÓN DE TIPO DE GOLPE -->
+    <div id="shot-type-modal" class="fixed inset-0 bg-black/90 z-[10000] hidden flex flex-col items-center justify-center backdrop-blur-sm p-4">
+        <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest text-center">¿QUÉ GOLPE FUE?</h3>
+        <p class="text-slate-400 text-sm mb-6 font-mono text-center">Selecciona el tipo de finalización</p>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-3xl">
+            
+            <!-- Botón 1: Volea -->
+            <button onclick="selectShotType('Volea')" class="bg-slate-800 hover:bg-sky-600 border border-slate-600 hover:border-sky-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
+                <i class="ri-basketball-line text-3xl group-hover:scale-110 transition-transform text-sky-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Volea</span>
+            </button>
+            
+            <!-- Botón 2: Víbora -->
+            <button onclick="selectShotType('Víbora')" class="bg-slate-800 hover:bg-emerald-600 border border-slate-600 hover:border-emerald-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
+                <i class="ri-flashlight-line text-3xl group-hover:scale-110 transition-transform text-emerald-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Víbora</span>
+            </button>
+
+            <!-- Botón 3: X3 -->
+            <button onclick="selectShotType('X3')" class="bg-slate-800 hover:bg-purple-600 border border-slate-600 hover:border-purple-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
+                <i class="ri-shuffle-line text-3xl group-hover:scale-110 transition-transform text-purple-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">X3</span>
+            </button>
+
+            <!-- Botón 4: Remate -->
+            <button onclick="selectShotType('Remate')" class="bg-slate-800 hover:bg-red-600 border border-slate-600 hover:border-red-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-up-double-line text-3xl group-hover:scale-110 transition-transform text-red-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Remate</span>
+            </button>
+
+            <!-- Botón 5: Globo -->
+            <button onclick="selectShotType('Globo')" class="bg-slate-800 hover:bg-amber-600 border border-slate-600 hover:border-amber-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
+                <i class="ri-cloud-windy-line text-3xl group-hover:scale-110 transition-transform text-amber-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Globo</span>
+            </button>
+
+            <!-- Botón 6: Resto (Dinámico) -->
+            <button id="btn-shot-resto" onclick="selectShotType('Resto')" class="bg-slate-800 hover:bg-slate-600 border border-slate-600 hover:border-slate-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
+                <i class="ri-run-line text-3xl group-hover:scale-110 transition-transform text-slate-300"></i>
+                <!-- El texto "RESTO" se cambiará por JS -->
+                <span class="font-bold uppercase tracking-wider text-xs">RESTO</span>
+            </button>
+            
+            <!-- Botón 7: X4 (Nuevo) -->
+            <button onclick="selectShotType('X4')" class="bg-slate-800 hover:bg-pink-600 border border-slate-600 hover:border-pink-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
+                <i class="ri-sparkling-2-line text-3xl group-hover:scale-110 transition-transform text-pink-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">X4</span>
+            </button>
+
+        </div>
+
+        <button onclick="closeShotTypeModal()" class="mt-6 text-slate-500 hover:text-white text-sm font-bold underline">Cancelar</button>
+    </div>
+
+    <!-- MODAL: EDITAR PUNTO -->
+    <div id="edit-point-modal" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-black text-white mb-4 flex items-center gap-2">
+                <span class="text-amber-400">✏️</span> Editar Punto
+            </h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Acción</label>
+                    <select id="edit-action" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 text-sm focus:border-emerald-500 outline-none">
+                        <option value="winner">🏆 Winner</option>
+                        <option value="error_forced">💪 Error Forzado</option>
+                        <option value="error_unforced">💀 Error No Forzado</option>
+                        <option value="double_fault">⚡ Doble Falta</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Jugador (Quién hizo la acción)</label>
+                    <select id="edit-scorer" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 text-sm focus:border-emerald-500 outline-none">
+                        <!-- Se llena con JS -->
+                    </select>
+                </div>
+
+                <div class="bg-amber-900/20 border border-amber-800/50 p-3 rounded text-xs text-amber-200 leading-tight">
+                    ⚠️ <strong>Atención:</strong> Al guardar, se recalculará todo el marcador y estadísticas desde este punto en adelante.
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeEditModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded">Cancelar</button>
+                <button onclick="saveEditedPoint()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+        <!-- MODAL: CONFIGURACIÓN DEL MARCADOR -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 z-[9999] hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h2 class="text-2xl font-black text-white mb-6 flex items-center gap-2">
+                <span class="text-emerald-400">⚙️</span> Configuración
+            </h2>
+            
+            <div class="space-y-6">
+                <!-- Modo de Puntuación -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Modo de Puntuación</label>
+                    <select id="setting-score-mode" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3 text-sm focus:border-emerald-500 outline-none">
+                        <option value="standard">Estándar (Ventajas Normales)</option>
+                        <option value="golden">Golden Point (Decide)</option>
+                        <option value="star">⭐ Star Point (2x 40-40)</option>
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1 italic" id="score-mode-desc">Ventajas normales (40-40 con AD).</p>
+                    <p class="text-[10px] text-slate-400 mt-1 italic" id="score-mode-desc">Muerte súbita (El punto tras el 40-40 gana el juego).</p>
+                    <p class="text-[10px] text-slate-400 mt-1 italic" id="score-mode-desc">Si se llega 40-40 2 veces, el siguiente punto es muerte súbita.</p>
+                </div>
+
+                <!-- Visibilidad de Tipos de Golpe -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Tipos de Golpe</label>
+                    <select id="setting-shot-mode" class="w-full bg-slate-900 border border-slate-700 text-white rounded p-3 text-sm focus:border-emerald-500 outline-none">
+                        <option value="always">Siempre (Preguntar en todo)</option>
+                        <option value="winners">Solo Winners</option>
+                        <option value="never">Nunca (Sin detalle)</option>
+                    </select>
+                    <p class="text-[10px] text-slate-400 mt-1 italic">Si eliges "Nunca", el botón de Resto/Golpe no aparecerá.</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeSettingsModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded">Cancelar</button>
+                <button onclick="saveSettings()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded">Aplicar</button>
             </div>
         </div>
     </div>
