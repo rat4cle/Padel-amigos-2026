@@ -6580,23 +6580,37 @@
             }
         }
 
-        // Función que recorre el historial y reconstruye el marcador
         function recalculateStateFromLog() {
             isRecalculating = true;
             
-            // Resetear estado base
+            // ==========================================
+            // 1. GUARDAR LOS NOMBRES (FIX CRÍTICO)
+            // ==========================================
+            let savedNames = {
+                t1: {
+                    p1: scoreboardState.t1.p1 || "DRIVE",
+                    p2: scoreboardState.t1.p2 || "REVÉS"
+                },
+                t2: {
+                    p1: scoreboardState.t2.p1 || "DRIVE",
+                    p2: scoreboardState.t2.p2 || "REVÉS"
+                }
+            };
+
+            // 2. Resetear estado base (limpiamos sets, juegos y puntos)
+            // NOTA: No tocamos p1/p2 aquí, porque los restauraremos al final
             scoreboardState = {
-                t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1", p1: "", p2: "" }, 
-                t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2", p1: "", p2: "" }, 
+                t1: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 1" }, 
+                t2: { sets: 0, games: 0, pIdx: 0, faults: 0, name: "Team 2" }, 
                 server: 1,
                 matchFinished: false,
                 isTieBreak: false,
                 setHistory: [],
-                mode: scoreMode, // Usa el modo actual de configuración
+                mode: scoreMode,
                 starPointStage: 0
             };
 
-            // Funciones auxiliares internas para no depender de globales que puedan fallar en contexto
+            // Funciones auxiliares internas para no depender de globales
             const winGame = (teamNum) => {
                 scoreboardState['t' + teamNum].games++;
                 scoreboardState.t1.pIdx = 0;
@@ -6628,6 +6642,7 @@
                 scoreboardState.matchFinished = (scoreboardState['t' + teamNum].sets === 2);
             };
 
+            // 3. Reproducir el partido punto a punto
             playByPlayLog.forEach(log => {
                 let winningTeam = log.winner;
                 if (!winningTeam) {
@@ -6654,81 +6669,77 @@
                         }
                     }
                 } 
-                // --- LÓGICA DE JUEGO NORMAL (ACTUALIZADA CON STAR POINT) ---
+                // --- LÓGICA DE JUEGO NORMAL ---
                 else {
                     let w = scoreboardState['t' + winningTeam];
                     let l = scoreboardState['t' + (winningTeam === 1 ? 2 : 1)];
 
-                    // 1. MODO STAR POINT (Se evalúa antes que la lógica estándar)
+                    // 1. MODO STAR POINT
                     if (scoreboardState.mode === 'star') {
-                        // A) Si estamos en Stage 5 (Star Point), el punto gana el juego
                         if (scoreboardState.starPointStage === 5) {
                             winGame(winningTeam);
                         } 
-                        // B) Si estamos en 40-40, avanzamos etapa pero NO sumamos punto (D1, D2...)
                         else if (w.pIdx === 3 && l.pIdx === 3) {
                             if (scoreboardState.starPointStage === 0) scoreboardState.starPointStage = 1;
                             else if (scoreboardState.starPointStage === 2) scoreboardState.starPointStage = 3;
                             else if (scoreboardState.starPointStage === 4) scoreboardState.starPointStage = 5;
-                            // IMPORTANTE: Usamos 'return' para evitar que el código de abajo sume +1 al punto
                             return; 
                         }
-                        // C) Si estábamos en ventaja y perdimos, volvemos a 40-40 y avanzamos etapa
-                        // Esto se maneja en la lógica estándar de abajo (l.pIdx = 3), pero necesitamos actualizar stage aquí
                     }
                     
-                    // 2. MODO GOLDEN POINT (Si es GP y 40-40, gana directo)
+                    // 2. MODO GOLDEN POINT
                     else if (scoreboardState.mode === 'golden' && w.pIdx === 3 && l.pIdx === 3) {
                         winGame(winningTeam);
                         return;
                     }
                     
-                    // 3. LÓGICA ESTÁNDAR (Se ejecuta si no entramos en los 'return' de arriba)
-                    
-                    // Si estábamos en AD y perdimos -> Volvemos a 3 (40)
+                    // 3. LÓGICA ESTÁNDAR
                     if (w.pIdx === 3 && l.pIdx === 4) {
                         l.pIdx = 3;
-                        // En Star Point, si volvemos de ventaja a 40-40, avanzamos etapa
                         if (scoreboardState.mode === 'star') {
-                             if (scoreboardState.starPointStage === 2) scoreboardState.starPointStage = 3;
-                             else if (scoreboardState.starPointStage === 4) scoreboardState.starPointStage = 5;
+                            if (scoreboardState.starPointStage === 2) scoreboardState.starPointStage = 3;
+                            else if (scoreboardState.starPointStage === 4) scoreboardState.starPointStage = 5;
                         }
                     } 
-                    // Si tenemos ventaja -> GANAMOS JUEGO
                     else if (w.pIdx >= 3 && w.pIdx > l.pIdx) {
                         winGame(winningTeam);
                     } 
-                    // Punto Normal (0->15, 15->30...)
                     else {
                         w.pIdx++;
-                        // Si llegamos a 4 y el rival < 3, ganamos inmediatamente
                         if (w.pIdx === 4 && l.pIdx < 3) winGame(winningTeam);
                     }
 
-                    // Actualización posterior de Star Point Stage (para detectar nuevas entradas a 40-40 o ventajas)
                     if (scoreboardState.mode === 'star' && !scoreboardState.matchFinished) {
                         let p1 = scoreboardState.t1.pIdx;
                         let p2 = scoreboardState.t2.pIdx;
                         let stage = scoreboardState.starPointStage;
 
                         if (p1 === 3 && p2 === 3) {
-                            // Si entramos a 40-40 (D -> 40-40 o Perdida de AD)
-                            if (stage === 0) scoreboardState.starPointStage = 1; // Primer Deuce
-                            else if (stage === 2) scoreboardState.starPointStage = 3; // Segundo Deuce
-                            else if (stage === 4) scoreboardState.starPointStage = 5; // Tercer Deuce (SP)
+                            if (stage === 0) scoreboardState.starPointStage = 1;
+                            else if (stage === 2) scoreboardState.starPointStage = 3;
+                            else if (stage === 4) scoreboardState.starPointStage = 5;
                         }
                         else if (Math.abs(p1 - p2) === 1 && (p1 === 4 || p2 === 4)) {
-                            // Si entramos en Ventaja
-                            if (stage === 1) scoreboardState.starPointStage = 2; // Primera Ventaja
-                            else if (stage === 3) scoreboardState.starPointStage = 4; // Segunda Ventaja
+                            if (stage === 1) scoreboardState.starPointStage = 2;
+                            else if (stage === 3) scoreboardState.starPointStage = 4;
                         }
                         else if (w.pIdx >= l.pIdx + 1 && w.pIdx !== 3) {
-                            // Si alguien gana un juego normal (ej. 40-30), reseteamos
                             scoreboardState.starPointStage = 0;
                         }
                     }
                 }
             });
+
+            // ==========================================
+            // 4. RESTAURAR LOS NOMBRES (FIX FINAL)
+            // ==========================================
+            scoreboardState.t1.p1 = savedNames.t1.p1;
+            scoreboardState.t1.p2 = savedNames.t1.p2;
+            scoreboardState.t2.p1 = savedNames.t2.p1;
+            scoreboardState.t2.p2 = savedNames.t2.p2;
+
+            // 5. Actualizar UI
+            updateScoreboardUI();
             
             isRecalculating = false;
         }
