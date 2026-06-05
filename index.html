@@ -9,6 +9,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
+    <!-- Añade esto en tu <head> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@400;700&family=Playfair+Display:wght@700&family=Roboto+Mono:wght@400;700&display=swap" />
     <style>
          
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Orbitron:wght@400;700;900&family=Quicksand:wght@400;700;900&family=Raleway:wght@400;700;900&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700;900&family=Nunito:wght@400;700;900&family=Space+Grotesk:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Rubik:wght@400;700;900&family=Roboto+Mono:wght@400;700&family=Zen+Maru+Gothic:wght@400;700&display=swap');
@@ -2022,6 +2026,11 @@
         let matchStartTime = null; // Para calcular el tiempo real
         let isRecalculating = false;
 
+        // Función auxiliar para limpiar nombres
+        const normalizeName = (name) => {
+            if (!name) return "";
+            return String(name).trim().toLowerCase();
+        };
         // ===== SIDEBAR & FILTER PANEL =====
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -2459,15 +2468,94 @@
         }
 
         window.onload = function() {
-            Papa.parse(urlGoogleSheets, { download: true, header: true, skipEmptyLines: true, complete: function(results) {
-                if (results && results.data && results.data.length > 0) {
-                    rawDataGlobal = results.data.map(rawRow => { let row = {}; Object.keys(rawRow).forEach(k => { if(k && rawRow[k] !== undefined && rawRow[k] !== null) { let cleanKey = String(k).replace(/[^a-zA-Z0-9\- ]/g, '').trim().toLowerCase(); row[cleanKey] = rawRow[k]; } }); return row; }).filter(r => r.fecha && String(r.fecha).trim() !== "" && String(r.fecha).trim() !== "*");
-                    if(rawDataGlobal.length === 0) { mostrarErrorPantalla("No se han encontrado partidos válidos."); return; }
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('main-content').classList.add('visible');
-                    setDefaultDates();
-                } else { mostrarErrorPantalla("El documento está vacío."); }
-            }, error: function(err) { mostrarErrorPantalla("No se pudo conectar."); } });
+            // ==========================================
+            // 1. CONFIGURACIÓN DEL CACHÉ
+            // ==========================================
+            const CACHE_KEY = 'padelData_v1';
+            const CACHE_DURATION = 1000 * 60 * 60 * 2; // 2 Horas de validez
+
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            let useCache = false;
+
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    // Si los datos son recientes (< 2 horas), usarlos
+                    if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+                        rawDataGlobal = parsed.data;
+                        useCache = true;
+                        console.log("🚀 Datos cargados desde Caché Local (Rápido)");
+                    }
+                } catch (e) {
+                    console.warn("Error leyendo caché, ignorando...", e);
+                }
+            }
+
+            // ==========================================
+            // 2. FUNCIÓN DE PROCESAMIENTO (Reutilizable)
+            // ==========================================
+            const procesarYRenderizar = (data) => {
+                if (!data || data.length === 0) {
+                    mostrarErrorPantalla("No se han encontrado partidos válidos.");
+                    return;
+                }
+                
+                // Ocultar loading
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('main-content').classList.add('visible');
+                
+                // Tu lógica original de transformación de datos
+                rawDataGlobal = data.map(rawRow => { 
+                    let row = {}; 
+                    Object.keys(rawRow).forEach(k => { 
+                        if(k && rawRow[k] !== undefined && rawRow[k] !== null) { 
+                            let cleanKey = String(k).replace(/[^a-zA-Z0-9\- ]/g, '').trim().toLowerCase(); 
+                            row[cleanKey] = rawRow[k]; 
+                        } 
+                    }); 
+                    return row; 
+                }).filter(r => r.fecha && String(r.fecha).trim() !== "" && String(r.fecha).trim() !== "*");
+
+                if(rawDataGlobal.length === 0) { 
+                    mostrarErrorPantalla("El documento está vacío."); 
+                    return; 
+                }
+
+                setDefaultDates();
+                procesarDatosInteligentes(filteredDataGlobal); // Tu función principal
+            };
+
+            // ==========================================
+            // 3. EJECUCIÓN
+            // ==========================================
+            if (useCache) {
+                procesarYRenderizar(rawDataGlobal);
+            } else {
+                // Si no hay caché o es vieja, descargamos de Google Sheets
+                Papa.parse(urlGoogleSheets, { 
+                    download: true, 
+                    header: true, 
+                    skipEmptyLines: true, 
+                    complete: function(results) {
+                        if (results && results.data && results.data.length > 0) {
+                            // Guardar en caché para la próxima vez
+                            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                                timestamp: Date.now(),
+                                data: results.data
+                            }));
+                            procesarYRenderizar(results.data);
+                        } else { 
+                            mostrarErrorPantalla("El documento está vacío."); 
+                        }
+                    }, 
+                    error: function(err) { 
+                        mostrarErrorPantalla("No se pudo conectar."); 
+                    } 
+                });
+            }
+            
+            // Inicializar marcador
+            initScoreboard();
         };
 
         function mostrarErrorPantalla(msg) { document.getElementById('loading-text').innerText = "❌ Error"; document.getElementById('loading-text').classList.remove('animate-pulse'); document.getElementById('error-box').classList.remove('hidden'); document.getElementById('error-box').innerText = msg; }
