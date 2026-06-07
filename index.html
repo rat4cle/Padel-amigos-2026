@@ -1915,10 +1915,14 @@
                             <!-- Contenido Scrollable -->
                             <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
                                 
-                                <!-- PESTAÑA 1: RESUMEN -->
                                 <div id="stats-tab-summary" class="stats-tab-content h-full">
-                                    <div id="summary-team-1" class="col-span-1 lg:col-span-2"></div>
-                                    <!-- Elimina summary-team-2 -->
+                                    <!-- Puntuación por Sets (arriba) -->
+                                    <div id="summary-sets-score" class="mb-6"></div>
+                                    <!-- Layout 2 columnas: Izquierda = Puntuaciones jugadores, Derecha = Comparativa -->
+                                    <div class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6">
+                                        <div id="summary-player-scores" class="bg-slate-900/50 p-4 rounded-xl border border-slate-700"></div>
+                                        <div id="summary-comparison"></div>
+                                    </div>
                                 </div>
 
                                 <!-- PESTAÑA 2: AVANZADO -->
@@ -4561,6 +4565,12 @@
         }
         // ✅ CORREGIDO
         function winScoreboardSet(teamNum) {
+            // Guardar resultado del set ANTES de resetear
+            scoreboardState.setHistory.push({
+                s1: scoreboardState.t1.games,
+                s2: scoreboardState.t2.games
+            });
+
             // Añadir set
             scoreboardState['t' + teamNum].sets++;
             
@@ -5484,7 +5494,9 @@
                 console.warn(`⚠️ Inconsistencia: ${totalPoints} puntos totales vs ${expectedPoints} esperados (W:${totalWinners}+FE:${totalForced}+UE:${totalUnforced}+DF:${totalDF})`);
             }
 
-            renderVisuals(stats, derived, document.getElementById('summary-team-1'));
+            renderSetScores();
+            renderPlayerScores(stats);
+            renderVisuals(stats, derived, document.getElementById('summary-comparison'));
         }
         
         function renderVisuals(stats, d, container) {
@@ -5522,14 +5534,9 @@
             };
 
             container.innerHTML = `
-                <div class="max-w-lg mx-auto pt-6 px-2">
-                    <div class="text-center mb-8">
-                        <h3 class="text-lg font-black text-white tracking-tight uppercase">Resumen del Partido</h3>
-                        <div class="flex items-center justify-center gap-3 mt-2">
-                            <span class="text-[11px] font-bold text-emerald-400 tracking-wider">${scoreboardState.t1.p1} / ${scoreboardState.t1.p2}</span>
-                            <span class="text-slate-700 text-[10px]">vs</span>
-                            <span class="text-[11px] font-bold text-white tracking-wider">${scoreboardState.t2.p1} / ${scoreboardState.t2.p2}</span>
-                        </div>
+                <<div class="pt-2 px-2">
+                    <div class="text-center mb-6">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Comparativa de Parejas</h3>
                     </div>
 
                     <div class="space-y-0">
@@ -5571,6 +5578,307 @@
                     </div>
                 </div>`;
         }
+
+        function renderSetScores() {
+            let container = document.getElementById('summary-sets-score');
+            if (!container) return;
+            
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            // 1. Agrupar puntos por set y calcular stats
+            let setGroups = {};
+            let setOrder = [];
+            
+            playByPlayLog.forEach(entry => {
+                if (entry.action === 'fault') return;
+                let setKey = entry.sets || '0-0';
+                if (!setGroups[setKey]) {
+                    setGroups[setKey] = {
+                        players: {
+                            t1p1: { pts: 0, w: 0, fe: 0, ue: 0, df: 0 },
+                            t1p2: { pts: 0, w: 0, fe: 0, ue: 0, df: 0 },
+                            t2p1: { pts: 0, w: 0, fe: 0, ue: 0, df: 0 },
+                            t2p2: { pts: 0, w: 0, fe: 0, ue: 0, df: 0 }
+                        },
+                        t1: 0, t2: 0,
+                        lastEntry: null
+                    };
+                    setOrder.push(setKey);
+                }
+                
+                let g = setGroups[setKey];
+                g.lastEntry = entry;
+                
+                if (entry.winner) g['t' + entry.winner]++;
+                if (entry.action === 'double_fault' && entry.team) {
+                    let opp = entry.team === 1 ? 2 : 1;
+                    g['t' + opp]++;
+                }
+                
+                if (entry.team && entry.pos) {
+                    let key = 't' + entry.team + entry.pos;
+                    let p = g.players[key];
+                    if (!p) return;
+                    if (entry.action === 'winner') { p.w++; p.pts += 3; }
+                    else if (entry.action === 'error_forced') { p.fe++; p.pts -= 1; }
+                    else if (entry.action === 'error_unforced') { p.ue++; p.pts -= 2; }
+                    else if (entry.action === 'double_fault') { p.df++; p.pts -= 3; }
+                }
+            });
+            
+            if (setOrder.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            // 2. Calcular resultados de cada set usando el último punto
+            let setResults = [];
+            
+            for (let i = 0; i < setOrder.length; i++) {
+                let g = setGroups[setOrder[i]];
+                let isLastSet = (i === setOrder.length - 1);
+                let isMatchFinished = scoreboardState.matchFinished;
+                
+                if (isLastSet && !isMatchFinished) {
+                    // Set en curso
+                    setResults.push({
+                        s1: scoreboardState.t1.games,
+                        s2: scoreboardState.t2.games,
+                        winner: null,
+                        isLive: true
+                    });
+                } else {
+                    // Set completado: derivar desde el último punto del set
+                    let last = g.lastEntry;
+                    if (last && last.games) {
+                        let gp = last.games.split('-');
+                        let g1 = parseInt(gp[0]) || 0;
+                        let g2 = parseInt(gp[1]) || 0;
+                        let winner = last.winner || 0;
+                        
+                        // El último punto ganó el juego, sumamos +1 al ganador
+                        if (winner === 1) g1++;
+                        else if (winner === 2) g2++;
+                        
+                        setResults.push({ s1: g1, s2: g2, winner: winner, isLive: false });
+                    } else {
+                        setResults.push({ s1: '?', s2: '?', winner: null, isLive: false });
+                    }
+                }
+            }
+            
+            // 3. Generar tarjetas
+            let playerNames = {
+                t1p1: getPlayerLabel(1, 'p1'), t1p2: getPlayerLabel(1, 'p2'),
+                t2p1: getPlayerLabel(2, 'p1'), t2p2: getPlayerLabel(2, 'p2')
+            };
+            
+            let playerShort = {
+                t1p1: playerNames.t1p1.split(' ')[0], t1p2: playerNames.t1p2.split(' ')[0],
+                t2p1: playerNames.t2p1.split(' ')[0], t2p2: playerNames.t2p2.split(' ')[0]
+            };
+            
+            let playerTeam = { t1p1: 1, t1p2: 1, t2p1: 2, t2p2: 2 };
+            
+            let setCards = setOrder.map((setKey, idx) => {
+                let data = setGroups[setKey];
+                let result = setResults[idx];
+                let s1 = result.s1;
+                let s2 = result.s2;
+                let t1Won = result.winner === 1;
+                let t2Won = result.winner === 2;
+                let isLive = result.isLive;
+                
+                let ranking = Object.keys(data.players).map(key => ({
+                    key: key, name: playerShort[key], team: playerTeam[key],
+                    pts: data.players[key].pts, w: data.players[key].w,
+                    ue: data.players[key].ue + data.players[key].df
+                }));
+                ranking.sort((a, b) => b.pts - a.pts);
+                
+                let bestKey = ranking.length > 0 ? ranking[0].key : null;
+                
+                let rowsHtml = ranking.map((p, rIdx) => {
+                    let isBest = p.key === bestKey && p.pts > 0;
+                    let isT1 = p.team === 1;
+                    let sign = p.pts >= 0 ? '+' : '';
+                    let ptsColor = p.pts > 0 
+                        ? (isBest ? 'text-amber-400' : 'text-emerald-400') 
+                        : (p.pts === 0 ? 'text-slate-500' : 'text-red-400');
+                    let nameColor = isT1 ? 'text-emerald-300' : 'text-slate-300';
+                    let rowBg = isBest ? 'bg-amber-900/20 border border-amber-600/30' : 'bg-slate-800/50 border border-transparent';
+                    let barBg = isT1 ? 'bg-emerald-500' : 'bg-slate-400';
+                    let maxAbsPts = Math.max(...ranking.map(r => Math.abs(r.pts)), 1);
+                    let barW = Math.max((Math.abs(p.pts) / maxAbsPts) * 100, p.pts !== 0 ? 8 : 0);
+                    
+                    return `
+                        <div class="flex items-center gap-2 py-2 px-2.5 rounded-lg mb-1.5 ${rowBg}">
+                            <span class="text-[10px] font-black w-4 text-center ${isBest ? 'text-amber-400' : 'text-slate-600'}">${rIdx + 1}</span>
+                            <span class="text-xs font-bold ${nameColor} flex-1 truncate">${p.name}</span>
+                            <div class="flex items-center gap-1.5 mr-2">
+                                <span class="text-[8px] text-emerald-400/60 font-bold">${p.w}W</span>
+                                <span class="text-[8px] text-red-400/60 font-bold">${p.ue}E</span>
+                            </div>
+                            <div class="w-12 h-1.5 bg-slate-900 rounded-full overflow-hidden flex-shrink-0">
+                                <div class="h-full rounded-full ${barBg}" style="width:${barW}%"></div>
+                            </div>
+                            <span class="text-sm font-black ${ptsColor} w-10 text-right flex-shrink-0">${sign}${p.pts}</span>
+                        </div>`;
+                }).join('');
+                
+                let headerBg = t1Won ? 'bg-emerald-900/20' : (t2Won ? 'bg-slate-700/30' : 'bg-slate-800/50');
+                let liveTag = isLive ? '<div class="text-[8px] text-amber-400 font-bold uppercase tracking-wider animate-pulse mt-1">En curso</div>' : '';
+                
+                return `
+                    <div class="bg-slate-900/60 rounded-xl border border-slate-700 overflow-hidden flex-1 min-w-[200px]">
+                        <div class="text-center py-3 px-4 border-b border-slate-700 ${headerBg}">
+                            <div class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Set ${idx + 1}</div>
+                            <div class="flex items-center justify-center gap-2 mt-1">
+                                <span class="text-2xl font-black ${t1Won ? 'text-emerald-400' : 'text-slate-500'}">${s1}</span>
+                                <span class="text-slate-600 text-sm font-bold">-</span>
+                                <span class="text-2xl font-black ${t2Won ? 'text-white' : 'text-slate-500'}">${s2}</span>
+                            </div>
+                            ${liveTag}
+                        </div>
+                        <div class="p-3">
+                            ${rowsHtml}
+                        </div>
+                    </div>`;
+            }).join('');
+            
+            container.innerHTML = `
+                <div class="bg-slate-900/30 rounded-xl p-5">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 text-center">Puntuación por Sets</h4>
+                    <div class="flex gap-4 justify-center flex-wrap">
+                        ${setCards}
+                    </div>
+                </div>`;
+        }
+
+        function renderPlayerScores(stats) {
+            let container = document.getElementById('summary-player-scores');
+            if (!container) return;
+            
+            let players = {
+                t1p1: { name: getPlayerLabel(1, 'p1'), team: 1, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 },
+                t1p2: { name: getPlayerLabel(1, 'p2'), team: 1, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 },
+                t2p1: { name: getPlayerLabel(2, 'p1'), team: 2, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 },
+                t2p2: { name: getPlayerLabel(2, 'p2'), team: 2, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 }
+            };
+            
+            if (playByPlayLog && playByPlayLog.length > 0) {
+                playByPlayLog.forEach(entry => {
+                    if (!entry.team || !entry.pos) return;
+                    let key = 't' + entry.team + entry.pos;
+                    if (!players[key]) return;
+                    
+                    if (entry.action === 'winner') { 
+                        players[key].w++; 
+                        players[key].pts += 3; 
+                    }
+                    else if (entry.action === 'error_forced') { 
+                        players[key].fe++; 
+                        players[key].pts -= 1;
+                        let oppTeam = entry.team === 1 ? 2 : 1;
+                        ['p1','p2'].forEach(pos => {
+                            let oppKey = 't' + oppTeam + pos;
+                            if (players[oppKey]) players[oppKey].provoked += 0.5;
+                        });
+                    }
+                    else if (entry.action === 'error_unforced') { 
+                        players[key].ue++; 
+                        players[key].pts -= 2;
+                        let oppTeam = entry.team === 1 ? 2 : 1;
+                        ['p1','p2'].forEach(pos => {
+                            let oppKey = 't' + oppTeam + pos;
+                            if (players[oppKey]) players[oppKey].provoked += 0.5;
+                        });
+                    }
+                    else if (entry.action === 'double_fault') { 
+                        players[key].df++; 
+                        players[key].pts -= 3;
+                        let oppTeam = entry.team === 1 ? 2 : 1;
+                        ['p1','p2'].forEach(pos => {
+                            let oppKey = 't' + oppTeam + pos;
+                            if (players[oppKey]) players[oppKey].provoked += 0.5;
+                        });
+                    }
+                });
+            }
+            
+            // Encontrar MVP
+            let mvpKey = null;
+            let mvpScore = -Infinity;
+            for (let key in players) {
+                if (players[key].pts > mvpScore) {
+                    mvpScore = players[key].pts;
+                    mvpKey = key;
+                }
+            }
+            
+            let t1Name = (scoreboardState.t1.p1 || 'J1').split(' ')[0] + ' / ' + (scoreboardState.t1.p2 || 'J2').split(' ')[0];
+            let t2Name = (scoreboardState.t2.p1 || 'J3').split(' ')[0] + ' / ' + (scoreboardState.t2.p2 || 'J4').split(' ')[0];
+            
+            function playerCard(key, isT1) {
+                let p = players[key];
+                let sign = p.pts >= 0 ? '+' : '';
+                let ptsColor = p.pts >= 0 ? 'text-emerald-400' : 'text-red-400';
+                let isMvp = key === mvpKey;
+                let borderColor = isMvp ? 'border-amber-500/50' : 'border-slate-700/50';
+                let bgColor = isMvp ? 'bg-amber-900/10' : 'bg-slate-800/40';
+                
+                return `
+                <div class="mb-3 p-3 rounded-lg border ${borderColor} ${bgColor} relative">
+                    ${isMvp ? '<div class="absolute -top-2.5 right-3 text-[8px] font-black bg-amber-500 text-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-lg">🏆 MVP</div>' : ''}
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-black ${isT1 ? 'text-emerald-400' : 'text-white'} truncate mr-2">${p.name}</span>
+                        <span class="text-2xl font-black ${ptsColor} flex-shrink-0">${sign}${p.pts}</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5 text-center">
+                        <div class="bg-slate-900/70 rounded px-1 py-2">
+                            <div class="text-emerald-400 text-base font-black">${p.w}</div>
+                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Winners</div>
+                        </div>
+                        <div class="bg-slate-900/70 rounded px-1 py-2">
+                            <div class="text-orange-400 text-base font-black">${Math.floor(p.provoked)}</div>
+                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Provoc.</div>
+                        </div>
+                        <div class="bg-slate-900/70 rounded px-1 py-2">
+                            <div class="text-sky-400 text-base font-black">${p.fe}</div>
+                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Err.F</div>
+                        </div>
+                        <div class="bg-slate-900/70 rounded px-1 py-2">
+                            <div class="text-red-400 text-base font-black">${p.ue + p.df}</div>
+                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Err.NF</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            
+            let html = `
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 text-center">Puntuaciones</h4>
+                
+                <!-- Team 1 -->
+                <div class="mb-5">
+                    <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-2 text-center border-b border-emerald-800/40 pb-2">${t1Name}</div>
+                    ${playerCard('t1p1', true)}
+                    ${playerCard('t1p2', true)}
+                </div>
+                
+                <!-- Team 2 -->
+                <div>
+                    <div class="text-[10px] font-bold text-white uppercase tracking-wider mb-2 text-center border-b border-slate-600/40 pb-2">${t2Name}</div>
+                    ${playerCard('t2p1', false)}
+                    ${playerCard('t2p2', false)}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
         function getPlayerLabel(teamNum, pos) {
             let team = scoreboardState['t' + teamNum];
             if (pos === 'p1') return (team.p1 || 'DRIVE').toUpperCase();
@@ -6720,6 +7028,10 @@
             };
 
             const winSet = (teamNum) => {
+                scoreboardState.setHistory.push({
+                    s1: scoreboardState.t1.games,
+                    s2: scoreboardState.t2.games
+                });
                 scoreboardState['t' + teamNum].sets++;
                 scoreboardState.t1.games = 0;
                 scoreboardState.t2.games = 0;
