@@ -5893,6 +5893,7 @@
             if (s === '15') return 1;
             return parseInt(s) || 0;
         }
+        
         function renderAdvancedStats() {
             let container = document.getElementById('stats-tab-advanced');
 
@@ -5900,12 +5901,19 @@
             if (!document.getElementById('adv-mvp-card')) {
                 container.innerHTML = `
                     <div id="adv-mvp-card"></div>
-
+                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">📈 Contribución Neta por Jugador</h4>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mb-4">Winner = +1 · Error No Forzado = -1 · Doble Falta = -1</p>
+                        <div class="h-80 relative"><canvas id="adv-contribution-chart"></canvas></div>
+                    </div>
                     <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
                         <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-1">📈 Flujo del Partido</h4>
                         <p class="text-[10px] text-slate-500 mb-3">La línea sube con cada punto de Equipo 1 y baja con cada punto de Equipo 2</p>
                         <div class="relative h-52" id="momentum-wrapper"><canvas id="adv-momentum-chart"></canvas></div>
                     </div>
+                    
 
                     <!-- RECUADRO MEJORADO: CONTROL DEL PARTIDO -->
                     <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
@@ -5968,7 +5976,7 @@
             
             // 3. NUEVA LÓGICA: Gráfico de Tipos de Golpe
             renderShotTypeChart();
-
+            renderAdvContributionChart();
             renderSetBySet();
             renderAdvHistogram();
         }
