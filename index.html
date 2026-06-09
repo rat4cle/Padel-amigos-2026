@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
     <!-- Añade esto en tu <head> -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1914,6 +1914,7 @@
                             <div class="flex gap-4 border-b border-slate-700 pt-4 mb-0">
                                 <button onclick="switchStatsTab('summary')" id="btn-stats-summary" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn active">📊 Resumen</button>
                                 <button onclick="switchStatsTab('advanced')" id="btn-stats-advanced" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">🚀 Avanzado</button>
+                                <button onclick="switchStatsTab('armory')" id="btn-stats-armory" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">🎾 Armería</button>
                                 <button onclick="switchStatsTab('notas')" id="btn-stats-notas" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">📝 Notas</button>
                                 <button onclick="switchStatsTab('history')" id="btn-stats-history" class="pb-3 px-4 text-sm font-bold uppercase tracking-wider text-slate-400 border-b-2 border-transparent hover:text-white transition-colors stats-tab-btn">📝 Historial</button>
                             </div>
@@ -1958,7 +1959,35 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!-- PESTAÑA NUEVA: ARMERÍA (TIPOS DE GOLPE) -->
+                                <div id="stats-tab-armory" class="stats-tab-content hidden h-full flex flex-col">
+                                    <div class="p-6">
+                                        <div class="flex items-center justify-between mb-6 border-b border-slate-700 pb-4">
+                                            <h3 class="text-xl font-black text-white flex items-center gap-2">
+                                                <span class="text-pink-400">🎾</span> Armería del Partido
+                                            </h3>
+                                            <p class="text-xs text-slate-500">Análisis detallado de los golpes realizados (Winners y Errores)</p>
+                                        </div>
 
+                                        <!-- Tabla de Estadísticas -->
+                                        <div class="overflow-x-auto rounded-xl border border-slate-700">
+                                            <table class="w-full text-left border-collapse text-sm">
+                                                <thead class="bg-slate-800 text-slate-400 sticky top-0">
+                                                    <tr>
+                                                        <th class="p-3 border-b border-slate-600">Tipo de Golpe</th>
+                                                        <th class="p-3 border-b border-slate-600 text-center">Total</th>
+                                                        <th class="p-3 border-b border-slate-600 text-center text-emerald-400">Winners</th>
+                                                        <th class="p-3 border-b border-slate-600 text-center text-amber-400">Error Forzado</th>
+                                                        <th class="p-3 border-b border-slate-600 text-center text-red-400">Error No Forzado</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="armory-tbody" class="divide-y divide-slate-700/50 text-slate-300">
+                                                    <!-- Se llena con JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                                 <!-- PESTAÑA 3: HISTORIAL -->
                                 <div id="stats-tab-history" class="stats-tab-content hidden h-full flex flex-col">
                                     <h3 class="text-lg font-bold text-white mb-4">Registro Punto a Punto</h3>
@@ -2002,23 +2031,37 @@
         let editLogIndex = -1;      // ¡CRUCIAL! Necesario para editar puntos
         
         const SHOT_ICONS = {
-            'Volea': 'ri-basketball-line',
-            'Víbora': 'ri-flashlight-line',
-            'X3': 'ri-shuffle-line',
-            'Remate': 'ri-arrow-up-double-line',
-            'Globo': 'ri-cloud-windy-line',
-            'Resto': 'ri-run-line',
-            'X4': 'ri-sparkling-2-line' // <--- AÑADIR
+            'Volea': 'ri-basketball-line',          // Red/Malla
+            'Víbora': 'ri-flashlight-line',          // Vibora
+            'X3': 'ri-shuffle-line',              // Cruce (Truco)
+            'Remate': 'ri-arrow-up-double-line',    // Remate
+            'Globo': 'ri-cloud-windy-line',        // Globo
+            'Resto': 'ri-run-line',               // Resto
+            'X4': 'ri-sparkling-2-line',         // Espectacular
+            'Bandeja': 'ri-arrow-down-circle-line', // ⚠️ CAMBIO AQUÍ (Flecha hacia abajo = Bajar la pelota)
+            'Pared': 'ri-arrow-down-circle-line',   // Pared
+            'Fondo Reves': 'ri-corner-left-up-line', // ⚠️ CAMBIO AQUÍ (Esquina superior izquierda = Revés)
+            'Fondo Drive': 'ri-corner-right-up-line', // ⚠️ CAMBIO AQUÍ (Esquina superior derecha = Drive)
+            'Dejada': 'ri-arrow-down-circle-line',  // Dejada
+            'Chiquita': 'ri-checkbox-blank-circle-line', // Chiquita
+            'Red': 'ri-corner-down-right-line'    // Stop/Red
         };
 
         const SHOT_COLORS = {
-            'Volea': '#38bdf8',     // Sky
-            'Víbora': '#34d399',    // Emerald
-            'X3': '#a855f7',        // Purple
-            'Remate': '#ef4444',    // Red
-            'Globo': '#f59e0b',     // Amber
-            'Resto': '#94a3b8',    // Slate
-            'X4': '#ec4899'         // Pink
+            'Volea': '#38bdf8',        // Sky Blue
+            'Víbora': '#34d399',       // Emerald
+            'X3': '#a855f7',          // Purple
+            'Remate': '#ef4444',       // Red
+            'Globo': '#f59e0b',        // Amber
+            'Resto': '#94a3b8',       // Slate
+            'X4': '#ec4899',          // Pink
+            'Bandeja': '#f97316',      // Orange (Bandeja)
+            'Pared': '#57cbff',        // Cyan (Pared)
+            'Fondo Reves': '#14b8a6', // Teal (Fondo Reves)
+            'Fondo Drive': '#d946ef',  // Fuchsia (Fondo Drive)
+            'Dejada': '#3b82f6',       // Blue (Dejada)
+            'Chiquita': '#10b981',     // Emerald (Chiquita)
+            'Red': '#f97316'          // Orange (Red)
         };
         const urlGoogleSheets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTe6pQbD3p4NroFXhb1ypqFS9JmXeJjZq90ebqDEleUkR80fvdVarM1cXyaXU8CDY1BwTwuWV1OBCaB/pub?gid=2133685853&single=true&output=csv";
         const MANDATORY_PLAYERS = ["Garrido", "Pablo", "David", "Jordi", "Vijay"];
@@ -5446,6 +5489,7 @@
             // 3. Renderizado
             if(tabName === 'summary') renderSummaryStats();
             else if (tabName === 'advanced') renderAdvancedStats();
+            else if (tabName === 'armory') {renderArmoryStats();}
             else if (tabName === 'notas') renderNotesStats(); // <--- NUEVO
             else if (tabName === 'history') renderHistoryStats();
         }
@@ -6054,18 +6098,6 @@
                         <div id="adv-pos-content" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
                     </div>
 
-                    <!-- NUEVA SECCIÓN: ARMERÍA (TIPOS DE GOLPE) -->
-                    <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 class="text-sm font-bold text-pink-400 uppercase tracking-wider">🎾 Armería del Partido</h4>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mb-3">Distribución de los golpes ganadores (Voleas, Víbora, etc.)</p>
-                        <div class="h-64 relative flex items-center justify-center">
-                            <canvas id="adv-shot-chart"></canvas>
-                            <div id="shot-chart-placeholder" class="absolute text-slate-600 text-xs">Sin winners registrados aún</div>
-                        </div>
-                    </div>
-
                     <div class="bg-slate-900/50 p-5 rounded-xl border border-slate-700 mb-6">
                         <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3">📊 Dominio por Set</h4>
                         <div id="adv-set-content" class="overflow-x-auto"></div>
@@ -6101,7 +6133,80 @@
             renderSetBySet();
             renderAdvHistogram();
         }
+        function renderArmoryStats() {
+            const tbody = document.getElementById('armory-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
 
+            if (!playByPlayLog || playByPlayLog.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay datos registrados.</td></tr>';
+                return;
+            }
+
+            // Definir todos los tipos de golpe posibles
+            const allShots = Object.keys(SHOT_ICONS);
+            let stats = {};
+
+            // Inicializar contadores
+            allShots.forEach(shot => {
+                stats[shot] = { total: 0, winners: 0, forcedErrors: 0, unforcedErrors: 0 };
+            });
+
+            // Recorrer log y contar
+            playByPlayLog.forEach(log => {
+                if (!log.shotType || !stats[log.shotType]) return;
+
+                let shot = log.shotType;
+                stats[shot].total++;
+
+                // Lógica de atribución según el usuario
+                // Si es Error Forzado: El ganador (provocador) hizo el golpe.
+                // Si es Error No Forzado: El perdedor (team) falló el golpe.
+                // Si es Winner: El ganador (team) hizo el golpe.
+                
+                let actorTeam = null;
+                if (log.action === 'error_forced' && log.winner) {
+                    actorTeam = log.winner;
+                } else if (log.action === 'error_unforced' && log.team) {
+                    actorTeam = log.team;
+                } else if (log.action === 'winner' && log.team) {
+                    actorTeam = log.team;
+                }
+
+                if (actorTeam) {
+                    if (log.action === 'winner') stats[shot].winners++;
+                    if (log.action === 'error_forced') stats[shot].forcedErrors++;
+                    if (log.action === 'error_unforced') stats[shot].unforcedErrors++;
+                }
+            });
+
+            // Renderizar tabla
+            allShots.forEach(shot => {
+                const data = stats[shot];
+                // Opcional: ocultar filas vacías si quieres
+                if (data.total === 0) return; 
+
+                const icon = SHOT_ICONS[shot];
+                const color = SHOT_COLORS[shot];
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-800/50 transition border-b border-slate-700/50";
+                
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <div class="flex items-center gap-2">
+                            <i class="${icon}" style="color:${color}"></i>
+                            <span class="font-bold text-white">${shot}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center font-mono font-bold text-slate-300">${data.total}</td>
+                    <td class="p-3 text-center font-mono font-bold text-emerald-400">${data.winners}</td>
+                    <td class="p-3 text-center font-mono font-bold text-amber-400">${data.forcedErrors}</td>
+                    <td class="p-3 text-center font-mono font-bold text-red-400">${data.unforcedErrors}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
         // ----------------------------------------------------------------
         // FUNCIÓN NUEVA: Renderizado del Gráfico de Tipos de Golpe
         // ----------------------------------------------------------------
@@ -8243,77 +8348,95 @@
     </div>
         <!-- MODAL: SELECCIÓN DE TIPO DE GOLPE -->
     <div id="shot-type-modal" class="fixed inset-0 bg-black/90 z-[10000] hidden flex flex-col items-center justify-center backdrop-blur-sm p-4">
-        <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest text-center">¿QUÉ GOLPE FUE?</h3>
+        <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest text-center">¿QUÉ GOLPE HA SIDO?</h3>
         <p class="text-slate-400 text-sm mb-6 font-mono text-center">Selecciona el tipo de finalización</p>
         
-        <!-- Grid Actualizado: 2 cols (móvil), 4 cols (escritorio) para acomodar 10 botones -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-4xl">
+                <!-- Grid Actualizado: 3 cols (móvil), 4-5 cols (escritorio) -->
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-4 w-full max-w-5xl">
             
             <!-- 1. Volea -->
-            <button onclick="selectShotType('Volea')" class="bg-slate-800 hover:bg-sky-600 border border-slate-600 hover:border-sky-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
-                <i class="ri-basketball-line text-3xl group-hover:scale-110 transition-transform text-sky-400"></i>
+            <button onclick="selectShotType('Volea')" class="bg-slate-800 hover:bg-sky-600 border border-slate-600 hover:border-sky-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-basketball-line text-4xl group-hover:scale-110 transition-transform text-sky-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Volea</span>
             </button>
             
             <!-- 2. Víbora -->
-            <button onclick="selectShotType('Víbora')" class="bg-slate-800 hover:bg-emerald-600 border border-slate-600 hover:border-emerald-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
-                <i class="ri-flashlight-line text-3xl group-hover:scale-110 transition-transform text-emerald-400"></i>
+            <button onclick="selectShotType('Víbora')" class="bg-slate-800 hover:bg-emerald-600 border border-slate-600 hover:border-emerald-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-flashlight-line text-4xl group-hover:scale-110 transition-transform text-emerald-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Víbora</span>
             </button>
 
             <!-- 3. X3 -->
-            <button onclick="selectShotType('X3')" class="bg-slate-800 hover:bg-purple-600 border border-slate-600 hover:border-purple-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
-                <i class="ri-shuffle-line text-3xl group-hover:scale-110 transition-transform text-purple-400"></i>
+            <button onclick="selectShotType('X3')" class="bg-slate-800 hover:bg-purple-600 border border-slate-600 hover:border-purple-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-shuffle-line text-4xl group-hover:scale-110 transition-transform text-purple-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">X3</span>
             </button>
 
             <!-- 4. Remate -->
-            <button onclick="selectShotType('Remate')" class="bg-slate-800 hover:bg-red-600 border border-slate-600 hover:border-red-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
-                <i class="ri-arrow-up-double-line text-3xl group-hover:scale-110 transition-transform text-red-400"></i>
+            <button onclick="selectShotType('Remate')" class="bg-slate-800 hover:bg-red-600 border border-slate-600 hover:border-red-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-up-double-line text-4xl group-hover:scale-110 transition-transform text-red-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Remate</span>
             </button>
 
             <!-- 5. Globo -->
-            <button onclick="selectShotType('Globo')" class="bg-slate-800 hover:bg-amber-600 border border-slate-600 hover:border-amber-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
-                <i class="ri-cloud-windy-line text-3xl group-hover:scale-110 transition-transform text-amber-400"></i>
+            <button onclick="selectShotType('Globo')" class="bg-slate-800 hover:bg-amber-600 border border-slate-600 hover:border-amber-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-cloud-windy-line text-4xl group-hover:scale-110 transition-transform text-amber-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Globo</span>
             </button>
 
             <!-- 6. Resto (Dinámico) -->
-            <button id="btn-shot-resto" onclick="selectShotType('Resto')" class="bg-slate-800 hover:bg-slate-600 border border-slate-600 hover:border-slate-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
-                <i class="ri-run-line text-3xl group-hover:scale-110 transition-transform text-slate-300"></i>
+            <button id="btn-shot-resto" onclick="selectShotType('Resto')" class="bg-slate-800 hover:bg-slate-600 border border-slate-600 hover:border-slate-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i id="icon-shot-resto" class="ri-run-line text-4xl group-hover:scale-110 transition-transform text-slate-400"></i>
                 <!-- El texto "RESTO" se cambiará por JS -->
-                <span class="font-bold uppercase tracking-wider text-xs">Resto</span>
+                <span id="text-shot-resto" class="font-bold uppercase tracking-wider text-xs">Resto</span>
             </button>
             
             <!-- 7. X4 -->
-            <button onclick="selectShotType('X4')" class="bg-slate-800 hover:bg-pink-600 border border-slate-600 hover:border-pink-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
-                <i class="ri-sparkling-2-line text-3xl group-hover:scale-110 transition-transform text-pink-400"></i>
+            <button onclick="selectShotType('X4')" class="bg-slate-800 hover:bg-pink-600 border border-slate-600 hover:border-pink-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-sparkling-2-line text-4xl group-hover:scale-110 transition-transform text-pink-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">X4</span>
             </button>
 
-            <!-- NUEVO 8: BANDEJA -->
-            <button onclick="selectShotType('Bandeja')" class="bg-slate-800 hover:bg-red-600 border border-slate-600 hover:border-red-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
-                <i class="ri-badminton-line text-3xl group-hover:scale-110 transition-transform text-orange-400"></i>
+            <!-- 8. Bandeja -->
+            <button onclick="selectShotType('Bandeja')" class="bg-slate-800 hover:bg-orange-600 border border-slate-600 hover:border-orange-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-down-circle-line text-4xl group-hover:scale-110 transition-transform text-orange-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Bandeja</span>
             </button>
 
-            <!-- NUEVO 9: PARED -->
-            <button onclick="selectShotType('Pared')" class="bg-slate-800 hover:bg-cyan-600 border border-slate-600 hover:border-cyan-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
-                <i class="ri-arrow-down-circle-line text-3xl group-hover:scale-110 transition-transform text-cyan-400"></i>
+            <!-- 9. Pared -->
+            <button onclick="selectShotType('Pared')" class="bg-slate-800 hover:bg-cyan-600 border border-slate-600 hover:border-cyan-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-down-circle-line text-4xl group-hover:scale-110 transition-transform text-cyan-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Pared</span>
             </button>
 
-            <!-- NUEVO 10: FONDO REVÉS -->
-            <button onclick="selectShotType('Fondo Reves')" class="bg-slate-800 hover:bg-teal-600 border border-slate-600 hover:border-teal-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
-                <i class="ri-arrow-up-circle-line text-3xl group-hover:scale-110 transition-transform text-teal-400"></i>
+            <!-- 10. Fondo Reves -->
+            <button onclick="selectShotType('Fondo Reves')" class="bg-slate-800 hover:bg-teal-600 border border-slate-600 hover:border-teal-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-corner-left-up-line text-4xl group-hover:scale-110 transition-transform text-teal-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">F. Reves</span>
             </button>
 
-            <!-- NUEVO 11: FONDO DRIVE -->
-            <button onclick="selectShotType('Fondo Drive')" class="bg-slate-800 hover:bg-fuchsia-600 border border-slate-600 hover:border-fuchsia-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
-                <i class="ri-arrow-up-right-circle-line text-3xl group-hover:scale-110 transition-transform text-fuchsia-400"></i>
+            <!-- 11. Fondo Drive -->
+            <button onclick="selectShotType('Fondo Drive')" class="bg-slate-800 hover:bg-fuchsia-600 border border-slate-600 hover:border-fuchsia-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-corner-right-up-line text-4xl group-hover:scale-110 transition-transform text-fuchsia-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">F. Drive</span>
+            </button>
+
+            <!-- 12. Dejada -->
+            <button onclick="selectShotType('Dejada')" class="bg-slate-800 hover:bg-blue-600 border border-slate-600 hover:border-blue-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-down-circle-line text-4xl group-hover:scale-110 transition-transform text-blue-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Dejada</span>
+            </button>
+
+            <!-- 13. Chiquita -->
+            <button onclick="selectShotType('Chiquita')" class="bg-slate-800 hover:bg-emerald-600 border border-slate-600 hover:border-emerald-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-checkbox-blank-circle-line text-4xl group-hover:scale-110 transition-transform text-emerald-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Chiquita</span>
+            </button>
+
+            <!-- 14. Red -->
+            <button onclick="selectShotType('Red')" class="bg-slate-800 hover:bg-orange-600 border border-slate-600 hover:border-orange-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-corner-down-right-line text-4xl group-hover:scale-110 transition-transform text-orange-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Red</span>
             </button>
 
         </div>
