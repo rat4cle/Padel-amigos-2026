@@ -2044,7 +2044,9 @@
             'Fondo Drive': 'ri-corner-right-up-line', // ⚠️ CAMBIO AQUÍ (Esquina superior derecha = Drive)
             'Dejada': 'ri-arrow-down-circle-line',  // Dejada
             'Chiquita': 'ri-checkbox-blank-circle-line', // Chiquita
-            'Red': 'ri-corner-down-right-line'    // Stop/Red
+            'Red': 'ri-corner-down-right-line',    // Stop/Red
+            'Contrapared': 'ri-layout-right-2-line',
+            'Block': 'ri-door-lock-line'
         };
 
         const SHOT_COLORS = {
@@ -2061,7 +2063,9 @@
             'Fondo Drive': '#d946ef',  // Fuchsia (Fondo Drive)
             'Dejada': '#3b82f6',       // Blue (Dejada)
             'Chiquita': '#10b981',     // Emerald (Chiquita)
-            'Red': '#f97316'          // Orange (Red)
+            'Red': '#f97316',          // Orange (Red)
+            'Contrapared': '#8b5cf6',
+            'Block': '#2e8b57',
         };
         const urlGoogleSheets = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTe6pQbD3p4NroFXhb1ypqFS9JmXeJjZq90ebqDEleUkR80fvdVarM1cXyaXU8CDY1BwTwuWV1OBCaB/pub?gid=2133685853&single=true&output=csv";
         const MANDATORY_PLAYERS = ["Garrido", "Pablo", "David", "Jordi", "Vijay"];
@@ -8452,6 +8456,16 @@
             <button onclick="selectShotType('Red')" class="bg-slate-800 hover:bg-orange-600 border border-slate-600 hover:border-orange-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
                 <i class="ri-corner-down-right-line text-4xl group-hover:scale-110 transition-transform text-orange-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Red</span>
+            </button>
+            <!-- 15. Contrapared -->
+            <button onclick="selectShotType('Contrapared')" class="bg-slate-800 hover:bg-violet-600 border border-slate-600 hover:border-violet-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-layout-right-2-line text-4xl group-hover:scale-110 transition-transform text-violet-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Contrapared</span>
+            </button>
+            <!-- 16. Bloqueo -->
+            <button onclick="selectShotType('Block')" class="bg-slate-800 hover:bg-seagreen-600 border border-slate-600 hover:border-seagreen-400 text-white p-4 rounded-xl transition-all group h-28 flex flex-col items-center justify-center gap-2">
+                <i class="ri-door-lock-line text-4xl group-hover:scale-110 transition-transform text-seagreen-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Bloqueo</span>
             </button>
 
         </div>
