@@ -1300,6 +1300,12 @@
                 transform: scale(1);
             }
         }
+        /* Estilo visual cuando seleccionamos al provoker del error */
+
+        .selecting-provoker .scorer-btn {
+            background-color: #f59e0b !important; /* Botones ámbar */
+            color: #fff !important;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen">
@@ -4535,31 +4541,9 @@
             // Arrancar timer al primer toque
             if (!timerHasStarted) startTimer();
             
-            // --- CASO: FALTAS ---
-            if (type === 'fault') {
-                // 1. Aumentar contador
-                scoreboardState['t' + team].faults++;
-
-                // 2. ACTUALIZAR UI (Importante para ver "DOBLE FALTA")
-                updateScoreboardUI();
-
-                // 3. Comprobar si ya son 2 faltas
-                if (scoreboardState['t' + team].faults >= 2) {
-                    // Es Doble Falta -> Punto para el rival
-                    logAction('double_fault', team, null, 'DOBLE FALTA'); 
-                    scoreboardState['t' + team].faults = 0; // Resetear
-                    addScoreboardPoint((team === 1) ? 2 : 1);
-                    
-                    // Actualizamos la UI de nuevo tras el punto
-                    updateScoreboardUI();
-                }
-
-                // 4. RETORNAR: No abrir modales de selección ni de tipos de golpe
-                return; 
-            }
-
-            // --- CASO NORMAL: WINNER / ERROR ---
-            // Aquí SI queremos abrir el menú de selección (Drive / Reves)
+            // --- FIX: TRATAR FALTA COMO UNA ACCIÓN QUE REQUIERE SELECCIÓN ---
+            // Ya no hacemos return inmediato. Llamamos a showScorerSelection.
+            
             window.currentActionType = type;
             showScorerSelection(team);
         }
@@ -4868,35 +4852,69 @@
         // ==========================================
         // FUNCIÓN ACTUALIZADA: CONFIRMAR GANADOR
         // ==========================================
+                // Variable global para saber si estamos eligiendo al provocador
+        let isSelectingProvoker = false;
+
         function confirmWinner(team, playerPos) {
-            // 1. Preparar datos básicos
+            // Si estamos en modo de selección de provocador, redirigimos
+            if (isSelectingProvoker) {
+                confirmProvokerLogic(team, playerPos);
+                return;
+            }
+
+            // --- LÓGICA ESTÁNDAR (COMIENZO) ---
             let action = window.currentActionType || 'winner';
             let trueWinner = null;
 
-            // 2. Determinar qué equipo anota el punto realmente
+            // Determinar quién anota el punto
             if (action === 'error_forced' || action === 'error_unforced' || action === 'error') {
+                trueWinner = (team === 1) ? 2 : 1;
+            } else if (action === 'double_fault') {
                 trueWinner = (team === 1) ? 2 : 1;
             } else {
                 trueWinner = team;
             }
 
-            // 3. Guardar estado pendiente
+            // ==========================================
+            // LÓGICA PARA ERROR FORZADO (2 PASOS)
+            // ==========================================
+            if (action === 'error_forced') {
+                // 1. Creamos la entrada pendiente con el jugador que falló
+                pendingLogEntry = {
+                    action: action,
+                    team: team, 
+                    pointScore: "pending",
+                    winner: trueWinner,
+                    pos: playerPos,
+                    forcedBy: null // Se llenará en el paso 2
+                };
+
+                // 2. Mostramos selección para el EQUIPO CONTRARIO (Provocador)
+                let opponentTeam = (team === 1) ? 2 : 1;
+                showProvokerSelection(opponentTeam);
+                
+                // 3. Detenemos ejecución aquí. Esperaremos al 2º click.
+                return; 
+            }
+
+            // ==========================================
+            // RESTO DE ACCIONES (WINNER, ERROR NO FORZADO, ETC)
+            // ==========================================
+
+            // Guardar estado pendiente
             pendingLogEntry = {
                 action: action,
-                team: team, // El equipo que hizo la acción
+                team: team,
                 pointScore: "pending",
                 winner: trueWinner,
                 pos: playerPos
             };
 
-            // 4. Etiquetas dinámicas para el botón de Resto (Saque vs Receptor)
+            // Etiqueta dinámica para el botón de Resto
             let dynamicLabel = "RESTO"; 
             if (action !== 'fault' && action !== 'double_fault') {
-                if (trueWinner === scoreboardState.server) {
-                    dynamicLabel = "SAQUE";
-                } else {
-                    dynamicLabel = "RESTO";
-                }
+                if (trueWinner === scoreboardState.server) dynamicLabel = "SAQUE";
+                else dynamicLabel = "RESTO";
             } else {
                 dynamicLabel = (action === 'double_fault') ? "DOBLE FALTA" : "FALTA";
             }
@@ -4919,67 +4937,134 @@
                 }
             }
 
-            // ==========================================
-            // 5. LÓGICA DE CONFIGURACIÓN (SHOT TYPE MODE)
-            // ==========================================
+            // Lógica de configuración de tipo de golpe (Shot Type Mode)
+            // Usamos la función auxiliar commitPoint para no duplicar código
+            commitPoint();
+        }
+
+        // --- NUEVA FUNCIÓN: Mostrar selección de provocador ---
+        function showProvokerSelection(teamNum) {
+            // Limpiar clases anteriores
+            document.querySelectorAll('.selecting-scorer').forEach(el => el.classList.remove('selecting-scorer'));
+            document.querySelectorAll('.selecting-provoker').forEach(el => el.classList.remove('selecting-provoker'));
             
+            // Activar bandera global
+            isSelectingProvoker = true;
+
+            // Enfocar visualmente el contenedor del rival
+            let container = document.getElementById(`sb-actions-${teamNum}`);
+            if(container) {
+                container.classList.add('selecting-provoker');
+                container.classList.add('selecting-scorer'); // Reutilizamos layout de botones scorer-btn
+            }
+            
+            document.body.classList.add('is-selecting');
+        }
+
+        // --- NUEVA FUNCIÓN: Confirmar quién provocó el error ---
+        function confirmProvokerLogic(team, playerPos) {
+            // Guardar datos en la entrada pendiente
+            if (pendingLogEntry) {
+                pendingLogEntry.forcedBy = { team: team, pos: playerPos };
+            }
+
+            // Ejecutar el punto final
+            commitPoint();
+        }
+
+        // --- FUNCIÓN REFACTORIZADA: Finalizar el punto (Modal, Log, Score) ---
+        function commitPoint() {
+            if (!pendingLogEntry) return;
+
+            let action = window.currentActionType || 'winner';
+            let team = pendingLogEntry.team;
+            let pos = pendingLogEntry.pos;
+            
+            // ==========================================
+            // 1. LÓGICA DE FALTAS (PRIORIDAD ABSOLUTA)
+            // ==========================================
+            // Esto debe ejecutarse ANTES de pedir tipos de golpe
+            if (action === 'fault') {
+                let playerState = scoreboardState['t' + team];
+                
+                if (playerState.faults === 0) {
+                    // --- CASO A: PRIMERA FALTA ---
+                    // 1. Marcamos que tiene 1 falta
+                    playerState.faults = 1;
+                    
+                    // 2. Logueamos como falta simple
+                    logAction('fault', team, pos, 'FALTA');
+                    
+                    // 3. Actualizamos la UI para mostrar el botón de "DOBLE FALTA"
+                    updateScoreboardUI();
+                    
+                    // 4. LIMPIEZA: No damos punto, no cambiamos servidor (sigue siendo su 2º saque)
+                    finishPointAction(action, team, pos);
+                    return; // DETENEMOS EJECUCIÓN
+                } 
+                else if (playerState.faults === 1) {
+                    // --- CASO B: SEGUNDA FALTA (DOBLE FALTA) ---
+                    // 1. Reiniciamos contador de faltas para el futuro
+                    playerState.faults = 0;
+                    
+                    // 2. Logueamos como DOBLE FALTA (afecta estadísticas negativas)
+                    logAction('double_fault', team, pos, 'DOBLE FALTA');
+                    
+                    // 3. El punto es para el RIVAL
+                    let opponent = (team === 1) ? 2 : 1;
+                    
+                    // 4. Le damos el punto al rival (esto cambiará servidor automáticamente si es game)
+                    addScoreboardPoint(opponent);
+                    
+                    // 5. LIMPIEZA
+                    finishPointAction(action, team, pos);
+                    return; // DETENEMOS EJECUCIÓN
+                }
+            }
+
+            // ==========================================
+            // 2. LÓGICA DE TIPOS DE GOLPE (RESTO DE ACCIONES)
+            // ==========================================
             let shouldOpenModal = false;
             let finalShotType = null; 
 
+            // Resetear bandera global
+            isSelectingProvoker = false;
+
+            // Lógica de configuración de tipo de golpe
             if (shotTypeMode === 'always') {
-                // MODO SIEMPRE: Abrir para todo excepto faltas
-                if (action === 'fault' || action === 'double_fault') {
-                    shouldOpenModal = false;
-                    // El punto ya se sumó en handleScoreboardAction (para dobles faltas) o es solo visual (simple falta).
-                    // Solo nos aseguramos de limpiar la UI.
-                    // Nota: Si llegamos aquí por recálculo histórico, logamos la acción.
-                    if (action === 'double_fault') {
-                        logAction('double_fault', team, playerPos, finalShotType);
-                        // addScoreboardPoint ya se llamó en handleScoreboardAction
-                    } else {
-                        logAction('fault', team, playerPos, 'FALTA');
-                    }
-                    finishPointAction(action, team, playerPos);
-                    return;
-                } else {
+                // No abrir modal para faltas simples o dobles (ya gestionadas arriba)
+                // Solo para winners o errores
+                if (action === 'winner' || action === 'error_forced' || action === 'error_unforced') {
                     shouldOpenModal = true;
+                } else {
+                    shouldOpenModal = false;
+                    // Para 'double_fault' ya se logueó arriba
                 }
             } 
             else if (shotTypeMode === 'winners') {
-                // MODO SOLO WINNERS
                 if (action === 'winner') {
                     shouldOpenModal = true;
                 } else {
                     shouldOpenModal = false;
-                    // 1. Guardar en historial
-                    logAction(action, team, playerPos, finalShotType);
-                    
-                    // 2. ACTUALIZAR MARCADOR (LA CORRECCIÓN CLAVE)
-                    // Si es error, el punto es para el oponente (trueWinner)
-                    addScoreboardPoint(trueWinner);
-                    
-                    // 3. Limpiar UI
-                    finishPointAction(action, team, playerPos);
+                    // Aquí se encargaría de loguear el error y dar punto
+                    logAction(action, team, pos, finalShotType);
+                    let opponent = (team === 1) ? 2 : 1; // El rival anota en errores
+                    addScoreboardPoint(opponent);
+                    finishPointAction(action, team, pos);
                     return;
                 }
             } 
             else if (shotTypeMode === 'never') {
-                // MODO NUNCA
                 shouldOpenModal = false;
-                // 1. Guardar en historial
-                logAction(action, team, playerPos, finalShotType);
-                
-                // 2. ACTUALIZAR MARCADOR
-                addScoreboardPoint(trueWinner);
-                
-                // 3. Limpiar UI
-                finishPointAction(action, team, playerPos);
+                logAction(action, team, pos, finalShotType);
+                let opponent = (team === 1) ? 2 : 1; // El rival anota en errores
+                addScoreboardPoint(opponent);
+                finishPointAction(action, team, pos);
                 return;
             }
 
-            // ==========================================
-            // 6. ABRIR MODAL (SI CORRESPONDE)
-            // ==========================================
+            // 3. Abrir Modal si es necesario
             if (shouldOpenModal) {
                 document.getElementById('shot-type-modal').classList.remove('hidden');
                 document.body.classList.add('is-selecting');
@@ -4999,6 +5084,17 @@
             let trueWinner = null;
             let scorerName = "";
             let detail = "";
+
+            // --- CORRECCIÓN: RECUPERAR DATOS DEL PROVOCADOR ---
+            let forcedByData = null;
+            // Si estamos en medio de una transacción de punto (Error Forzado),
+            // pendingLogEntry tiene los datos de quién provocó el error.
+            if (pendingLogEntry && pendingLogEntry.forcedBy) {
+                forcedByData = {
+                    team: pendingLogEntry.forcedBy.team,
+                    pos: pendingLogEntry.forcedBy.pos
+                };
+            }
 
             if (actionType === 'winner') {
                 trueWinner = teamNum;
@@ -5035,7 +5131,8 @@
                 games: `${scoreboardState.t1.games}-${scoreboardState.t2.games}`,
                 sets: `${scoreboardState.t1.sets}-${scoreboardState.t2.sets}`,
                 server: scoreboardState.server,
-                shotType: shotType // <--- ESTA ES LA LÍNEA QUE TE FALTABA
+                shotType: shotType,
+                forcedBy: forcedByData // <--- AQUÍ SE GUARDA EL PROVOCADOR
             };
 
             playByPlayLog.push(event);
@@ -5758,17 +5855,22 @@
                 </div>`;
         }
 
-        function renderPlayerScores(stats) {
+                // ==========================================
+        // 📊 VISUALES: Corrección definitiva de Provocaciones
+        // ==========================================
+                function renderPlayerScores() {
             let container = document.getElementById('summary-player-scores');
             if (!container) return;
             
+            // 1. Inicializar estadísticas
             let players = {
                 t1p1: { name: getPlayerLabel(1, 'p1'), team: 1, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 },
                 t1p2: { name: getPlayerLabel(1, 'p2'), team: 1, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 },
                 t2p1: { name: getPlayerLabel(2, 'p1'), team: 2, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 },
                 t2p2: { name: getPlayerLabel(2, 'p2'), team: 2, w: 0, fe: 0, ue: 0, df: 0, provoked: 0, pts: 0 }
             };
-            
+
+            // 2. Calcular desde playByPlayLog
             if (playByPlayLog && playByPlayLog.length > 0) {
                 playByPlayLog.forEach(entry => {
                     if (!entry.team || !entry.pos) return;
@@ -5782,34 +5884,41 @@
                     else if (entry.action === 'error_forced') { 
                         players[key].fe++; 
                         players[key].pts -= 1;
+                        
+                        // Recorrer rivales para dar puntos al PROVOCADOR específico
                         let oppTeam = entry.team === 1 ? 2 : 1;
                         ['p1','p2'].forEach(pos => {
                             let oppKey = 't' + oppTeam + pos;
-                            if (players[oppKey]) players[oppKey].provoked += 0.5;
+                            if (players[oppKey]) {
+                                if (entry.forcedBy && entry.forcedBy.team === oppTeam && entry.forcedBy.pos === pos) {
+                                    players[oppKey].provoked += 1; 
+                                    players[oppKey].pts += 2; 
+                                }
+                            }
                         });
                     }
                     else if (entry.action === 'error_unforced') { 
                         players[key].ue++; 
                         players[key].pts -= 2;
-                        let oppTeam = entry.team === 1 ? 2 : 1;
-                        ['p1','p2'].forEach(pos => {
-                            let oppKey = 't' + oppTeam + pos;
-                            if (players[oppKey]) players[oppKey].provoked += 0.5;
-                        });
                     }
+                    // LÓGICA DE DOBLE FALTA (CATEGORÍA PROPIA)
                     else if (entry.action === 'double_fault') { 
-                        players[key].df++; 
+                        players[key].df++; // Sumamos a la categoria DF
                         players[key].pts -= 3;
+                        
+                        // El rival gana el punto (+3 pts)
                         let oppTeam = entry.team === 1 ? 2 : 1;
                         ['p1','p2'].forEach(pos => {
                             let oppKey = 't' + oppTeam + pos;
-                            if (players[oppKey]) players[oppKey].provoked += 0.5;
+                            if (players[oppKey]) {
+                                players[oppKey].pts += 3; 
+                            }
                         });
                     }
                 });
             }
             
-            // Encontrar MVP
+            // 3. Encontrar MVP
             let mvpKey = null;
             let mvpScore = -Infinity;
             for (let key in players) {
@@ -5822,6 +5931,7 @@
             let t1Name = (scoreboardState.t1.p1 || 'J1').split(' ')[0] + ' / ' + (scoreboardState.t1.p2 || 'J2').split(' ')[0];
             let t2Name = (scoreboardState.t2.p1 || 'J3').split(' ')[0] + ' / ' + (scoreboardState.t2.p2 || 'J4').split(' ')[0];
             
+            // 4. Función auxiliar para dibujar la tarjeta de un jugador
             function playerCard(key, isT1) {
                 let p = players[key];
                 let sign = p.pts >= 0 ? '+' : '';
@@ -5830,6 +5940,7 @@
                 let borderColor = isMvp ? 'border-amber-500/50' : 'border-slate-700/50';
                 let bgColor = isMvp ? 'bg-amber-900/10' : 'bg-slate-800/40';
                 
+                // --- GRID DE 5 COLUMNAS: W, PROVOC, ERR.F, UE, DF ---
                 return `
                 <div class="mb-3 p-3 rounded-lg border ${borderColor} ${bgColor} relative">
                     ${isMvp ? '<div class="absolute -top-2.5 right-3 text-[8px] font-black bg-amber-500 text-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-lg">🏆 MVP</div>' : ''}
@@ -5837,27 +5948,37 @@
                         <span class="text-sm font-black ${isT1 ? 'text-emerald-400' : 'text-white'} truncate mr-2">${p.name}</span>
                         <span class="text-2xl font-black ${ptsColor} flex-shrink-0">${sign}${p.pts}</span>
                     </div>
-                    <div class="grid grid-cols-4 gap-1.5 text-center">
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 text-center">
+                        <!-- Winners -->
                         <div class="bg-slate-900/70 rounded px-1 py-2">
                             <div class="text-emerald-400 text-base font-black">${p.w}</div>
-                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Winners</div>
+                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">W</div>
                         </div>
+                        <!-- Provocados -->
                         <div class="bg-slate-900/70 rounded px-1 py-2">
-                            <div class="text-orange-400 text-base font-black">${Math.floor(p.provoked)}</div>
-                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Provoc.</div>
+                            <div class="text-orange-400 text-base font-black">${p.provoked}</div>
+                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Provoc</div>
                         </div>
+                        <!-- Errores Forzados -->
                         <div class="bg-slate-900/70 rounded px-1 py-2">
                             <div class="text-sky-400 text-base font-black">${p.fe}</div>
                             <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Err.F</div>
                         </div>
+                        <!-- Errores No Forzados (Solo UE) -->
                         <div class="bg-slate-900/70 rounded px-1 py-2">
-                            <div class="text-red-400 text-base font-black">${p.ue + p.df}</div>
-                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">Err.NF</div>
+                            <div class="text-red-400 text-base font-black">${p.ue}</div>
+                            <div class="text-[7px] text-slate-500 font-bold uppercase leading-tight mt-0.5">UE</div>
+                        </div>
+                        <!-- DOBLE FALTA (NUEVA CATEGORÍA) -->
+                        <div class="bg-orange-900/20 border border-orange-800/30 rounded px-1 py-2">
+                            <div class="text-orange-400 text-base font-black">${p.df}</div>
+                            <div class="text-[7px] text-orange-500/80 font-bold uppercase leading-tight mt-0.5">DF</div>
                         </div>
                     </div>
                 </div>`;
             }
             
+            // 5. Generar HTML final
             let html = `
                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 text-center">Puntuaciones</h4>
                 
@@ -6095,6 +6216,9 @@
             });
         }
 
+        // ==========================================
+        // 📈 CONTRIBUCIÓN NETA (Corrección de Posición)
+        // ==========================================
         function renderAdvContributionChart() {
             if (advContributionChart) advContributionChart.destroy();
             if (!playByPlayLog || playByPlayLog.length === 0) return;
@@ -6116,10 +6240,34 @@
                     let prev = cumulative[p.key][cumulative[p.key].length - 1];
                     let delta = 0;
 
-                    if (log.pos && log.team === p.team && log.pos === p.pos) {
-                        if (log.action === 'winner') delta = 1;
-                        else if (log.action === 'error_unforced') delta = -1;
-                        else if (log.action === 'double_fault') delta = -1;
+                    // 1. GANADOR DIRECTO (Winner)
+                    if (log.action === 'winner' && log.winner === p.team) {
+                        delta = 1;
+                    }
+                    
+                    // 2. ERRORES NO FORZADOS (Solo afecta al que lo hace)
+                    else if (log.action === 'error_unforced' && log.team === p.team && log.pos === p.pos) {
+                        delta = -1;
+                    }
+
+                    // 3. DOBLE FALTA (Afecta a quien saca y posicion específica)
+                    else if (log.action === 'double_fault') {
+                        // Quien saca (log.pos) comete error -> -1
+                        if (log.team === p.team && log.pos === p.pos) delta = -1;
+                        // Quien recibe (log.winner) gana punto -> +1
+                        else if (log.winner === p.team) delta = 1;
+                    }
+
+                    // 4. ERRORES FORZADOS
+                    else if (log.action === 'error_forced') {
+                        // Quien comete el error (log.team + log.pos) -> -1
+                        if (log.team === p.team && log.pos === p.pos) {
+                            delta = -0.5;
+                        }
+                        // Quien provocó (log.forcedBy) -> +1
+                        if (log.forcedBy && log.forcedBy.team === p.team && log.forcedBy.pos === p.pos) {
+                            delta = 1;
+                        }
                     }
 
                     cumulative[p.key].push(prev + delta);
@@ -8017,21 +8165,26 @@
         // ==========================================
         // Esta función centraliza la limpieza de la interfaz y la actualización visual.
         function finishPointAction(action, team, pos) {
-            let opponent = (team === 1) ? 2 : 1;
+            // 1. Limpiar TODOS los estados de selección en AMBOS equipos
+            // (Esto soluciona que los botones del rival queden bloqueados tras una selección de provocador)
+            document.querySelectorAll('.selecting-scorer').forEach(el => el.classList.remove('selecting-scorer'));
+            document.querySelectorAll('.selecting-provoker').forEach(el => el.classList.remove('selecting-provoker'));
+
+            // 2. Cerrar modal de tipo de golpe
+            const modal = document.getElementById('shot-type-modal');
+            if(modal) modal.classList.add('hidden');
             
-            // 1. Cerrar UI de selección de jugador (Drive/Reverse)
-            const container = document.getElementById(`sb-actions-${team}`);
-            if(container) container.classList.remove('selecting-scorer');
+            // 3. Quitar bloqueo general del body
             document.body.classList.remove('is-selecting');
             
-            // 2. Cerrar UI de selección de tipo de golpe
-            document.getElementById('shot-type-modal').classList.add('hidden');
-            
-            // 3. Limpiar variable pendiente
+            // 4. Limpiar variable global y datos pendientes
+            isSelectingProvoker = false;
             pendingLogEntry = null;
-            
-            // 4. Forzar actualización visual del marcador
-            updateScoreboardUI();
+
+            // 5. Actualizar UI si es necesario (para botones de falta)
+            if (action === 'fault' || action === 'double_fault') {
+                 updateScoreboardUI();
+            }
         }
     </script>
     <!-- MODAL DE GUARDADO -->
@@ -8093,49 +8246,74 @@
         <h3 class="text-2xl font-black text-white mb-2 uppercase tracking-widest text-center">¿QUÉ GOLPE FUE?</h3>
         <p class="text-slate-400 text-sm mb-6 font-mono text-center">Selecciona el tipo de finalización</p>
         
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-3xl">
+        <!-- Grid Actualizado: 2 cols (móvil), 4 cols (escritorio) para acomodar 10 botones -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-4xl">
             
-            <!-- Botón 1: Volea -->
+            <!-- 1. Volea -->
             <button onclick="selectShotType('Volea')" class="bg-slate-800 hover:bg-sky-600 border border-slate-600 hover:border-sky-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
                 <i class="ri-basketball-line text-3xl group-hover:scale-110 transition-transform text-sky-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Volea</span>
             </button>
             
-            <!-- Botón 2: Víbora -->
+            <!-- 2. Víbora -->
             <button onclick="selectShotType('Víbora')" class="bg-slate-800 hover:bg-emerald-600 border border-slate-600 hover:border-emerald-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
                 <i class="ri-flashlight-line text-3xl group-hover:scale-110 transition-transform text-emerald-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Víbora</span>
             </button>
 
-            <!-- Botón 3: X3 -->
+            <!-- 3. X3 -->
             <button onclick="selectShotType('X3')" class="bg-slate-800 hover:bg-purple-600 border border-slate-600 hover:border-purple-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
                 <i class="ri-shuffle-line text-3xl group-hover:scale-110 transition-transform text-purple-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">X3</span>
             </button>
 
-            <!-- Botón 4: Remate -->
+            <!-- 4. Remate -->
             <button onclick="selectShotType('Remate')" class="bg-slate-800 hover:bg-red-600 border border-slate-600 hover:border-red-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
                 <i class="ri-arrow-up-double-line text-3xl group-hover:scale-110 transition-transform text-red-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Remate</span>
             </button>
 
-            <!-- Botón 5: Globo -->
+            <!-- 5. Globo -->
             <button onclick="selectShotType('Globo')" class="bg-slate-800 hover:bg-amber-600 border border-slate-600 hover:border-amber-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
                 <i class="ri-cloud-windy-line text-3xl group-hover:scale-110 transition-transform text-amber-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">Globo</span>
             </button>
 
-            <!-- Botón 6: Resto (Dinámico) -->
+            <!-- 6. Resto (Dinámico) -->
             <button id="btn-shot-resto" onclick="selectShotType('Resto')" class="bg-slate-800 hover:bg-slate-600 border border-slate-600 hover:border-slate-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
                 <i class="ri-run-line text-3xl group-hover:scale-110 transition-transform text-slate-300"></i>
                 <!-- El texto "RESTO" se cambiará por JS -->
-                <span class="font-bold uppercase tracking-wider text-xs">RESTO</span>
+                <span class="font-bold uppercase tracking-wider text-xs">Resto</span>
             </button>
             
-            <!-- Botón 7: X4 (Nuevo) -->
+            <!-- 7. X4 -->
             <button onclick="selectShotType('X4')" class="bg-slate-800 hover:bg-pink-600 border border-slate-600 hover:border-pink-400 text-white p-4 rounded-xl transition-all group h-24 flex flex-col items-center justify-center gap-2">
                 <i class="ri-sparkling-2-line text-3xl group-hover:scale-110 transition-transform text-pink-400"></i>
                 <span class="font-bold uppercase tracking-wider text-xs">X4</span>
+            </button>
+
+            <!-- NUEVO 8: BANDEJA -->
+            <button onclick="selectShotType('Bandeja')" class="bg-slate-800 hover:bg-red-600 border border-slate-600 hover:border-red-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
+                <i class="ri-badminton-line text-3xl group-hover:scale-110 transition-transform text-orange-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Bandeja</span>
+            </button>
+
+            <!-- NUEVO 9: PARED -->
+            <button onclick="selectShotType('Pared')" class="bg-slate-800 hover:bg-cyan-600 border border-slate-600 hover:border-cyan-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-down-circle-line text-3xl group-hover:scale-110 transition-transform text-cyan-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">Pared</span>
+            </button>
+
+            <!-- NUEVO 10: FONDO REVÉS -->
+            <button onclick="selectShotType('Fondo Reves')" class="bg-slate-800 hover:bg-teal-600 border border-slate-600 hover:border-teal-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-up-circle-line text-3xl group-hover:scale-110 transition-transform text-teal-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">F. Reves</span>
+            </button>
+
+            <!-- NUEVO 11: FONDO DRIVE -->
+            <button onclick="selectShotType('Fondo Drive')" class="bg-slate-800 hover:bg-fuchsia-600 border border-slate-600 hover:border-fuchsia-400 text-white p-4 rounded-xl transition-all group h-24 flex flex flex-col items-center justify-center gap-2">
+                <i class="ri-arrow-up-right-circle-line text-3xl group-hover:scale-110 transition-transform text-fuchsia-400"></i>
+                <span class="font-bold uppercase tracking-wider text-xs">F. Drive</span>
             </button>
 
         </div>
