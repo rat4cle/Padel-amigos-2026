@@ -4954,19 +4954,33 @@
             };
 
             // Etiqueta dinámica para el botón de Resto
+            // ==========================================
+            // CORRECCIÓN AQUÍ:
+            // La etiqueta debe indicar qué está haciendo el jugador que selecciona el tipo de golpe.
+            // Si `team` (el equipo seleccionado en el marcador) es el servidor, es "SAQUE".
+            // Si `team` es el receptor, es "RESTO".
+            // ==========================================
             let dynamicLabel = "RESTO"; 
+            
+            // Solo cambiamos si no es falta ni doble falta (que tienen su propia etiqueta)
             if (action !== 'fault' && action !== 'double_fault') {
-                if (trueWinner === scoreboardState.server) dynamicLabel = "SAQUE";
-                else dynamicLabel = "RESTO";
-            } else {
-                dynamicLabel = (action === 'double_fault') ? "DOBLE FALTA" : "FALTA";
+                
+                if (pendingLogEntry.team === scoreboardState.server) {
+                    dynamicLabel = "SAQUE";
+                } else {
+                    dynamicLabel = "RESTO";
+                }
             }
 
             let restoBtn = document.getElementById('btn-shot-resto');
             if(restoBtn) {
                 let span = restoBtn.querySelector('span');
                 let icon = restoBtn.querySelector('i');
+                
+                // Actualizar texto
                 if(span) span.innerText = dynamicLabel;
+                
+                // Actualizar icono visual (Opcional, pero consistente)
                 if(icon) {
                     if (action === 'double_fault') {
                         icon.className = "ri-alarm-warning-line text-3xl group-hover:scale-110 transition-transform text-red-500";
@@ -4975,6 +4989,7 @@
                     } else if (dynamicLabel === "SAQUE") {
                         icon.className = "ri-skip-forward-line text-3xl group-hover:scale-110 transition-transform text-amber-400";
                     } else {
+                        // Es RESTO
                         icon.className = "ri-run-line text-3xl group-hover:scale-110 transition-transform text-slate-300";
                     }
                 }
