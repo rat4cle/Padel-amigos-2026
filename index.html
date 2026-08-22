@@ -5121,13 +5121,16 @@
                 shouldOpenModal = false;
                 logAction(action, team, pos, finalShotType);
                 if (action === 'winner') {
-                    let opponent = (team === 1) ? 1 : 2;
+                    addScoreboardPoint(team);
+                    finishPointAction(action, team, pos);
+                    return;
                 } else {
                     let opponent = (team === 1) ? 2 : 1; // El rival anota en errores
+                    addScoreboardPoint(opponent);
+                    finishPointAction(action, team, pos);
+                    return;
                 }
-                addScoreboardPoint(opponent);
-                finishPointAction(action, team, pos);
-                return;
+                
             }
 
             // 3. Abrir Modal si es necesario
