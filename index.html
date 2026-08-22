@@ -5120,7 +5120,11 @@
             else if (shotTypeMode === 'never') {
                 shouldOpenModal = false;
                 logAction(action, team, pos, finalShotType);
-                let opponent = (team === 1) ? 2 : 1; // El rival anota en errores
+                if (action === 'winner') {
+                    let opponent = (team === 1) ? 1 : 2;
+                } else {
+                    let opponent = (team === 1) ? 2 : 1; // El rival anota en errores
+                }
                 addScoreboardPoint(opponent);
                 finishPointAction(action, team, pos);
                 return;
